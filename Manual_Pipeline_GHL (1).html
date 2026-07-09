@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual Pipeline GHL - CDI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            animation: slideDown 0.6s ease;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            background: white;
+            color: #667eea;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn:hover, .tab-btn.active {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .etapas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .etapa-card {
+            border-radius: 12px;
+            padding: 20px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            border-left: 5px solid transparent;
+        }
+
+        .etapa-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        .etapa-card.active {
+            max-height: 600px;
+        }
+
+        .etapa-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .etapa-numero {
+            font-size: 1.8em;
+            font-weight: bold;
+            opacity: 0.8;
+        }
+
+        .etapa-nombre {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .etapa-responsable {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        .etapa-desc {
+            font-size: 0.95em;
+            line-height: 1.6;
+            margin-top: 15px;
+            opacity: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .etapa-card.active .etapa-desc {
+            opacity: 1;
+            max-height: 500px;
+            margin-bottom: 15px;
+        }
+
+        /* Colores de etapas */
+        .etapa-1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-left-color: #667eea; }
+        .etapa-2 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-left-color: #f093fb; }
+        .etapa-3 { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); border-left-color: #fa709a; }
+        .etapa-4 { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); border-left-color: #30cfd0; }
+        .etapa-5 { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); border-left-color: #a8edea; }
+        .etapa-6 { background: linear-gradient(135deg, #ff9a56 0%, #ff6a88 100%); border-left-color: #ff9a56; }
+        .etapa-7 { background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); border-left-color: #a1c4fd; }
+        .etapa-8 { background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); border-left-color: #ffecd2; }
+        .etapa-9 { background: linear-gradient(135deg, #ff9a56 0%, #ff6a88 100%); border-left-color: #ff9a56; }
+        .etapa-10 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); border-left-color: #43e97b; }
+        .etapa-11 { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); border-left-color: #fa709a; }
+        .etapa-12 { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); border-left-color: #30cfd0; }
+        .etapa-13 { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); border-left-color: #a8edea; }
+
+        .timeline-container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 100%;
+            background: #667eea;
+        }
+
+        .timeline-item {
+            margin-bottom: 50px;
+            position: relative;
+        }
+
+        .timeline-item:nth-child(odd) {
+            padding-right: 52%;
+            text-align: right;
+        }
+
+        .timeline-item:nth-child(even) {
+            padding-left: 52%;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 20px;
+            background: white;
+            border: 4px solid #667eea;
+            border-radius: 50%;
+            z-index: 2;
+        }
+
+        .timeline-content {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .timeline-content h3 {
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .timeline-content p {
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        .protocolo-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .protocolo-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .protocolo-item {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .protocolo-item:last-child {
+            border-bottom: none;
+        }
+
+        .protocolo-item h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .protocolo-item ul {
+            list-style: none;
+            padding-left: 20px;
+        }
+
+        .protocolo-item li {
+            color: #666;
+            margin-bottom: 8px;
+            position: relative;
+        }
+
+        .protocolo-item li:before {
+            content: "✓";
+            position: absolute;
+            left: -20px;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .checklist-container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .checklist-container h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .checklist-item:hover {
+            background: #e9ecef;
+        }
+
+        .checklist-item input {
+            width: 20px;
+            height: 20px;
+            margin-right: 15px;
+            cursor: pointer;
+        }
+
+        .checklist-item label {
+            cursor: pointer;
+            flex: 1;
+            color: #333;
+        }
+
+        .checklist-item input:checked + label {
+            text-decoration: line-through;
+            color: #999;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .stat-card p {
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .timeline::before {
+                left: 10px;
+            }
+
+            .timeline-item:nth-child(odd),
+            .timeline-item:nth-child(even) {
+                padding-left: 50px;
+                padding-right: 0;
+                text-align: left;
+            }
+
+            .timeline-dot {
+                left: 10px;
+            }
+
+            .etapas-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            padding: 20px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 MANUAL PIPELINE GHL</h1>
+            <p>CDI - Guía Completa de Etapas, Responsabilidades y Protocolos</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('etapas')">📌 Etapas</button>
+            <button class="tab-btn" onclick="showTab('flujo')">🔄 Flujo</button>
+            <button class="tab-btn" onclick="showTab('protocolos')">⚙️ Protocolos</button>
+            <button class="tab-btn" onclick="showTab('checklist')">✅ Checklist Líder</button>
+        </div>
+
+        <!-- TAB: ETAPAS -->
+        <div id="etapas" class="tab-content active">
+            <div class="stats">
+                <div class="stat-card">
+                    <h3>13</h3>
+                    <p>Etapas del Pipeline</p>
+                </div>
+                <div class="stat-card">
+                    <h3>2</h3>
+                    <p>Roles Principales</p>
+                </div>
+                <div class="stat-card">
+                    <h3>2 días</h3>
+                    <p>Tiempo máx. Sin Respuesta</p>
+                </div>
+                <div class="stat-card">
+                    <h3>9</h3>
+                    <p>Intentos mínimos/día</p>
+                </div>
+            </div>
+
+            <div class="etapas-grid">
+                <!-- Etapa 1 -->
+                <div class="etapa-card etapa-1" onclick="toggleEtapa(this)">
+                    <div class="etapa-header">
+                        <span class="etapa-numero">1</span>
+                    </div>
+                    <div class="etapa-nombre">Leads LA - 48H/72H/96H</div>
+                    <span class="etapa-responsable">👤 SETTER</span>
+                    <div class="etapa-desc">Lead registrado en calendario. Setter debe contactar entre 5 min a 4h después del registro. Lead recibe WhatsApp + video de Juan. Objetivo: Calentar al lead.</div>
+                </div>
+
+                <!-- Etapa 2 -->
+                <div class="etapa-card etapa-2" onclick="toggleEtapa(this)">
+                    <div class="etapa-header">
+                        <span class="etapa-numero">2</span>
+                    </div>
+                    <div class="etapa-nombre">LA Pendiente Por Confirmar</div>
+                    <span class="etapa-responsable">👤 SETTER</span>
+                    <div class="etapa-desc">Lead ya fue contactado. Esperando confirmación de asistencia. Setter continúa insistiendo (9 intentos). Si no confirma → LA SIN RESPUESTA.</div>
+                </div>
+
+                <!-- Etapa 3 -->
+                <div class="etapa-card etapa-3" onclick="toggleEtapa(this)">
+                    <div class="etapa-header">
+                        <span class="etapa-numero">3</span>
+                    </div>
+                    <div class="etapa-nombre">LA Sin Respuesta</div>
+                    <span class="etapa-responsable">👤 SETTER</span>
+                    <div class="etapa-desc">Lead no responde a intentos. Múltiples intentos (llamadas + 3 WhatsApp). Tiempo máximo: 2 días. Después se convierte en PÉRDIDA automáticamente.</div>
+                </div>
+
+                <!-- Etapa 4 -->
+                <div class="etapa-card etapa-4" onclick="toggleEtapa(this)">
+                    <div class="etapa-header">
+                        <span class="etapa-numero">4</span>
+                    </div>
+                    <div class="etapa-nombre">LA Confirmados y Calificados</div>
+                    <span class="etapa-responsable">👤 SETTER</span>
+                    <div class="etapa-desc">Lead pasó NCTO, cumplió 6 criterios de calificación, confirmó agenda y recibió nutrición. Estado: LISTO para entrar a consultoría.</div>
+                </div>
+
+                <!-- Etapa 5 -->
+                <div class="etapa-card etapa-5" onclick="toggleEtapa(this)">
+                    <div class="etapa-header">
+                        <span class="etapa-numero">5</span>
+                    </div>
+                    <div class="etapa-nombre">SHOW</div>
+                    <span class="etapa-responsable">👨‍💼 CLOSER</span>
+                    <div class="etapa-desc">Lead asistió a la consultoría. Ingresó al meet con el CLOSER. 📝 NOTA OBLIGATORIA: Resumen + Link de sesión grabada (Samuel).</div>
+                </div>
+
+                <!-- Etapa 6 -->
+                <div class="etapa-card etapa-6" onclick="toggleEtapa(this)">
+                    <div class="etapa-header">
+                        <span class="etapa-numero">6</span>
+                    </div>
+                    <div class="etapa-nombre">No Asistida</div>
+                    <span class="etapa-responsable">👤 SETTER</span>
+                    <div class="etapa-desc">Lead confirmado pero NO ingresó a la reunión. Acción: Reagendar o seguimiento para saber qué pasó.</div>
+                </div>
+
+                <!-- Etapa 7 -->
+                <div class="etapa-card etapa-7" onclick="toggleEtapa(this)">
+                    <div class="etapa-header">
+                        <span class="etapa-numero">7</span>
+                    </div>
+                    <div class="etapa-nombre">Reagendadas</div>
+                    <span class="etapa-responsable">👤 SETTER / 👨‍💼 CLOSER</span>
+                    <div class="etapa-desc">Lead reagendado para nueva consultoría. Casos: No completó SHOW o pidió otra fecha. Sin tiempo máximo. CLOSER define a dónde devolverlo.</div>
+                </div>
+
+                <!-- Etapa 8 -->
+                <div class="etapa-card etapa-8" onclick="toggleEtapa(this)">
+                    <div class="etapa-header">
+                        <span class="etapa-numero">8</span>
+                    </div>
+                    <div class="etapa-nombre">Seguimientos Agendas</div>
+                    <span class="etapa-responsable">👨‍💼 CLOSER</span>
+                    <div class="etapa-desc">Lead pasó por consultoría pero NO pagó. Recibe 5 mensajes de seguimiento por WhatsApp. 📝 NOTA: Resumen + Link de sesión (Samuel).</div>
+                </div>
+
+                <!-- Etapa 9 -->
+                <div class="etapa-card etapa-9" onclick="toggleEtapa(this)">
+                    <div class="etapa-header">
+                        <span class="etapa-numero">9</span>
+                    </div>
+                    <div class="etapa-nombre">Abonos</div>
+                    <span class="etapa-responsable">👨‍💼 CLOSER</span>
+                    <div class="etapa-desc">Lead hizo pago PARCIAL. Ej: Curso $1000, paga $50 para apartar cupo. Reserva su lugar en el ecosistema.</div>
+                </div>
+
+                <!-- Etapa 10 -->
+                <div class="etapa-card etapa-10" onclick="toggleEtapa(this)">
+                    <div class="etapa-header">
+                        <span class="etapa-numero">10</span>
+                    </div>
+                    <div class="etapa-nombre">Agendas Cerradas a Cuotas</div>
+                    <span class="etapa-responsable">👨‍💼 CLOSER</span>
+                    <div class="etapa-desc">Lead pagó TOTAL pero en cuotas. Ej: $900 = $300 + $300 + $300. Conversión cerrada con pago fraccionado.</div>
+                </div>
+
+                <!-- Etapa 11 -->
+                <div class="etapa-card etapa-11" onclick="toggleEtapa(this)">
+                    <div class="etapa-header">
+                        <span class="etapa-numero">11</span>
+                    </div>
+                    <div class="etapa-nombre">Agendas Cerradas de Contado</div>
+                    <span class="etapa-responsable">👨‍💼 CLOSER</span>
+                    <div class="etapa-desc">Lead pagó TOTALIDAD en UN SOLO pago. Status: Conversión cerrada 100%.</div>
+                </div>
+
+                <!-- Etapa 12 -->
+                <div class="etapa-card etapa-12" onclick="toggleEtapa(this)">
+                    <div class="etapa-header">
+                        <span class="etapa-numero">12</span>
+                    </div>
+                    <div class="etapa-nombre">LA Perdido Setteo</div>
+                    <span class="etapa-responsable">👤 SETTER</span>
+                    <div class="etapa-desc">Lead NO VIABLE en etapa SETTEO. No pasa 6 criterios, no contesta o no alinea con valores CDI. Se identifica en NCTO.</div>
+                </div>
+
+                <!-- Etapa 13 -->
+                <div class="etapa-card etapa-13" onclick="toggleEtapa(this)">
+                    <div class="etapa-header">
+                        <span class="etapa-numero">13</span>
+                    </div>
+                    <div class="etapa-nombre">LA Perdido Closing</div>
+                    <span class="etapa-responsable">👨‍💼 CLOSER</span>
+                    <div class="etapa-desc">Lead pasó SHOW y seguimiento pero definitivamente NO quiere entrar. Lead descartado post-cierre.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: FLUJO -->
+        <div id="flujo" class="tab-content">
+            <div class="timeline-container">
+                <h2 style="color: #667eea; margin-bottom: 30px; text-align: center; font-size: 1.8em;">🔄 Flujo del Pipeline</h2>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <h3>1️⃣ Lead registrado 48H/72H/96H</h3>
+                            <p><strong>Acción:</strong> SETTER contacta entre 5 min - 4h (9 intentos)</p>
+                            <p><strong>Resultado:</strong> Confirma asistencia o NO contesta</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <h3>2️⃣ LA Pendiente Por Confirmar</h3>
+                            <p><strong>Acción:</strong> SETTER sigue insistiendo (9 intentos)</p>
+                            <p><strong>Resultado:</strong> Confirma → Etapa 4 | No contesta → Etapa 3</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <h3>3️⃣ LA Sin Respuesta</h3>
+                            <p><strong>Acción:</strong> SETTER continúa reintentos</p>
+                            <p><strong>Tiempo:</strong> Máximo 2 días (AUTOMÁTICO → PÉRDIDA)</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <h3>4️⃣ LA Confirmados y Calificados</h3>
+                            <p><strong>Acción:</strong> SETTER valida 6 criterios</p>
+                            <p><strong>Resultado:</strong> Listo para consultoría → CLOSER</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <h3>5️⃣ SHOW (Consultoría)</h3>
+                            <p><strong>Acción:</strong> CLOSER realiza consultoría</p>
+                            <p><strong>Resultado:</strong> Compra ahora | Seguimiento | No asiste | Reagenda</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <h3>6️⃣ Decisiones post-SHOW</h3>
+                            <p><strong>Pago completo:</strong> → Etapa 10 ó 11 (CONVERSIÓN) ✅</p>
+                            <p><strong>Pago parcial:</strong> → Etapa 9 (ABONOS)</p>
+                            <p><strong>No pagó ahora:</strong> → Etapa 8 (SEGUIMIENTOS)</p>
+                            <p><strong>No asistió:</strong> → Etapa 6 (REAGENDAR)</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <h3>7️⃣ Conversión Completa</h3>
+                            <p><strong>CONTADO:</strong> Pago 100% en 1 transacción</p>
+                            <p><strong>CUOTAS:</strong> Pago 100% en múltiples pagos</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: PROTOCOLOS -->
+        <div id="protocolos" class="tab-content">
+            <div class="protocolo-section">
+                <h2>⏱️ Tiempos Críticos</h2>
+                
+                <div class="protocolo-item">
+                    <h3>📌 Leads LA 48H/72H/96H</h3>
+                    <ul>
+                        <li><strong>Contactar:</strong> MISMO DÍA del registro</li>
+                        <li><strong>Intentos mínimos:</strong> 9 (llamadas + WhatsApp)</li>
+                        <li><strong>Horarios variados:</strong> Mañana, tarde, noche</li>
+                        <li><strong>Si no contesta:</strong> Pasar a "LA SIN RESPUESTA"</li>
+                    </ul>
+                </div>
+
+                <div class="protocolo-item">
+                    <h3>🔴 LA Sin Respuesta</h3>
+                    <ul>
+                        <li><strong>Prioridad:</strong> Segunda (después de nuevos)</li>
+                        <li><strong>Reintentos:</strong> Continuos según disponibilidad</li>
+                        <li><strong>Tiempo máximo:</strong> 2 DÍAS</li>
+                        <li><strong>Después de 2 días:</strong> AUTOMÁTICO → PÉRDIDA</li>
+                    </ul>
+                </div>
+
+                <div class="protocolo-item">
+                    <h3>✅ LA Pendiente Por Confirmar</h3>
+                    <ul>
+                        <li><strong>Acción:</strong> Insistir en confirmación</li>
+                        <li><strong>Intentos:</strong> 9 intentos mínimos</li>
+                        <li><strong>Si no confirma:</strong> Pasar a "LA SIN RESPUESTA"</li>
+                        <li><strong>Deadline:</strong> Antes de -48H de la agenda</li>
+                    </ul>
+                </div>
+
+                <div class="protocolo-item">
+                    <h3>📋 Notas Obligatorias</h3>
+                    <ul>
+                        <li><strong>En SHOW:</strong> Resumen de consultoría + Link de sesión (Samuel)</li>
+                        <li><strong>En SEGUIMIENTOS AGENDAS:</strong> Resumen de follow-up + Link sesión</li>
+                        <li><strong>En TODO movimiento:</strong> Documentar QUÉ pasó y POR QUÉ se mueve</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="protocolo-section">
+                <h2>👤 Protocolo Diario SETTER</h2>
+                
+                <div class="protocolo-item">
+                    <h3>🥇 Primera Prioridad: Leads Nuevos</h3>
+                    <ul>
+                        <li>Contactar leads 48H/72H/96H</li>
+                        <li>Mínimo 9 intentos MISMO DÍA</li>
+                        <li>Combinar: llamadas + WhatsApp</li>
+                        <li>Registrar cada intento en notas</li>
+                    </ul>
+                </div>
+
+                <div class="protocolo-item">
+                    <h3>🥈 Segunda Prioridad: Confirmaciones</h3>
+                    <ul>
+                        <li>Gestionar "LA PENDIENTE POR CONFIRMAR"</li>
+                        <li>Insistir en confirmación (9 intentos)</li>
+                        <li>Si no confirma → LA SIN RESPUESTA</li>
+                    </ul>
+                </div>
+
+                <div class="protocolo-item">
+                    <h3>🥉 Tercera Prioridad: Reintentos</h3>
+                    <ul>
+                        <li>Reintentar "LA SIN RESPUESTA"</li>
+                        <li>Según disponibilidad (cuando termines prioritarios)</li>
+                        <li>Máximo 2 días en esta etapa</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="protocolo-section">
+                <h2>👨‍💼 Protocolo CLOSER</h2>
+                
+                <div class="protocolo-item">
+                    <h3>Durante la Consultoría (SHOW)</h3>
+                    <ul>
+                        <li>Recibe leads de "LA CONFIRMADOS Y CALIFICADOS"</li>
+                        <li>Realiza presentación completa</li>
+                        <li>Ofrece el producto/servicio</li>
+                        <li>📝 OBLIGATORIO: Dejar nota con resumen + link de sesión</li>
+                    </ul>
+                </div>
+
+                <div class="protocolo-item">
+                    <h3>Post-Consultoría (Decisión)</h3>
+                    <ul>
+                        <li><strong>Si pagó:</strong> → ABONOS, CUOTAS o CONTADO</li>
+                        <li><strong>Si no pagó:</strong> → SEGUIMIENTOS AGENDAS (5 mensajes automáticos)</li>
+                        <li><strong>Si no asistió:</strong> → Informar a SETTER para REAGENDAR</li>
+                        <li><strong>Si rechaza:</strong> → LA PERDIDO CLOSING</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: CHECKLIST -->
+        <div id="checklist" class="tab-content">
+            <div class="checklist-container">
+                <h2>✅ Checklist Diario del Líder de Equipo (15 min)</h2>
+                <p style="color: #666; margin-bottom: 20px;">Revisa esto TODOS LOS DÍAS para asegurar que el pipeline funcione:</p>
+
+                <div class="checklist-item">
+                    <input type="checkbox" id="check1">
+                    <label for="check1">✓ Cada lead nuevo (48H/72H/96H) tiene contacto MISMO DÍA</label>
+                </div>
+
+                <div class="checklist-item">
+                    <input type="checkbox" id="check2">
+                    <label for="check2">✓ Se hicieron MÍNIMO 9 intentos (llamadas + WhatsApp)</label>
+                </div>
+
+                <div class="checklist-item">
+                    <input type="checkbox" id="check3">
+                    <label for="check3">✓ Las notas documenten CADA ACCIÓN realizada</label>
+                </div>
+
+                <div class="checklist-item">
+                    <input type="checkbox" id="check4">
+                    <label for="check4">✓ NO hay leads en "LA SIN RESPUESTA" por más de 2 días</label>
+                </div>
+
+                <div class="checklist-item">
+                    <input type="checkbox" id="check5">
+                    <label for="check5">✓ "LA PENDIENTE POR CONFIRMAR" tiene confirmaciones ANTES de -48H</label>
+                </div>
+
+                <div class="checklist-item">
+                    <input type="checkbox" id="check6">
+                    <label for="check6">✓ Los CLOSER entregaron notas en SHOW y SEGUIMIENTOS AGENDAS</label>
+                </div>
+
+                <div class="checklist-item">
+                    <input type="checkbox" id="check7">
+                    <label for="check7">✓ Las notas incluyen LINK DE SESIÓN GRABADA (Samuel)</label>
+                </div>
+
+                <div class="checklist-item">
+                    <input type="checkbox" id="check8">
+                    <label for="check8">✓ NO hay leads sin mover a su etapa correspondiente por más de 24h</label>
+                </div>
+
+                <div class="checklist-item">
+                    <input type="checkbox" id="check9">
+                    <label for="check9">✓ Revisar que cada SETTER tenga menos de 5 leads "sin respuesta" vigentes</label>
+                </div>
+
+                <div class="checklist-item">
+                    <input type="checkbox" id="check10">
+                    <label for="check10">✓ Los CLOSER tienen leads en SEGUIMIENTOS AGENDAS activos</label>
+                </div>
+
+                <h2 style="color: #667eea; margin-top: 40px; margin-bottom: 20px;">📊 Reporta Diariamente</h2>
+
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; color: #666;">
+                    <p><strong>• Número de leads contactados:</strong> ___</p>
+                    <p><strong>• Número de leads confirmados:</strong> ___</p>
+                    <p><strong>• Número de leads perdidos:</strong> ___</p>
+                    <p><strong>• Pendientes de acción:</strong> ___</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>📅 Manual Pipeline GHL - CDI v1.0</p>
+        <p>Última actualización: 2024 | Preguntas? Contacta a Oscar / Gestión Directiva</p>
+    </footer>
+
+    <script>
+        function showTab(tabName) {
+            // Ocultar todos los tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            // Mostrar el tab seleccionado
+            document.getElementById(tabName).classList.add('active');
+
+            // Actualizar botones
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function toggleEtapa(element) {
+            element.classList.toggle('active');
+        }
+    </script>
+</body>
+</html>
