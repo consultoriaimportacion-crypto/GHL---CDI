@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ATRAE · KPI Closers</title>
+<style>
+  :root{
+    --bg:#0b0a10; --bg2:#13111b; --ink:#f4f1ff; --muted:#a49db8; --faint:#726b86;
+    --line:rgba(255,255,255,.08); --glass:rgba(255,255,255,.035); --glass2:rgba(255,255,255,.05);
+    --c1:#ff6a2b; --c2:#ff2e8b; --c3:#ffb020; --good:#2fe08a; --bad:#ff5a5a; --warn:#ffb020;
+    --font:ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{
+    font-family:var(--font); color:var(--ink); min-height:100vh;
+    padding:24px clamp(16px,3.5vw,40px) 44px;
+    background:
+      radial-gradient(900px 500px at 12% -8%, rgba(255,106,43,.20), transparent 60%),
+      radial-gradient(800px 520px at 100% 0%, rgba(255,46,139,.16), transparent 55%),
+      linear-gradient(180deg,var(--bg2),var(--bg));
+    background-attachment:fixed; -webkit-font-smoothing:antialiased;
+  }
+  .top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:18px;margin-bottom:22px}
+  .brand{display:flex;align-items:center;gap:13px}
+  .mark{width:44px;height:44px;border-radius:13px;background:linear-gradient(135deg,var(--c1),var(--c2));display:grid;place-items:center;color:#fff;font-weight:900;font-size:21px;box-shadow:0 8px 24px rgba(255,46,139,.35)}
+  h1{margin:0;font-size:19px;font-weight:800;letter-spacing:-.02em}
+  .sub{font-size:12px;color:var(--muted);margin-top:3px;display:flex;align-items:center;gap:7px}
+  .live{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--good)}
+  .live i{width:7px;height:7px;border-radius:99px;background:var(--good);animation:pulse 2s infinite}
+  .live.err{color:var(--bad)} .live.err i{background:var(--bad);animation:none}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(47,224,138,.5)}70%{box-shadow:0 0 0 7px rgba(47,224,138,0)}100%{box-shadow:0 0 0 0 rgba(47,224,138,0)}}
+  .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+  .fld{display:flex;flex-direction:column;gap:5px}
+  .fld label{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--faint);font-weight:700}
+  .fld input,.sel{font:inherit;font-size:12.5px;color:var(--ink);background:var(--glass);border:1px solid var(--line);border-radius:11px;padding:8px 12px;color-scheme:dark}
+  .sel option{background:var(--bg2)}
+  .seg{display:flex;background:var(--glass);border:1px solid var(--line);border-radius:11px;padding:3px;gap:2px}
+  .seg button{font:inherit;font-size:12.5px;font-weight:600;color:var(--muted);background:none;border:0;padding:7px 12px;border-radius:8px;cursor:pointer;transition:.2s;white-space:nowrap}
+  .seg button:hover{color:var(--ink)}
+  .seg button.on{background:linear-gradient(135deg,var(--c1),var(--c2));color:#fff;box-shadow:0 4px 14px rgba(255,46,139,.35)}
+  .refbtn{font:inherit;font-size:16px;line-height:1;color:var(--ink);background:var(--glass);border:1px solid var(--line);border-radius:11px;width:38px;height:37px;cursor:pointer;display:grid;place-items:center;transition:.2s}
+  .refbtn:hover{border-color:var(--c1);color:var(--c1)}
+  .refbtn.spin i{display:inline-block;animation:spin .7s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .kpis{display:grid;grid-template-columns:1.7fr 1fr 1fr 1fr 1fr;gap:14px;margin-bottom:16px}
+  .card{background:var(--glass);border:1px solid var(--line);border-radius:18px;padding:18px 20px;position:relative;overflow:hidden;backdrop-filter:blur(6px)}
+  .card::before{content:"";position:absolute;inset:0;border-radius:18px;padding:1px;background:linear-gradient(135deg,rgba(255,255,255,.14),transparent 40%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+  .label{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--faint);font-weight:700}
+  .hero{background:radial-gradient(420px 200px at 100% 0%, rgba(255,106,43,.26), transparent 60%),var(--glass)}
+  .hero .big{font-size:clamp(24px,3.1vw,38px);font-weight:900;letter-spacing:-.02em;line-height:1.05;margin-top:12px;background:linear-gradient(135deg,#fff,#ffd9c4 45%,var(--c3));-webkit-background-clip:text;background-clip:text;color:transparent;font-variant-numeric:tabular-nums}
+  .hero .cur{font-size:15px;font-weight:700;color:var(--muted);-webkit-text-fill-color:var(--muted)}
+  .val{font-size:30px;font-weight:800;letter-spacing:-.02em;margin-top:10px;font-variant-numeric:tabular-nums}
+  .delta{margin-top:9px;font-size:11.5px;font-weight:700;display:inline-flex;align-items:center;gap:6px;color:var(--muted);line-height:1.4}
+  .delta.up{color:var(--good)} .delta.down{color:var(--bad)} .delta.warn{color:var(--warn)}
+
+  .grid2{display:grid;grid-template-columns:1fr 1.2fr;gap:16px;margin-top:16px}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink);margin:0 0 3px;font-weight:800}
+  .h2sub{font-size:12px;color:var(--faint);margin-bottom:16px}
+  svg{display:block;width:100%;height:auto;overflow:visible}
+  .xlab{display:flex;justify-content:space-between;margin-top:8px}
+  .xlab span{font-size:11px;color:var(--faint);font-variant-numeric:tabular-nums}
+
+  /* tabla comparativa por closer */
+  .tblwrap{overflow-x:auto}
+  .tbl{width:100%;border-collapse:collapse;font-size:13px;min-width:900px}
+  .tbl th{text-align:right;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--faint);font-weight:700;padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+  .tbl th:first-child{text-align:left}
+  .tbl td{text-align:right;padding:13px 10px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .tbl td:first-child{text-align:left}
+  .tbl tbody tr{transition:background .15s} .tbl tbody tr:hover{background:var(--glass)}
+  .tbl tbody tr:last-child td{border-bottom:0}
+  .cl{display:flex;align-items:center;gap:10px}
+  .av{width:32px;height:32px;border-radius:9px;flex:none;display:grid;place-items:center;font-weight:800;font-size:11px;color:#fff}
+  .clname{font-weight:700;font-size:13.5px}
+  .sub2{display:block;font-size:10px;color:var(--faint);font-weight:600;margin-top:3px}
+  .rec{font-weight:800;font-size:13.5px}
+  .pct{font-weight:700;padding:3px 9px;border-radius:99px;font-size:11.5px;background:rgba(255,255,255,.07);color:var(--muted)}
+  .pct.g{color:var(--good);background:rgba(47,224,138,.12)} .pct.b{color:var(--bad);background:rgba(255,90,90,.12)} .pct.w{color:var(--warn);background:rgba(255,176,32,.12)}
+  .tbl tfoot td{padding:14px 10px;border-top:2px solid var(--line);font-weight:800;color:var(--ink)}
+  .tbl tfoot .rec{color:var(--c3);font-size:14px}
+  .empty{color:var(--faint);font-size:13px;padding:20px 0;text-align:center}
+
+  /* embudo */
+  .fstage{margin:0 0 14px}
+  .fstage:last-child{margin-bottom:0}
+  .ftop{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;gap:8px}
+  .fname{font-weight:700;font-size:13px}
+  .fval{font-variant-numeric:tabular-nums;font-weight:800;font-size:15px}
+  .fpct{font-size:11px;color:var(--faint);font-weight:600;margin-left:6px}
+  .fbar{height:24px;border-radius:8px;background:rgba(255,255,255,.05);overflow:hidden}
+  .fbar i{display:block;height:100%;border-radius:8px;width:0;transition:width .9s cubic-bezier(.2,.7,.2,1)}
+
+  @media(max-width:1040px){.kpis{grid-template-columns:1fr 1fr 1fr}.grid2{grid-template-columns:1fr}}
+  @media(max-width:620px){
+    .controls{width:100%}
+    .seg{flex-wrap:wrap}
+    .kpis{grid-template-columns:1fr 1fr;gap:12px}
+    .kpis .hero{grid-column:1/-1}
+    .hero .big{font-size:clamp(26px,8vw,40px)}
+  }
+  @media(max-width:380px){.kpis{grid-template-columns:1fr}}
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+  <div class="top">
+    <div class="brand">
+      <div class="mark">A</div>
+      <div>
+        <h1>ATRAE · KPI Diario Closers</h1>
+        <div class="sub"><span class="live" id="status"><i></i><span id="statusTxt">conectando…</span></span></div>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="fld"><label>Rango rápido</label>
+        <div class="seg" id="seg">
+          <button data-r="hoy">Hoy</button><button data-r="ayer">Ayer</button><button data-r="sem">Esta semana</button><button data-r="mesact">Este mes</button><button data-r="tri" class="on">Trimestre</button>
+        </div>
+      </div>
+      <div class="fld"><label>Mes</label>
+        <select class="sel" id="mes">
+          <option value="">Todos</option><option value="5">Mayo</option><option value="6">Junio</option><option value="7">Julio</option>
+        </select>
+      </div>
+      <div class="fld"><label>Closer</label><select class="sel" id="trk"><option value="">Todos</option></select></div>
+      <div class="fld"><label>Desde</label><input type="date" id="from"></div>
+      <div class="fld"><label>Hasta</label><input type="date" id="to"></div>
+      <div class="fld"><label>&nbsp;</label><button class="refbtn" id="refresh" title="Actualizar datos"><i>↻</i></button></div>
+    </div>
+  </div>
+
+  <div class="kpis">
+    <div class="card hero">
+      <div class="label">Recaudo total</div>
+      <div class="big"><span class="cur">$ </span><span id="kRec">0</span> <span class="cur">COP</span></div>
+      <div class="delta" id="kRecSub"></div>
+    </div>
+    <div class="card"><div class="label">Agendas nuevas</div><div class="val" id="kAg">0</div><div class="delta" id="kAgSub">agendadas</div></div>
+    <div class="card"><div class="label">Asistencias</div><div class="val" id="kAs">0</div><div class="delta" id="kAsSub"></div></div>
+    <div class="card"><div class="label">Ofertas presentadas</div><div class="val" id="kOf">0</div><div class="delta" id="kOfSub"></div></div>
+    <div class="card"><div class="label">Cierres</div><div class="val" id="kCie">0</div><div class="delta" id="kCieSub"></div></div>
+  </div>
+
+  <div class="card">
+    <h2>Comparativo por closer</h2>
+    <div class="h2sub" id="tblSub">periodo seleccionado</div>
+    <div class="tblwrap">
+      <table class="tbl">
+        <thead><tr>
+          <th>Closer</th><th>Agendas</th><th>Asistencias</th><th>Ofertas</th>
+          <th>C. Contado</th><th>C. Reserva</th><th>C. Seguim.</th><th>% Cierre</th><th>Recaudo</th><th>% Meta</th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+        <tfoot id="tfoot"></tfoot>
+      </table>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h2>Embudo de conversión</h2>
+      <div class="h2sub">del periodo seleccionado</div>
+      <div id="funnel"></div>
+    </div>
+    <div class="card">
+      <h2>Recaudo por mes</h2>
+      <div class="h2sub" id="chartSub">pesos COP</div>
+      <svg id="chart" viewBox="0 0 620 240" preserveAspectRatio="none"></svg>
+      <div class="xlab" id="xlab"></div>
+    </div>
+  </div>
+
+<script>
+// ---- config ----
+// La lista de asesores se lee en vivo del TRACKER CONSOLIDADO (pestaña "TRACKERS", gid 0),
+// y de cada tracker individual se jala la pestaña DIARIA (plantilla estándar, gid 824958696).
+const MASTER_ID="130xusaGXKBnGVqRS-etzi6fb1ila7F3yyvw4mVgAVC0"; // "DASHBOARD CLOSERS - CDI"
+const MASTER_GID="0";        // pestaña "TRACKERS" = url + nombre de cada asesor
+const DAILY_GID="824958696"; // pestaña "KPI´S DIARIOS CLOSER ..." en cada tracker
+const TRACKERS_FALLBACK=[
+  {name:"Alejandro Pulido", id:"1gDcQWO-vHZphKp0X0aRP5_diaUB_k1AqM3stIQdXrIY"},
+  {name:"Yeison Velez",     id:"1HeZqHl-jYPlv3w9IIUUxt_yA0m_9tw7GHvEPuLNHOPw"},
+  {name:"Camilo Luque",     id:"1dE5Pj5eBM4tQBmSiRaBi8q7cqUpB_YgbU7lRH72Tx9U"},
+  {name:"Wendy Ortiz",      id:"1vCHZ7MsvyZPeMjOwRb4JHgenaNAgmYzd7YKXcG1cvXg"},
+];
+let TRACKERS=[];
+const gvizUrl=(id,gid)=>`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&gid=${gid}&_=${Date.now()}`;
+const rm=matchMedia('(prefers-reduced-motion:reduce)').matches;
+const grads=['linear-gradient(135deg,#ff6a2b,#ff2e8b)','linear-gradient(135deg,#ffb020,#ff6a2b)','linear-gradient(135deg,#7a5cff,#ff2e8b)','linear-gradient(135deg,#2fe08a,#12b5c9)','linear-gradient(135deg,#12b5c9,#7a5cff)'];
+
+function loadTrackerList(){
+  return fetch(gvizUrl(MASTER_ID,MASTER_GID),{cache:'no-store'})
+    .then(r=>r.ok?r.text():Promise.reject(r.status))
+    .then(txt=>{
+      const out=[];
+      parseCSV(txt).forEach(r=>{
+        const url=(r[0]||'').trim(), name=(r[1]||'').trim();
+        const m=url.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
+        if(m && name && name.toLowerCase()!=='nombre') out.push({name,id:m[1]});
+      });
+      return out.length?out:TRACKERS_FALLBACK;
+    })
+    .catch(()=>TRACKERS_FALLBACK);
+}
+
+function parseCSV(t){
+  const rows=[]; let row=[],f='',q=false;
+  for(let i=0;i<t.length;i++){const c=t[i];
+    if(q){ if(c==='"'){ if(t[i+1]==='"'){f+='"';i++;} else q=false;} else f+=c; }
+    else{ if(c==='"')q=true; else if(c===','){row.push(f);f='';} else if(c==='\n'){row.push(f);rows.push(row);row=[];f='';} else if(c!=='\r')f+=c; }
+  }
+  if(f.length||row.length){row.push(f);rows.push(row);}
+  return rows;
+}
+const num=v=>{const d=String(v).replace(/[^0-9-]/g,'');const n=parseInt(d,10);return isNaN(n)?0:n;};
+const fmtCOP=v=>Math.round(v).toLocaleString('es-CO');            // 16.745.378
+const pctStr=(a,b)=>b>0?Math.round(a/b*100)+'%':'—';
+
+let RECORDS=[], built=false, failed=[];
+
+// hoja "ancha": métricas en filas, fechas en columnas (bloques de 3 = objetivo | realidad | %logrado)
+function parseTracker(name, txt){
+  const rows=parseCSV(txt);
+  if(rows.length<19) return [];
+  const findRow=frag=>rows.find(r=>r[0] && r[0].trim()===frag);
+  const rAg =findRow("AGENDAS NUEVAS");
+  const rAs =findRow("ASISTENCIAS AGENDAS NUEVAS");
+  const rOf =findRow("PRESENTACIONES DE OFERTA AGENDAS NUEVAS");
+  const rCie=findRow("CIERRES AGENDAS NUEVAS CONTADO");
+  const rRes=findRow("CIERRES AGENDAS NUEVAS RESERVAS");
+  const rSeg=findRow("CIERRES SEGUIMIENTOS");
+  const rRec=findRow("$ RECAUDO TOTAL");
+  const hdr=rows[0], out=[];
+  const years={};
+  hdr.forEach(h=>{const m=String(h).trim().match(/^\d{2}\/\d{2}\/(\d{4})$/); if(m){const y=+m[1]; if(y>=2000)years[y]=(years[y]||0)+1;}});
+  const refYear=+Object.keys(years).sort((a,b)=>years[b]-years[a])[0]||2026;
+  for(let c=0;c<hdr.length;c++){
+    const m=String(hdr[c]).trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if(!m) continue;
+    let y=+m[3]; if(y<2000)y=refYear;
+    const v=c+1;                        // realidad = 2ª col del bloque; objetivo = col de la fecha (c)
+    out.push({date:new Date(y, +m[2]-1, +m[1]), closer:name,
+      agendas:num(rAg&&rAg[v]), asist:num(rAs&&rAs[v]), ofertas:num(rOf&&rOf[v]),
+      cieCon:num(rCie&&rCie[v]), cieRes:num(rRes&&rRes[v]), cieSeg:num(rSeg&&rSeg[v]),
+      recaudo:num(rRec&&rRec[v]), recaudoObj:num(rRec&&rRec[c])});
+  }
+  return out;
+}
+
+function fetchData(){
+  const btn=document.getElementById('refresh'); btn.classList.add('spin'); failed=[];
+  return loadTrackerList().then(list=>{
+    TRACKERS=list;
+    return Promise.all(TRACKERS.map(t=>
+      fetch(gvizUrl(t.id,DAILY_GID),{cache:'no-store'})
+        .then(r=>r.ok?r.text():Promise.reject(r.status))
+        .then(txt=>{const recs=parseTracker(t.name,txt); if(!recs.length)failed.push(t.name); return recs;})
+        .catch(e=>{console.error(t.name,e);failed.push(t.name);return [];})
+    ));
+  }).then(all=>{
+    RECORDS=all.flat();
+    setStatus(RECORDS.length>0);
+    if(!built){buildFilters();built=true;}
+    render();
+  }).finally(()=>btn.classList.remove('spin'));
+}
+function setStatus(ok){
+  const s=document.getElementById('status');
+  s.className='live'+(ok?'':' err');
+  const t=new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+  let txt = ok?('en vivo · actualizado '+t):'sin acceso a las hojas';
+  if(ok && failed.length) txt += ' · ⚠ sin acceso: '+failed.join(', ');
+  document.getElementById('statusTxt').textContent=txt;
+}
+
+function buildFilters(){
+  const sel=document.getElementById('trk');
+  TRACKERS.map(t=>t.name).forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+  setRange('tri');
+  document.getElementById('refresh').addEventListener('click',fetchData);
+  document.getElementById('trk').addEventListener('change',render); // el closer no altera el rango
+  ['from','to'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{clearSeg();document.getElementById('mes').value='';render();}));
+  document.getElementById('mes').addEventListener('change',e=>{setMonth(e.target.value);render();});
+  document.getElementById('seg').addEventListener('click',e=>{
+    const b=e.target.closest('button'); if(!b)return;
+    [...e.currentTarget.children].forEach(x=>x.classList.remove('on')); b.classList.add('on');
+    setRange(b.dataset.r); document.getElementById('mes').value=''; render();
+  });
+}
+function clearSeg(){document.querySelectorAll('#seg button').forEach(b=>b.classList.remove('on'));}
+function fmtDate(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function dataYear(){return new Date(Math.max(...RECORDS.map(x=>x.date))).getFullYear();}
+
+function setRange(r){
+  const today=new Date(); today.setHours(12,0,0,0);
+  const dataMax=new Date(Math.max(...RECORDS.map(x=>x.date)));
+  const maxD=new Date(Math.min(dataMax,today)); // ignora fechas futuras (placeholders de la hoja)
+  let from=new Date(maxD), to=new Date(maxD);
+  if(r==='hoy'){from=new Date(today);to=new Date(today);}
+  else if(r==='ayer'){const y=new Date(today);y.setDate(y.getDate()-1);from=new Date(y);to=new Date(y);}
+  else if(r==='sem'){const d=new Date(today);const dow=(d.getDay()+6)%7;from=new Date(d);from.setDate(d.getDate()-dow);to=new Date(today);}
+  else if(r==='mesact'){from=new Date(maxD.getFullYear(),maxD.getMonth(),1);to=maxD;}
+  else if(r==='tri'){from=new Date(maxD.getFullYear(),maxD.getMonth()-2,1);to=maxD;}
+  else if(r==='ano'){from=new Date(maxD.getFullYear(),0,1);to=maxD;}
+  else {from=new Date(Math.min(...RECORDS.map(x=>x.date)));to=maxD;}
+  document.getElementById('from').value=fmtDate(from);
+  document.getElementById('to').value=fmtDate(to);
+  document.querySelectorAll('#seg button').forEach(b=>b.classList.toggle('on',b.dataset.r===r));
+}
+function setMonth(m){
+  clearSeg();
+  if(!m){setRange('tri');return;}
+  const y=dataYear();
+  const from=new Date(y,+m-1,1), to=new Date(y,+m,0); // primer y último día del mes
+  document.getElementById('from').value=fmtDate(from);
+  document.getElementById('to').value=fmtDate(to);
+}
+
+function filtered(){
+  const f=new Date(document.getElementById('from').value+'T00:00:00'), t=new Date(document.getElementById('to').value+'T23:59:59');
+  const trk=document.getElementById('trk').value;
+  return RECORDS.filter(r=>r.date>=f&&r.date<=t&&(!trk||r.closer===trk));
+}
+function prevPeriod(){
+  const f=new Date(document.getElementById('from').value+'T00:00:00'), t=new Date(document.getElementById('to').value+'T23:59:59');
+  const span=t-f; const pt=new Date(f-1), pf=new Date(pt-span); const trk=document.getElementById('trk').value;
+  return RECORDS.filter(r=>r.date>=pf&&r.date<=pt&&(!trk||r.closer===trk));
+}
+const sum=(a,k)=>a.reduce((s,x)=>s+x[k],0);
+
+function animate(el,to,dec){
+  const fmt=x=>x.toLocaleString('es-CO',{minimumFractionDigits:dec,maximumFractionDigits:dec});
+  if(rm||document.hidden){el.textContent=fmt(to);el.dataset.v=to;return;} // sin rAF si la pestaña está oculta
+  const from=parseFloat(el.dataset.v||0),t0=performance.now(),dur=700;
+  (function tick(t){const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,3),v=from+(to-from)*e;
+    el.textContent=v.toLocaleString('es-CO',{minimumFractionDigits:dec,maximumFractionDigits:dec});
+    if(p<1)requestAnimationFrame(tick);})(t0);
+  el.dataset.v=to;
+}
+
+function render(){
+  const data=filtered();
+  const recaudo=sum(data,'recaudo'), recObj=sum(data,'recaudoObj');
+  const agendas=sum(data,'agendas'), asist=sum(data,'asist'), ofertas=sum(data,'ofertas');
+  const cieCon=sum(data,'cieCon'), cieRes=sum(data,'cieRes'), cieSeg=sum(data,'cieSeg');
+  const cierres=cieCon+cieRes+cieSeg;
+
+  animate(document.getElementById('kRec'),recaudo,0);
+  animate(document.getElementById('kAg'),agendas,0);
+  animate(document.getElementById('kAs'),asist,0);
+  animate(document.getElementById('kOf'),ofertas,0);
+  animate(document.getElementById('kCie'),cierres,0);
+
+  document.getElementById('kAsSub').textContent=pctStr(asist,agendas)+' de las agendas asistieron';
+  document.getElementById('kOfSub').textContent=pctStr(ofertas,asist)+' recibieron oferta';
+  document.getElementById('kCieSub').textContent=pctStr(cierres,ofertas)+' cierre · '+cieCon+' contado / '+cieRes+' reserva / '+cieSeg+' seg.';
+
+  const recSub=document.getElementById('kRecSub');
+  const cumpl=recObj>0?Math.round(recaudo/recObj*100):null;
+  const prevRec=sum(prevPeriod(),'recaudo');
+  let parts=[];
+  if(cumpl!==null) parts.push((cumpl>=100?'✔ ':'')+cumpl+'% de la meta');
+  if(prevRec>0){const p=(recaudo-prevRec)/prevRec*100; parts.push((p>=0?'▲ ':'▼ ')+Math.abs(p).toFixed(0)+'% vs. anterior');}
+  recSub.className='delta '+(cumpl!==null?(cumpl>=100?'up':(cumpl>=70?'warn':'down')):'');
+  recSub.textContent=parts.join('   ·   ');
+
+  renderTable(data); renderFunnel(agendas,asist,ofertas,cierres); renderChart(data);
+}
+
+function renderTable(data){
+  const trk=document.getElementById('trk').value;
+  document.getElementById('tblSub').textContent = (trk?trk:'todos los closers')+' · '+
+    document.getElementById('from').value+'  →  '+document.getElementById('to').value;
+  const by={};
+  data.forEach(r=>{const b=by[r.closer]||(by[r.closer]={agendas:0,asist:0,ofertas:0,cieCon:0,cieRes:0,cieSeg:0,recaudo:0,recaudoObj:0});
+    ['agendas','asist','ofertas','cieCon','cieRes','cieSeg','recaudo','recaudoObj'].forEach(k=>b[k]+=r[k]);});
+  const list=Object.entries(by).map(([n,v])=>({n,...v})).sort((a,b)=>b.recaudo-a.recaudo);
+  const tb=document.getElementById('tbody'), tf=document.getElementById('tfoot');
+  if(!list.length){tb.innerHTML='<tr><td colspan="10" class="empty">Sin datos en el periodo seleccionado.</td></tr>';tf.innerHTML='';return;}
+  const clsCumpl=p=>p===null?'':(p>=100?'g':(p<70?'b':'w'));
+  const clsCierre=p=>p===null?'':(p>=50?'g':(p<25?'b':'w'));
+  tb.innerHTML=list.map((t,i)=>{
+    const ini=t.n.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const cie=t.cieCon+t.cieRes+t.cieSeg;
+    const cumpl=t.recaudoObj>0?Math.round(t.recaudo/t.recaudoObj*100):null;
+    const pcie=t.ofertas>0?Math.round(cie/t.ofertas*100):null;
+    return `<tr>
+      <td><div class="cl"><div class="av" style="background:${grads[i%grads.length]}">${ini}</div><span class="clname">${t.n}</span></div></td>
+      <td>${t.agendas}</td>
+      <td>${t.asist}<span class="sub2">${pctStr(t.asist,t.agendas)} asist.</span></td>
+      <td>${t.ofertas}<span class="sub2">${pctStr(t.ofertas,t.asist)} oferta</span></td>
+      <td>${t.cieCon}</td><td>${t.cieRes}</td><td>${t.cieSeg}</td>
+      <td><span class="pct ${clsCierre(pcie)}">${pcie===null?'—':pcie+'%'}</span></td>
+      <td class="rec">$${fmtCOP(t.recaudo)}</td>
+      <td><span class="pct ${clsCumpl(cumpl)}">${cumpl===null?'—':cumpl+'%'}</span></td>
+    </tr>`;
+  }).join('');
+  const T=k=>list.reduce((s,x)=>s+x[k],0);
+  const tCie=T('cieCon')+T('cieRes')+T('cieSeg');
+  const tCumpl=T('recaudoObj')>0?Math.round(T('recaudo')/T('recaudoObj')*100):null;
+  const tPcie=T('ofertas')>0?Math.round(tCie/T('ofertas')*100):null;
+  tf.innerHTML=`<tr>
+    <td>Total</td><td>${T('agendas')}</td>
+    <td>${T('asist')}<span class="sub2">${pctStr(T('asist'),T('agendas'))} asist.</span></td>
+    <td>${T('ofertas')}<span class="sub2">${pctStr(T('ofertas'),T('asist'))} oferta</span></td>
+    <td>${T('cieCon')}</td><td>${T('cieRes')}</td><td>${T('cieSeg')}</td>
+    <td>${tPcie===null?'—':tPcie+'%'}</td>
+    <td class="rec">$${fmtCOP(T('recaudo'))}</td>
+    <td>${tCumpl===null?'—':tCumpl+'%'}</td>
+  </tr>`;
+}
+
+function renderFunnel(ag,as,of,ci){
+  const stages=[
+    {n:'Agendas nuevas', v:ag, base:null},
+    {n:'Asistencias',    v:as, base:ag},
+    {n:'Ofertas presentadas', v:of, base:as},
+    {n:'Cierres',        v:ci, base:of},
+  ];
+  const max=ag||1;
+  const el=document.getElementById('funnel');
+  el.innerHTML=stages.map((s,i)=>`<div class="fstage">
+    <div class="ftop"><span class="fname">${s.n}</span>
+      <span class="fval">${s.v.toLocaleString('es-CO')}${s.base!==null?`<span class="fpct">${pctStr(s.v,s.base)} del paso anterior</span>`:''}</span></div>
+    <div class="fbar"><i data-w="${Math.max(2,Math.round(s.v/max*100))}" style="background:${grads[i%grads.length]}"></i></div>
+  </div>`).join('');
+  requestAnimationFrame(()=>el.querySelectorAll('.fbar i').forEach(x=>x.style.width=x.dataset.w+'%'));
+}
+
+function renderChart(data){
+  const by={}; data.forEach(r=>{const k=r.date.getFullYear()+'-'+String(r.date.getMonth()+1).padStart(2,'0');by[k]=(by[k]||0)+r.recaudo;});
+  const keys=Object.keys(by).sort(); const mNames=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const pts=keys.map(k=>({lbl:mNames[+k.slice(5)-1],v:by[k]}));
+  const svg=document.getElementById('chart'), xl=document.getElementById('xlab');
+  if(pts.length<2){svg.innerHTML='';xl.innerHTML='';document.getElementById('chartSub').textContent='rango de un solo mes — usa Trimestre para ver la tendencia';return;}
+  document.getElementById('chartSub').textContent='pesos COP · '+pts.length+' meses';
+  const W=620,H=240,pad=16,max=Math.max(...pts.map(p=>p.v))*1.1||1;
+  const xs=i=>pad+i*((W-2*pad)/(pts.length-1)), ys=v=>H-pad-(v/max)*(H-2*pad);
+  const P=pts.map((p,i)=>[xs(i),ys(p.v)]);
+  const line=P.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  const area=line+` L${xs(pts.length-1)} ${H-pad} L${pad} ${H-pad} Z`;
+  svg.innerHTML=`<defs>
+    <linearGradient id="fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff6a2b" stop-opacity=".55"/><stop offset="1" stop-color="#ff2e8b" stop-opacity="0"/></linearGradient>
+    <linearGradient id="stroke" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffb020"/><stop offset="1" stop-color="#ff2e8b"/></linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+    ${[0,.25,.5,.75,1].map(g=>`<line x1="${pad}" x2="${W-pad}" y1="${pad+g*(H-2*pad)}" y2="${pad+g*(H-2*pad)}" stroke="rgba(255,255,255,.06)"/>`).join('')}
+    <path d="${area}" fill="url(#fill)"/>
+    <path d="${line}" fill="none" stroke="url(#stroke)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
+    ${P.map((p,i)=>`<circle cx="${p[0]}" cy="${p[1]}" r="${i===P.length-1?5:3}" fill="${i===P.length-1?'#ff2e8b':'#fff'}" ${i===P.length-1?'filter="url(#glow)"':''}/>`).join('')}`;
+  xl.innerHTML=pts.map(p=>`<span>${p.lbl}</span>`).join('');
+}
+
+fetchData();
+setInterval(fetchData, 60000);
+</script>
+</body>
+</html>
