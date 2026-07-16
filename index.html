@@ -184,7 +184,7 @@
   <div class="controls">
     <div class="fld daily" id="fldRango"><label>Rango rápido</label>
       <div class="seg" id="seg">
-        <button data-r="hoy">Hoy</button><button data-r="ayer">Ayer</button><button data-r="sem">Esta semana</button><button data-r="mesact">Este mes</button><button data-r="tri" class="on">Trimestre</button>
+        <button data-r="hoy">Hoy</button><button data-r="ayer">Ayer</button><button data-r="sem">Esta semana</button><button data-r="semant">Semana pasada</button><button data-r="mesact">Este mes</button><button data-r="tri" class="on">Trimestre</button>
       </div>
     </div>
     <div class="fld daily" id="fldMes"><label>Mes</label>
@@ -492,9 +492,15 @@ function loadProyFuentes(){
 function fetchData(){
   const btn=document.getElementById('refresh'); btn.classList.add('spin');
   return Promise.all([loadMode('closers'),loadMode('setters'),loadProyFuentes()]).then(()=>{
-    if(!built){buildFilters();built=true;}
-    applyMode(); // ajusta filtros y render
+    if(!built){buildFilters();built=true;applyMode();} // SOLO en la carga inicial se fija el filtro por defecto
+    else rerenderCurrent();                            // en auto-refrescos: re-dibuja con datos frescos SIN tocar el filtro del usuario
   }).finally(()=>btn.classList.remove('spin'));
+}
+// re-dibuja el modo actual conservando exactamente los filtros seleccionados (rango, mes, closer/setter)
+function rerenderCurrent(){
+  if(MODE==='closers'||MODE==='setters'){ setStatus(); render(); }
+  else if(MODE==='proyeccion'){ renderProy(CUR_MES); }
+  else if(MODE==='fuentes'){ renderFuentes(CUR_MES); }
 }
 function records(){return DATA[MODE];}
 function setStatus(){
@@ -560,6 +566,7 @@ function setRange(r){
   if(r==='hoy'){from=new Date(today);to=new Date(today);}
   else if(r==='ayer'){const y=new Date(today);y.setDate(y.getDate()-1);from=new Date(y);to=new Date(y);}
   else if(r==='sem'){const d=new Date(today);const dow=(d.getDay()+6)%7;from=new Date(d);from.setDate(d.getDate()-dow);to=new Date(today);}
+  else if(r==='semant'){const d=new Date(today);const dow=(d.getDay()+6)%7;const mon=new Date(d);mon.setDate(d.getDate()-dow);to=new Date(mon);to.setDate(mon.getDate()-1);from=new Date(to);from.setDate(to.getDate()-6);} // semana calendario anterior (lun–dom)
   else if(r==='mesact'){from=new Date(maxD.getFullYear(),maxD.getMonth(),1);to=maxD;}
   else if(r==='tri'){from=new Date(maxD.getFullYear(),maxD.getMonth()-2,1);to=maxD;}
   else if(r==='ano'){from=new Date(maxD.getFullYear(),0,1);to=maxD;}
