@@ -127,15 +127,21 @@
   .chbar i{display:block;height:100%;border-radius:99px;width:0;transition:width .9s cubic-bezier(.2,.7,.2,1)}
 
   /* visibilidad por modo */
-  #proyView,#fuentesView{display:none}
+  #proyView,#fuentesView,#finanzasView{display:none}
   #dailyView{display:none}
   body.m-closers #dailyView,body.m-setters #dailyView{display:block}
   body.m-proyeccion #proyView{display:block}
   body.m-fuentes #fuentesView{display:block}
+  body.m-finanzas #finanzasView{display:block}
   #proyKpis,#fuKpis{grid-template-columns:1.7fr 1fr 1fr 1fr}
   .fld.monthly{display:none}
   body.m-proyeccion .fld.daily,body.m-fuentes .fld.daily{display:none}
   body.m-proyeccion .fld.monthly,body.m-fuentes .fld.monthly{display:flex}
+  /* Finanzas (aislado) */
+  .finclick{cursor:pointer;transition:transform .12s}
+  .finclick:hover{transform:translateY(-2px)}
+  #finTbl td.fincell{cursor:pointer} #finTbl td.fincell:hover{color:var(--c3)}
+  #finEstados{margin-bottom:16px}
   .tbl tr.grouprow td{background:linear-gradient(90deg,rgba(255,106,43,.22),rgba(255,46,139,.10));font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;color:#ffd9c4;font-weight:800;padding:10px 12px;text-align:left;border-top:1px solid rgba(255,106,43,.35);border-bottom:1px solid var(--line)}
   .tbl tr.cartera td{color:var(--c3)} .tbl tr.cartera td:first-child{font-weight:800}
   .etapa{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:rgba(255,255,255,.07);color:var(--muted)}
@@ -177,7 +183,7 @@
       </div>
     </div>
     <div class="modeseg" id="modeseg">
-      <button data-m="closers" class="on">Closers</button><button data-m="setters">Setters</button><button data-m="proyeccion">Proyección</button><button data-m="fuentes">Fuentes</button>
+      <button data-m="closers" class="on">Closers</button><button data-m="setters">Setters</button><button data-m="proyeccion">Proyección</button><button data-m="fuentes">Fuentes</button><button data-m="finanzas">Finanzas</button>
     </div>
   </div>
 
@@ -286,6 +292,35 @@
       <h2>Recaudo por fuente</h2>
       <div class="h2sub" id="fuChartSub">pesos COP</div>
       <div id="fuBars"></div>
+    </div>
+  </div>
+
+  <div id="finanzasView">
+    <div class="kpis" id="finKpis"></div>
+    <div class="kpis" id="finEstados" style="grid-template-columns:1fr 1fr 1fr 1fr;margin-bottom:16px"></div>
+    <div class="card">
+      <h2>Flujo del dinero</h2>
+      <div class="h2sub">de la venta hasta la facturación · en el periodo · <span style="color:var(--faint)">clic en cualquier tarjeta o celda para ver el detalle</span></div>
+      <div id="finFunnel"></div>
+    </div>
+    <div class="card">
+      <div class="cthead">
+        <div><h2>Comparativo por closer</h2><div class="h2sub" id="finTblSub">clic en una celda para filtrar el detalle</div></div>
+        <button class="refbtn" id="finExport" title="Exportar CSV de lo filtrado" style="width:auto;padding:0 14px;font-size:12.5px;font-weight:700">⤓ CSV</button>
+      </div>
+      <div class="tblwrap"><table class="tbl" id="finTbl" style="min-width:1000px"></table></div>
+    </div>
+    <div class="card" id="finDetailCard" style="display:none">
+      <div class="cthead">
+        <div><h2 id="finDetailTitle">Detalle</h2><div class="h2sub" id="finDetailSub"></div></div>
+        <button class="refbtn" id="finDetailClose" title="Cerrar detalle" style="width:auto;padding:0 14px;font-size:12.5px;font-weight:700">✕ cerrar</button>
+      </div>
+      <div class="tblwrap"><table class="tbl" id="finDetail" style="min-width:1400px"></table></div>
+    </div>
+    <div class="card">
+      <h2>Seguimiento — dinero detenido</h2>
+      <div class="h2sub">clientes con dinero en validación, cargue o inconsistencia · ordenado por más días detenido</div>
+      <div class="tblwrap"><table class="tbl" id="finSeg" style="min-width:720px"></table></div>
     </div>
   </div>
 
@@ -491,7 +526,7 @@ function loadProyFuentes(){
 }
 function fetchData(){
   const btn=document.getElementById('refresh'); btn.classList.add('spin');
-  return Promise.all([loadMode('closers'),loadMode('setters'),loadProyFuentes()]).then(()=>{
+  return Promise.all([loadMode('closers'),loadMode('setters'),loadProyFuentes(),loadFinanzas()]).then(()=>{
     if(!built){buildFilters();built=true;applyMode();} // SOLO en la carga inicial se fija el filtro por defecto
     else rerenderCurrent();                            // en auto-refrescos: re-dibuja con datos frescos SIN tocar el filtro del usuario
   }).finally(()=>btn.classList.remove('spin'));
@@ -501,6 +536,7 @@ function rerenderCurrent(){
   if(MODE==='closers'||MODE==='setters'){ setStatus(); render(); }
   else if(MODE==='proyeccion'){ renderProy(CUR_MES); }
   else if(MODE==='fuentes'){ renderFuentes(CUR_MES); }
+  else if(MODE==='finanzas'){ renderFinanzas(); }
 }
 function records(){return DATA[MODE];}
 function setStatus(){
@@ -520,6 +556,13 @@ function buildFilters(){
   ['from','to'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{clearSeg();document.getElementById('mes').value='';render();}));
   document.getElementById('mes').addEventListener('change',e=>{setMonth(e.target.value);render();});
   document.getElementById('mesSel').addEventListener('change',e=>{CUR_MES=e.target.value; if(MODE==='proyeccion')renderProy(CUR_MES); else if(MODE==='fuentes')renderFuentes(CUR_MES);});
+  // Finanzas: clic en tarjeta/celda -> detalle (delegación)
+  document.getElementById('finanzasView').addEventListener('click',e=>{
+    const el=e.target.closest('[data-fin-metric]'); if(!el)return;
+    finDrill(el.dataset.finCloser||'', el.dataset.finMetric);
+  });
+  document.getElementById('finExport').addEventListener('click',finExport);
+  document.getElementById('finDetailClose').addEventListener('click',()=>{FIN_DRILL=null;document.getElementById('finDetailCard').style.display='none';});
   document.getElementById('seg').addEventListener('click',e=>{
     const b=e.target.closest('button'); if(!b)return;
     setRange(b.dataset.r); document.getElementById('mes').value=''; render();
@@ -543,6 +586,13 @@ function applyMode(){
     (MODE==='closers'?CLOSERS:SETTERS).forEach(t=>{const o=document.createElement('option');o.value=t.name;o.textContent=t.name;sel.appendChild(o);});
     setRange('tri'); document.getElementById('mes').value='';
     setStatus(); render();
+  } else if(MODE==='finanzas'){
+    document.getElementById('persLbl').textContent='Closer';
+    const sel=document.getElementById('pers'); sel.innerHTML='<option value="">Todos</option>';
+    ((FIN&&FIN.closers)||[]).forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+    document.getElementById('mes').value=''; FIN_DRILL=null;
+    if(records()&&records().length) setRange('tri'); // DATA.finanzas trae fechas → setRange funciona igual
+    renderFinanzas();
   } else {
     const src = MODE==='proyeccion'?PROY:FUENTES;
     const months=(src&&src.months)||[];
@@ -611,6 +661,7 @@ function setKPI(i,label,val,dec,sub,subClass){
 
 // ================== RENDER ==================
 function render(){
+  if(MODE==='finanzas'){ renderFinanzas(); return; } // módulo Finanzas: render aislado (no afecta closers/setters)
   const data=filtered();
   const pTxt=(document.getElementById('pers').value||('todos los '+(MODE==='closers'?'closers':'setters')));
   document.getElementById('tblSub').textContent=pTxt+' · '+document.getElementById('from').value+'  →  '+document.getElementById('to').value;
@@ -901,6 +952,189 @@ function renderFuentes(key){
     <div class="furec">$${fmtCOP(x.rec)}</div></div>`).join('');
   requestAnimationFrame(()=>bars.querySelectorAll('.futrack i').forEach(x=>x.style.width=x.dataset.w+'%'));
   document.getElementById('fuChartSub').textContent=mm?('recaudo por fuente · '+mm.label):'';
+}
+
+// ================================================================
+// ============== MÓDULO FINANZAS (100% aislado) ==================
+// ================================================================
+const FIN_ID="15SLCJWLNWUTmMHvedAJPu473IFm2_C2_4fsIcQAJH0Y";
+const FIN_HV_GID="1210165273";  // High Ventas  (1 fila por venta)
+const FIN_SR_GID="443294330";   // Sales Records (1 fila por transacción, con ESTADO)
+let FIN=null;        // {ventas:{ID:{...}}, trans:[...], closers:[...]}
+let FIN_DRILL=null;  // detalle abierto: {closer, metric}
+const finDate=s=>{const m=String(s).match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);return m?new Date(+m[3],+m[2]-1,+m[1]):null;};
+// SOLO estos 5 closers interesan; el resto (Lanzamiento, Michelle, Kenny, Lorena…) se ignora. Une variantes.
+function finCloser(raw){
+  const l=String(raw||'').toLowerCase().replace(/\s+/g,'');
+  if(l.includes('alejandro'))return 'Alejandro Pulido';
+  if(l.includes('camilo'))return 'Camilo Luque';
+  if(l.includes('yeisson')||l.includes('yeison'))return 'Yeison Velez';
+  if(l.includes('wendy'))return 'Wendy Ortiz';
+  if(l.includes('carlosmejia'))return 'Carlos Mejía';
+  return null; // excluido
+}
+const finMoney=v=>{const d=String(v).split(',')[0].replace(/[^0-9-]/g,'');return d&&d!=='-'?parseInt(d,10):0;};
+function estadoClass(e){const l=String(e||'').toLowerCase();
+  if(l.includes('inconsist'))return 'inconsistencia';
+  if(l.includes('cargue'))return 'cargue';
+  if(l.includes('validaci'))return 'validacion';
+  if(l.includes('factur'))return 'facturado';
+  if(l.includes('devoluc')||l.includes('nota'))return 'devolucion';
+  return 'otro';}
+const FIN_LBL={venta:'Venta Total',pactado:'Pago Pactado',cancelado:'Pago Cancelado',pendiente:'Dinero Pendiente',facturado:'Facturado',validacion:'En Proceso de Validación',cargue:'En Proceso de Cargue',inconsistencia:'Inconsistencia',devolucion:'Devolución / N.C.'};
+
+function parseFinanzas(hvTxt, srTxt){
+  const hv=parseCSV(hvTxt), sr=parseCSV(srTxt);
+  const ventas={};
+  for(let i=1;i<hv.length;i++){const r=hv[i]; const id=(r[1]||'').trim(); if(!id.startsWith('VEN'))continue;
+    const cl=finCloser(r[4]); if(!cl)continue; // solo los 5 closers deseados
+    ventas[id]={id, idCli:(r[2]||'').trim(), date:finDate(r[3]), dateStr:(r[3]||'').trim(), closer:cl, setter:(r[5]||'').trim(),
+      cliente:(r[6]||'').trim(), pactado:finMoney(r[11]), cancelado:finMoney(r[15]), debe:finMoney(r[16]),
+      ultimoPago:(r[17]||'').trim(), descripcion:(r[23]||'').trim(), correo:(r[27]||'').trim()};
+  }
+  const trans=[];
+  for(let i=1;i<sr.length;i++){const r=sr[i]; const id=(r[1]||'').trim(); if(!id.startsWith('VEN'))continue;
+    const cl=finCloser(r[4]); if(!cl)continue; // solo los 5 closers deseados
+    trans.push({id, estado:(r[0]||'').trim(), idCli:(r[2]||'').trim(), fechaReg:finDate(r[3]), fechaRegStr:(r[3]||'').trim(),
+      closer:cl, setter:(r[5]||'').trim(), cliente:(r[6]||'').trim(), valor:finMoney(r[11]), correccion:(r[14]||'').trim()});
+  }
+  const ORDER=['Alejandro Pulido','Camilo Luque','Yeison Velez','Wendy Ortiz','Carlos Mejía'];
+  const closers=ORDER.filter(c=>Object.values(ventas).some(v=>v.closer===c));
+  return {ventas, trans, closers};
+}
+function loadFinanzas(){
+  return Promise.all([
+    fetch(gvizUrl(FIN_ID,FIN_HV_GID),{cache:'no-store'}).then(r=>r.ok?r.text():Promise.reject(r.status)),
+    fetch(gvizUrl(FIN_ID,FIN_SR_GID),{cache:'no-store'}).then(r=>r.ok?r.text():Promise.reject(r.status))
+  ]).then(([hv,sr])=>{FIN=parseFinanzas(hv,sr); DATA.finanzas=Object.values(FIN.ventas);})
+    .catch(e=>{console.error('finanzas',e); FIN=null; DATA.finanzas=[];});
+}
+function finStatus(){
+  document.getElementById('status').className='live'+(FIN?'':' err');
+  const t=new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('statusTxt').textContent=(FIN?'en vivo · actualizado '+t:'sin acceso a las hojas de Finanzas')+' · finanzas';
+}
+function finFilteredVentas(){
+  if(!FIN)return [];
+  const f=new Date(document.getElementById('from').value+'T00:00:00'), t=new Date(document.getElementById('to').value+'T23:59:59'), cl=document.getElementById('pers').value;
+  return Object.values(FIN.ventas).filter(v=>v.date&&v.date>=f&&v.date<=t&&(!cl||v.closer===cl));
+}
+
+function renderFinanzas(){
+  const kp=document.getElementById('finKpis'), es=document.getElementById('finEstados');
+  if(!FIN){kp.innerHTML='<div class="empty">Sin acceso a las hojas de Finanzas. Verifica que estén compartidas como "Cualquiera con el enlace".</div>';es.innerHTML='';document.getElementById('finTbl').innerHTML='';document.getElementById('finFunnel').innerHTML='';document.getElementById('finSeg').innerHTML='';document.getElementById('finDetailCard').style.display='none';return;}
+  finStatus();
+  const ventas=finFilteredVentas(), ids=new Set(ventas.map(v=>v.id));
+  const trans=FIN.trans.filter(tr=>ids.has(tr.id));
+  const pactado=ventas.reduce((s,v)=>s+v.pactado,0), cancelado=ventas.reduce((s,v)=>s+v.cancelado,0), debe=ventas.reduce((s,v)=>s+v.debe,0);
+  const pct=pactado>0?Math.round(cancelado/pactado*100):0;
+  const st={facturado:0,validacion:0,cargue:0,inconsistencia:0,devolucion:0};
+  trans.forEach(tr=>{const c=estadoClass(tr.estado);if(st[c]!==undefined)st[c]+=tr.valor;});
+  const card=(metric,label,val,sub,hero,cls)=>`<div class="card${hero?' hero':''} finclick" data-fin-metric="${metric}"><div class="label">${label}</div><div class="${hero?'big':'val'}">$${fmtCOP(val)}</div><div class="delta ${cls||''}">${sub||''}</div></div>`;
+  kp.innerHTML=
+    card('venta','Venta Total',pactado,ventas.length+' ventas en el periodo',true)+
+    card('pactado','Pago Pactado',pactado,'acordado a pagar')+
+    card('cancelado','Pago Cancelado',cancelado,pct+'% recaudado','','up')+
+    card('pendiente','Dinero Pendiente',debe,'falta por recaudar','',debe>0?'warn':'')+
+    `<div class="card"><div class="label">% Recaudado</div><div class="val">${pct}%</div><div class="delta ${pct>=90?'up':(pct>=70?'warn':'down')}">cancelado ÷ pactado</div></div>`;
+  es.innerHTML=
+    card('facturado','Facturado',st.facturado,'ingresó y facturado','','up')+
+    card('validacion','En Validación',st.validacion,'detenido en validación','','warn')+
+    card('cargue','En Proceso de Cargue',st.cargue,'detenido en cargue','','warn')+
+    card('inconsistencia','Inconsistencia',st.inconsistencia,'requiere corrección','','down');
+  renderFinFunnel([
+    {n:'Venta Total',v:pactado,base:null},{n:'Pago Pactado',v:pactado,base:pactado},
+    {n:'Pago Cancelado',v:cancelado,base:pactado},{n:'Facturado',v:st.facturado,base:pactado},
+    {n:'Dinero Pendiente',v:debe,base:pactado},{n:'Inconsistencias',v:st.inconsistencia,base:pactado}]);
+  renderFinTable(ventas,trans);
+  renderFinSeg(trans);
+  renderFinDetail();
+}
+function renderFinFunnel(stages){
+  const el=document.getElementById('finFunnel'); const max=stages[0].v||1;
+  el.innerHTML=stages.map((s,i)=>`<div class="fstage">
+    <div class="ftop"><span class="fname">${s.n}</span>
+      <span class="fval">$${fmtCOP(s.v||0)}${s.base!==null?`<span class="fpct">${s.base>0?Math.round((s.v||0)/s.base*100):0}% de la venta</span>`:''}</span></div>
+    <div class="fbar"><i data-w="${Math.max(2,Math.round((s.v||0)/max*100))}" style="background:${grads[i%grads.length]}"></i></div></div>`).join('');
+  requestAnimationFrame(()=>el.querySelectorAll('.fbar i').forEach(x=>x.style.width=x.dataset.w+'%'));
+}
+function renderFinTable(ventas,trans){
+  const by={}; ventas.forEach(v=>{const b=by[v.closer]||(by[v.closer]={pactado:0,cancelado:0,debe:0,facturado:0,validacion:0,cargue:0,inconsistencia:0});b.pactado+=v.pactado;b.cancelado+=v.cancelado;b.debe+=v.debe;});
+  trans.forEach(tr=>{const b=by[tr.closer]; if(!b)return; const c=estadoClass(tr.estado); if(b[c]!==undefined)b[c]+=tr.valor;});
+  const list=Object.entries(by).map(([n,v])=>({n,...v})).sort((a,b)=>b.pactado-a.pactado);
+  const tb=document.getElementById('finTbl');
+  if(!list.length){tb.innerHTML='<tbody><tr><td class="empty">Sin ventas en el periodo seleccionado.</td></tr></tbody>';return;}
+  const cell=(cl,metric,val)=>`<td class="fincell finclick" data-fin-closer="${cl}" data-fin-metric="${metric}">$${fmtCOP(val)}</td>`;
+  const body=list.map((t,i)=>{const ini=t.n.split(/(?=[A-Z])| /).map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    return `<tr>
+      <td><div class="cl"><div class="av" style="background:${grads[i%grads.length]}">${ini}</div><span class="clname">${t.n}</span></div></td>
+      ${cell(t.n,'venta',t.pactado)}${cell(t.n,'pactado',t.pactado)}${cell(t.n,'cancelado',t.cancelado)}${cell(t.n,'pendiente',t.debe)}
+      ${cell(t.n,'facturado',t.facturado)}${cell(t.n,'validacion',t.validacion)}${cell(t.n,'cargue',t.cargue)}${cell(t.n,'inconsistencia',t.inconsistencia)}</tr>`;}).join('');
+  const T=k=>list.reduce((s,x)=>s+x[k],0);
+  tb.innerHTML=`<thead><tr><th>Closer</th><th>Venta Total</th><th>Pago Pactado</th><th>Pago Cancelado</th><th>Pendiente</th><th>Facturado</th><th>Validación</th><th>Proc. Cargue</th><th>Inconsist.</th></tr></thead>
+    <tbody>${body}</tbody>
+    <tfoot><tr><td>Total</td><td class="rec">$${fmtCOP(T('pactado'))}</td><td>$${fmtCOP(T('pactado'))}</td><td>$${fmtCOP(T('cancelado'))}</td><td>$${fmtCOP(T('debe'))}</td><td>$${fmtCOP(T('facturado'))}</td><td>$${fmtCOP(T('validacion'))}</td><td>$${fmtCOP(T('cargue'))}</td><td>$${fmtCOP(T('inconsistencia'))}</td></tr></tfoot>`;
+}
+function renderFinSeg(trans){
+  const today=new Date();
+  const stuck=trans.filter(tr=>['validacion','cargue','inconsistencia'].includes(estadoClass(tr.estado)))
+    .map(tr=>({cliente:tr.cliente,closer:tr.closer,estado:tr.estado,dias:tr.fechaReg?Math.max(0,Math.floor((today-tr.fechaReg)/864e5)):null,comentario:tr.correccion,valor:tr.valor}))
+    .sort((a,b)=>(b.dias||0)-(a.dias||0));
+  const tb=document.getElementById('finSeg');
+  if(!stuck.length){tb.innerHTML='<tbody><tr><td class="empty">No hay dinero detenido en el periodo. 🎉</td></tr></tbody>';return;}
+  const badge=e=>{const c=estadoClass(e);return `<span class="pct ${c==='inconsistencia'?'b':'w'}">${e}</span>`;};
+  tb.innerHTML=`<thead><tr><th>Cliente</th><th>Closer</th><th>Estado</th><th>Valor</th><th>Días detenido</th><th>Comentario</th></tr></thead><tbody>`+
+    stuck.slice(0,80).map(s=>`<tr><td style="font-weight:700">${s.cliente||'—'}</td><td>${s.closer||'—'}</td><td>${badge(s.estado)}</td><td class="rec">$${fmtCOP(s.valor)}</td><td><b>${s.dias===null?'—':s.dias+' días'}</b></td><td style="max-width:280px;white-space:normal;color:var(--muted)">${s.comentario||'—'}</td></tr>`).join('')+`</tbody>`;
+}
+function finDrill(closer, metric){ FIN_DRILL={closer:closer||'', metric}; renderFinDetail(); document.getElementById('finDetailCard').scrollIntoView({behavior:'smooth',block:'start'}); }
+function finDetailRows(){
+  if(!FIN||!FIN_DRILL)return [];
+  const {closer,metric}=FIN_DRILL;
+  const ventas=finFilteredVentas().filter(v=>!closer||v.closer===closer);
+  const ids=new Set(ventas.map(v=>v.id));
+  const V=FIN.ventas;
+  if(['facturado','validacion','cargue','inconsistencia','devolucion'].includes(metric)){
+    return FIN.trans.filter(tr=>ids.has(tr.id)&&(!closer||tr.closer===closer)&&estadoClass(tr.estado)===metric).map(tr=>({v:V[tr.id]||{},tr}));
+  }
+  let vs=ventas;
+  if(metric==='cancelado')vs=ventas.filter(v=>v.cancelado>0);
+  if(metric==='pendiente')vs=ventas.filter(v=>v.debe>0);
+  return vs.map(v=>({v,tr:null}));
+}
+const FIN_DET_COLS=['ID Venta','ID Cliente','Cliente','Correo','Closer','Setter','Fecha Venta','Fecha Registro','Pago Pactado','Pago Cancelado','Valor Pendiente','Estado','Comentario','Observación','Último Pago','Fecha Último Pago'];
+function finDetailData(){
+  return finDetailRows().map(({v,tr})=>[
+    v.id||tr&&tr.id||'', v.idCli||'', v.cliente||(tr&&tr.cliente)||'', v.correo||'', v.closer||(tr&&tr.closer)||'', v.setter||(tr&&tr.setter)||'',
+    v.dateStr||'', tr?tr.fechaRegStr:'', v.pactado||0, v.cancelado||0, v.debe||0,
+    tr?tr.estado:'—', tr?tr.correccion:'', v.descripcion||'', v.ultimoPago||'', v.ultimoPago||''
+  ]);
+}
+function renderFinDetail(){
+  const cardEl=document.getElementById('finDetailCard');
+  if(!FIN_DRILL||!FIN){cardEl.style.display='none';return;}
+  const rows=finDetailData();
+  document.getElementById('finDetailTitle').textContent='Detalle · '+FIN_LBL[FIN_DRILL.metric];
+  document.getElementById('finDetailSub').textContent=(FIN_DRILL.closer?FIN_DRILL.closer+' · ':'todos los closers · ')+rows.length+' registros';
+  const money=new Set([8,9,10]);
+  const tb=document.getElementById('finDetail');
+  if(!rows.length){tb.innerHTML='<tbody><tr><td class="empty">Sin registros para este filtro.</td></tr></tbody>';cardEl.style.display='block';return;}
+  tb.innerHTML=`<thead><tr>${FIN_DET_COLS.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>`+
+    rows.map(r=>`<tr>${r.map((c,j)=>`<td>${money.has(j)?'$'+fmtCOP(c):(c||'—')}</td>`).join('')}</tr>`).join('')+`</tbody>`;
+  cardEl.style.display='block';
+}
+function finExport(){
+  const openDetail=FIN_DRILL&&document.getElementById('finDetailCard').style.display!=='none';
+  let cols, data, name;
+  if(openDetail){ cols=FIN_DET_COLS; data=finDetailData(); name='finanzas_'+FIN_DRILL.metric+(FIN_DRILL.closer?'_'+FIN_DRILL.closer:'')+'.csv'; }
+  else { // exportar el comparativo/ventas filtradas
+    cols=['ID Venta','Cliente','Closer','Setter','Fecha Venta','Pago Pactado','Pago Cancelado','Valor Pendiente'];
+    data=finFilteredVentas().map(v=>[v.id,v.cliente,v.closer,v.setter,v.dateStr,v.pactado,v.cancelado,v.debe]);
+    name='finanzas_ventas.csv';
+  }
+  const esc=c=>'"'+String(c).replace(/"/g,'""')+'"';
+  const csv=[cols.map(esc).join(',')].concat(data.map(r=>r.map(esc).join(','))).join('\r\n');
+  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob), a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 
 fetchData();
