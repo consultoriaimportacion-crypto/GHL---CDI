@@ -127,16 +127,18 @@
   .chbar i{display:block;height:100%;border-radius:99px;width:0;transition:width .9s cubic-bezier(.2,.7,.2,1)}
 
   /* visibilidad por modo */
-  #proyView,#fuentesView,#finanzasView{display:none}
+  #proyView,#fuentesView,#finanzasView,#carteraView{display:none}
   #dailyView{display:none}
   body.m-closers #dailyView,body.m-setters #dailyView{display:block}
   body.m-proyeccion #proyView{display:block}
   body.m-fuentes #fuentesView{display:block}
   body.m-finanzas #finanzasView{display:block}
+  body.m-cartera #carteraView{display:block}
   #proyKpis,#fuKpis{grid-template-columns:1.7fr 1fr 1fr 1fr}
-  .fld.monthly{display:none}
-  body.m-proyeccion .fld.daily,body.m-fuentes .fld.daily{display:none}
+  .fld.monthly,.fld.cartera{display:none}
+  body.m-proyeccion .fld.daily,body.m-fuentes .fld.daily,body.m-cartera .fld.daily{display:none}
   body.m-proyeccion .fld.monthly,body.m-fuentes .fld.monthly{display:flex}
+  body.m-cartera .fld.cartera{display:flex}
   /* Finanzas (aislado) */
   .finclick{cursor:pointer;transition:transform .12s}
   .finclick:hover{transform:translateY(-2px)}
@@ -183,7 +185,7 @@
       </div>
     </div>
     <div class="modeseg" id="modeseg">
-      <button data-m="closers" class="on">Closers</button><button data-m="setters">Setters</button><button data-m="proyeccion">Proyección</button><button data-m="fuentes">Fuentes</button><button data-m="finanzas">Finanzas</button>
+      <button data-m="closers" class="on">Closers</button><button data-m="setters">Setters</button><button data-m="proyeccion">Proyección</button><button data-m="fuentes">Fuentes</button><button data-m="finanzas">Finanzas</button><button data-m="cartera">Cartera</button>
     </div>
   </div>
 
@@ -202,6 +204,12 @@
     <div class="fld daily" id="fldFrom"><label>Desde</label><input type="date" id="from"></div>
     <div class="fld daily" id="fldTo"><label>Hasta</label><input type="date" id="to"></div>
     <div class="fld monthly" id="fldMesSel"><label>Mes</label><select class="sel" id="mesSel"></select></div>
+    <div class="fld cartera" id="fldCartMes"><label>Mes</label>
+      <select class="sel" id="cartMes">
+        <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option><option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option><option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option><option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+      </select>
+    </div>
+    <div class="fld cartera" id="fldCartCloser"><label>Closer</label><select class="sel" id="cartCloser"></select></div>
     <div class="fld"><label>&nbsp;</label><button class="refbtn" id="refresh" title="Actualizar datos"><i>↻</i></button></div>
   </div>
 
@@ -321,6 +329,18 @@
       <h2>Seguimiento — dinero detenido</h2>
       <div class="h2sub">clientes con dinero en validación, cargue o inconsistencia · ordenado por más días detenido</div>
       <div class="tblwrap"><table class="tbl" id="finSeg" style="min-width:720px"></table></div>
+    </div>
+  </div>
+
+  <div id="carteraView">
+    <div class="kpis" style="grid-template-columns:1fr 1fr;max-width:720px">
+      <div class="card"><div class="label">👥 Clientes por Cobrar</div><div class="val" id="cartN">0</div><div class="delta" id="cartNsub"></div></div>
+      <div class="card hero"><div class="label">💰 Valor Total por Cobrar</div><div class="big"><span class="cur">$ </span><span id="cartVal">0</span> <span class="cur">COP</span></div><div class="delta">saldo pendiente del mes</div></div>
+    </div>
+    <div class="card">
+      <h2>Cartera del mes — <span id="cartTitle"></span></h2>
+      <div class="h2sub" id="cartSub">clientes con próximo pago en el mes seleccionado · ordenados por fecha</div>
+      <div class="tblwrap"><table class="tbl" id="cartTbl" style="min-width:900px"></table></div>
     </div>
   </div>
 
@@ -537,6 +557,7 @@ function rerenderCurrent(){
   else if(MODE==='proyeccion'){ renderProy(CUR_MES); }
   else if(MODE==='fuentes'){ renderFuentes(CUR_MES); }
   else if(MODE==='finanzas'){ renderFinanzas(); }
+  else if(MODE==='cartera'){ renderCartera(); }
 }
 function records(){return DATA[MODE];}
 function setStatus(){
@@ -563,6 +584,9 @@ function buildFilters(){
   });
   document.getElementById('finExport').addEventListener('click',finExport);
   document.getElementById('finDetailClose').addEventListener('click',()=>{FIN_DRILL=null;document.getElementById('finDetailCard').style.display='none';});
+  // Cartera: sus dos filtros propios
+  document.getElementById('cartMes').addEventListener('change',renderCartera);
+  document.getElementById('cartCloser').addEventListener('change',renderCartera);
   document.getElementById('seg').addEventListener('click',e=>{
     const b=e.target.closest('button'); if(!b)return;
     setRange(b.dataset.r); document.getElementById('mes').value=''; render();
@@ -593,6 +617,12 @@ function applyMode(){
     document.getElementById('mes').value=''; FIN_DRILL=null;
     if(records()&&records().length) setRange('tri'); // DATA.finanzas trae fechas → setRange funciona igual
     renderFinanzas();
+  } else if(MODE==='cartera'){
+    const sel=document.getElementById('cartCloser'); sel.innerHTML='<option value="">Todos</option>';
+    ((FIN&&FIN.closers)||[]).forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+    document.getElementById('cartMes').value=String((new Date()).getMonth()+1); // mes actual por defecto
+    document.getElementById('status').className='live'; document.getElementById('statusTxt').textContent=(FIN?'en vivo':'sin acceso')+' · cartera';
+    renderCartera();
   } else {
     const src = MODE==='proyeccion'?PROY:FUENTES;
     const months=(src&&src.months)||[];
@@ -990,7 +1020,7 @@ function parseFinanzas(hvTxt, srTxt){
     const cl=finCloser(r[4]); if(!cl)continue; // solo los 5 closers deseados
     ventas[id]={id, idCli:(r[2]||'').trim(), date:finDate(r[3]), dateStr:(r[3]||'').trim(), closer:cl, setter:(r[5]||'').trim(),
       cliente:(r[6]||'').trim(), pactado:finMoney(r[11]), cancelado:finMoney(r[15]), debe:finMoney(r[16]),
-      ultimoPago:(r[17]||'').trim(), descripcion:(r[23]||'').trim(), correo:(r[27]||'').trim()};
+      ultimoPago:(r[17]||'').trim(), proxPago:finDate(r[18]), proxPagoStr:(r[18]||'').trim(), descripcion:(r[23]||'').trim(), correo:(r[27]||'').trim()};
   }
   const trans=[];
   for(let i=1;i<sr.length;i++){const r=sr[i]; const id=(r[1]||'').trim(); if(!id.startsWith('VEN'))continue;
@@ -1135,6 +1165,39 @@ function finExport(){
   const csv=[cols.map(esc).join(',')].concat(data.map(r=>r.map(esc).join(','))).join('\r\n');
   const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
   const url=URL.createObjectURL(blob), a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+// ================================================================
+// ============== MÓDULO CARTERA (100% aislado) ===================
+// Reutiliza FIN.ventas (hoja High Ventas ya cargada). Sin nueva conexión.
+// ================================================================
+const CART_MES=['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+function renderCartera(){
+  const tb=document.getElementById('cartTbl');
+  const mes=+(document.getElementById('cartMes').value||((new Date()).getMonth()+1));
+  const closer=document.getElementById('cartCloser').value;
+  document.getElementById('cartTitle').textContent=CART_MES[mes]+(closer?(' · '+closer):'');
+  if(!FIN){document.getElementById('cartN').textContent='0';document.getElementById('cartVal').textContent='0';tb.innerHTML='<tbody><tr><td class="empty">Sin acceso a High Ventas.</td></tr></tbody>';return;}
+  // clientes cuyo PRÓXIMO PAGO cae en el mes elegido, que aún deben, del closer elegido
+  const rows=Object.values(FIN.ventas)
+    .filter(v=>v.proxPago&&(v.proxPago.getMonth()+1)===mes&&v.debe>0&&(!closer||v.closer===closer))
+    .sort((a,b)=>a.proxPago-b.proxPago);
+  const total=rows.reduce((s,v)=>s+v.debe,0);
+  document.getElementById('cartN').textContent=rows.length.toLocaleString('es-CO');
+  document.getElementById('cartNsub').textContent='en '+CART_MES[mes];
+  document.getElementById('cartVal').textContent=fmtCOP(total);
+  document.getElementById('cartSub').textContent=rows.length+' clientes con próximo pago en '+CART_MES[mes]+(closer?(' · '+closer):' · todos los closers');
+  if(!rows.length){tb.innerHTML='<tbody><tr><td class="empty">No hay clientes por cobrar en '+CART_MES[mes]+(closer?(' para '+closer):'')+'. 🎉</td></tr></tbody>';return;}
+  const fdate=v=>{const d=v.proxPago;return d?(String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear()):'—';};
+  tb.innerHTML='<thead><tr><th>Cliente</th><th>Correo</th><th>Teléfono</th><th>Closer</th><th>Fecha Próximo Pago</th><th>Valor a Pagar</th></tr></thead><tbody>'+
+    rows.map(v=>`<tr>
+      <td style="font-weight:700">${v.cliente||'—'}</td>
+      <td style="color:var(--muted)">${v.correo||'—'}</td>
+      <td style="color:var(--muted)">${v.telefono||'—'}</td>
+      <td>${v.closer||'—'}</td>
+      <td><b>${fdate(v)}</b></td>
+      <td class="rec">$${fmtCOP(v.debe)}</td></tr>`).join('')+
+    `</tbody><tfoot><tr><td>Total</td><td></td><td></td><td></td><td>${rows.length} clientes</td><td class="rec">$${fmtCOP(total)}</td></tr></tfoot>`;
 }
 
 fetchData();
