@@ -355,7 +355,7 @@ const CLOSERS=[
 const CLOSER_GID="824958696"; // pestaña "KPI´S DIARIOS CLOSER ..."
 const SETTERS=[
   {name:"Natalia Castiblanco", id:"1SnYSXiv-PhGF7hkAPwkOFAZwFYZ0o6i5RMtn9dddFEw"},
-  {name:"Paula Fernández",     id:"1Vofr7NIgx_lynoG1U1o2U3onzraVhcYe_vECEhaEI_4"},
+  {name:"Paula Fernández",     id:"1Vofr7NIgx_lynoG1U1o2U3onzraVhcYe_vECEhaEI_4", split:{from:new Date(2026,6,18), to:"Eduardo"}}, // Paula → Eduardo desde el sáb 18/07/2026 (por fecha del registro, sin tocar el histórico)
   {name:"Carlos Pineda",       id:"1BmVzkCdIK1qvrNL_yNqANuoqUPBhjoAkxGSUszX1-L8"},
 ];
 const SETTER_GID="0"; // pestaña diaria (con el nombre de la persona)
@@ -423,7 +423,7 @@ function isChannelHeader(lab){
   if(low==='objetivos'||lab==='AGENDAS NUEVAS CONSEGUIDAS'||low.startsWith('% agendas')) return false;
   return !SET_PREFIX.some(p=>low.startsWith(p));
 }
-function parseSetter(name, txt){
+function parseSetter(name, txt, cfg){
   const rows=parseCSV(txt);
   if(rows.length<15) return [];
   const hdr=rows[0], ref=refYearOf(hdr);
@@ -461,7 +461,9 @@ function parseSetter(name, txt){
     const conseguidas=num(rTot&&rTot[v]);
     // limpiar canal "CONFIRMACIONES (HOY)" del desglose (no es fuente de agenda)
     delete ch["CONFIRMACIONES (HOY)"];
-    out.push({date:new Date(y,+m[2]-1,+m[1]), who:name, conseguidas, asistidas, ofertadas, cerradas, recaudo, ch,
+    const dd=new Date(y,+m[2]-1,+m[1]);
+    const who=(cfg&&cfg.split&&dd>=cfg.split.from)?cfg.split.to:name; // transición por fecha (Paula→Eduardo), sin relabelear el histórico
+    out.push({date:dd, who, conseguidas, asistidas, ofertadas, cerradas, recaudo, ch,
       programadas:num(rPr&&rPr[v]), confirmadas:num(rCf&&rCf[v]), asistieron:num(rSh&&rSh[v])});
   }
   return out;
@@ -534,7 +536,7 @@ function loadMode(mode){
   return Promise.all(list.map(t=>
     fetch(gvizUrl(t.id,gid),{cache:'no-store'})
       .then(r=>r.ok?r.text():Promise.reject(r.status))
-      .then(txt=>{const recs=parse(t.name,txt); if(!recs.length)FAILED[mode].push(t.name); return recs;})
+      .then(txt=>{const recs=parse(t.name,txt,t); if(!recs.length)FAILED[mode].push(t.name); return recs;})
       .catch(e=>{console.error(mode,t.name,e);FAILED[mode].push(t.name);return [];})
   )).then(all=>{DATA[mode]=all.flat();});
 }
@@ -607,7 +609,10 @@ function applyMode(){
   if(MODE==='closers'||MODE==='setters'){
     document.getElementById('persLbl').textContent = MODE==='closers'?'Closer':'Setter';
     const sel=document.getElementById('pers'); sel.innerHTML='<option value="">Todos</option>';
-    (MODE==='closers'?CLOSERS:SETTERS).forEach(t=>{const o=document.createElement('option');o.value=t.name;o.textContent=t.name;sel.appendChild(o);});
+    let persNames;
+    if(MODE==='closers'){ persNames=CLOSERS.map(t=>t.name); }
+    else { persNames=SETTERS.map(t=>t.name); SETTERS.forEach(t=>{if(t.split&&t.split.to&&!persNames.includes(t.split.to))persNames.push(t.split.to);}); } // incluye Eduardo
+    persNames.forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;sel.appendChild(o);});
     setRange('tri'); document.getElementById('mes').value='';
     setStatus(); render();
   } else if(MODE==='finanzas'){
