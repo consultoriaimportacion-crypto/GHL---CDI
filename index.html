@@ -351,6 +351,7 @@ const CLOSERS=[
   {name:"Yeison Velez",     id:"1HeZqHl-jYPlv3w9IIUUxt_yA0m_9tw7GHvEPuLNHOPw"},
   {name:"Camilo Luque",     id:"1dE5Pj5eBM4tQBmSiRaBi8q7cqUpB_YgbU7lRH72Tx9U"},
   {name:"Wendy Ortiz",      id:"1vCHZ7MsvyZPeMjOwRb4JHgenaNAgmYzd7YKXcG1cvXg"},
+  {name:"Karen Quintero",   id:"17RnJ2-6qwm1DoYndQBvskspNWcGV4NE1K2S0WAEFMYc", since:new Date(2026,7,18)}, // solo cuenta desde el 18/08/2026 (lo anterior de su tracker se ignora)
 ];
 const CLOSER_GID="824958696"; // pestaña "KPI´S DIARIOS CLOSER ..."
 const SETTERS=[
@@ -394,7 +395,7 @@ function refYearOf(hdr){
 }
 
 // ================== PARSER CLOSERS ==================
-function parseCloser(name, txt){
+function parseCloser(name, txt, cfg){
   const rows=parseCSV(txt);
   if(rows.length<19) return [];
   const find=frag=>rows.find(r=>r[0] && r[0].trim()===frag);
@@ -408,7 +409,9 @@ function parseCloser(name, txt){
     if(!m) continue;
     let y=+m[3]; if(y<2000)y=ref;
     const v=c+1;
-    out.push({date:new Date(y,+m[2]-1,+m[1]), who:name,
+    const dd=new Date(y,+m[2]-1,+m[1]);
+    if(cfg&&cfg.since&&dd<cfg.since) continue; // ej. Karen: solo cuenta desde su fecha de inicio
+    out.push({date:dd, who:name,
       agendas:num(rAg&&rAg[v]), asist:num(rAs&&rAs[v]), ofertas:num(rOf&&rOf[v]),
       cieCon:num(rCie&&rCie[v]), cieRes:num(rRes&&rRes[v]), cieSeg:num(rSeg&&rSeg[v]),
       recaudo:num(rRec&&rRec[v]), recaudoObj:num(rRec&&rRec[c])});
