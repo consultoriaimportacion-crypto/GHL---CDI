@@ -127,23 +127,15 @@
   .chbar i{display:block;height:100%;border-radius:99px;width:0;transition:width .9s cubic-bezier(.2,.7,.2,1)}
 
   /* visibilidad por modo */
-  #proyView,#fuentesView,#finanzasView,#carteraView{display:none}
+  #proyView,#fuentesView{display:none}
   #dailyView{display:none}
   body.m-closers #dailyView,body.m-setters #dailyView{display:block}
   body.m-proyeccion #proyView{display:block}
   body.m-fuentes #fuentesView{display:block}
-  body.m-finanzas #finanzasView{display:block}
-  body.m-cartera #carteraView{display:block}
   #proyKpis,#fuKpis{grid-template-columns:1.7fr 1fr 1fr 1fr}
-  .fld.monthly,.fld.cartera{display:none}
-  body.m-proyeccion .fld.daily,body.m-fuentes .fld.daily,body.m-cartera .fld.daily{display:none}
+  .fld.monthly{display:none}
+  body.m-proyeccion .fld.daily,body.m-fuentes .fld.daily{display:none}
   body.m-proyeccion .fld.monthly,body.m-fuentes .fld.monthly{display:flex}
-  body.m-cartera .fld.cartera{display:flex}
-  /* Finanzas (aislado) */
-  .finclick{cursor:pointer;transition:transform .12s}
-  .finclick:hover{transform:translateY(-2px)}
-  #finTbl td.fincell{cursor:pointer} #finTbl td.fincell:hover{color:var(--c3)}
-  #finEstados{margin-bottom:16px}
   .tbl tr.grouprow td{background:linear-gradient(90deg,rgba(255,106,43,.22),rgba(255,46,139,.10));font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;color:#ffd9c4;font-weight:800;padding:10px 12px;text-align:left;border-top:1px solid rgba(255,106,43,.35);border-bottom:1px solid var(--line)}
   .tbl tr.cartera td{color:var(--c3)} .tbl tr.cartera td:first-child{font-weight:800}
   .etapa{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:rgba(255,255,255,.07);color:var(--muted)}
@@ -185,14 +177,14 @@
       </div>
     </div>
     <div class="modeseg" id="modeseg">
-      <button data-m="closers" class="on">Closers</button><button data-m="setters">Setters</button><button data-m="proyeccion">Proyección</button><button data-m="fuentes">Fuentes</button><button data-m="finanzas">Finanzas</button><button data-m="cartera">Cartera</button>
+      <button data-m="closers" class="on">Closers</button><button data-m="setters">Setters</button><button data-m="proyeccion">Proyección</button><button data-m="fuentes">Fuentes</button>
     </div>
   </div>
 
   <div class="controls">
     <div class="fld daily" id="fldRango"><label>Rango rápido</label>
       <div class="seg" id="seg">
-        <button data-r="hoy">Hoy</button><button data-r="ayer">Ayer</button><button data-r="sem">Esta semana</button><button data-r="semant">Semana pasada</button><button data-r="mesact">Este mes</button><button data-r="mespas">Mes pasado</button><button data-r="tri" class="on">Trimestre</button>
+        <button data-r="hoy">Hoy</button><button data-r="ayer">Ayer</button><button data-r="sem">Esta semana</button><button data-r="semant">Semana pasada</button><button data-r="mesact">Este mes</button><button data-r="tri" class="on">Trimestre</button>
       </div>
     </div>
     <div class="fld daily" id="fldMes"><label>Mes</label>
@@ -204,12 +196,6 @@
     <div class="fld daily" id="fldFrom"><label>Desde</label><input type="date" id="from"></div>
     <div class="fld daily" id="fldTo"><label>Hasta</label><input type="date" id="to"></div>
     <div class="fld monthly" id="fldMesSel"><label>Mes</label><select class="sel" id="mesSel"></select></div>
-    <div class="fld cartera" id="fldCartMes"><label>Mes</label>
-      <select class="sel" id="cartMes">
-        <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option><option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option><option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option><option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
-      </select>
-    </div>
-    <div class="fld cartera" id="fldCartCloser"><label>Closer</label><select class="sel" id="cartCloser"></select></div>
     <div class="fld"><label>&nbsp;</label><button class="refbtn" id="refresh" title="Actualizar datos"><i>↻</i></button></div>
   </div>
 
@@ -227,7 +213,7 @@
   </div>
 
   <div class="card" id="confCard">
-    <div class="cthead"><div><h2>Embudo del setter</h2><div class="h2sub">Agendas en calendario → RE-Calificadas → Asistentes a la consultoría → Ofertadas → Cierres</div></div></div>
+    <div class="cthead"><div><h2>Confirmación &amp; show</h2><div class="h2sub">gestión de la agenda del día · el % de asistencia sale de las confirmadas</div></div></div>
     <div id="confStats"></div>
   </div>
 
@@ -303,61 +289,6 @@
     </div>
   </div>
 
-  <div id="finanzasView">
-    <div class="kpis" id="finKpis"></div>
-    <div class="kpis" id="finEstados" style="grid-template-columns:1fr 1fr 1fr 1fr;margin-bottom:16px"></div>
-    <div class="card">
-      <h2>Flujo del dinero — vendido vs. recaudado</h2>
-      <div class="h2sub">Ventas = lo vendido (por fecha de venta) · Recaudo = lo que entró (por fecha de pago) · la diferencia es la cartera · <span style="color:var(--faint)">clic en cualquier tarjeta o celda para ver el detalle</span></div>
-      <div id="finFunnel"></div>
-    </div>
-    <div class="card">
-      <div class="cthead">
-        <div><h2>Comparativo por closer</h2><div class="h2sub" id="finTblSub">clic en una celda para filtrar el detalle</div></div>
-        <button class="refbtn" id="finExport" title="Exportar CSV de lo filtrado" style="width:auto;padding:0 14px;font-size:12.5px;font-weight:700">⤓ CSV</button>
-      </div>
-      <div class="tblwrap"><table class="tbl" id="finTbl" style="min-width:1000px"></table></div>
-    </div>
-    <div class="card" id="finConcilCard">
-      <h2>Conciliación — venta real → recaudo → facturación</h2>
-      <div class="h2sub"><b>Vendido</b> = venta real (sin promesas &lt;20% pagado) · <b>Entró</b> = lo registrado en Sales · <b>Facturado</b> = ya facturado · <b>Falta facturar</b> = en validación/cargue/inconsistencia</div>
-      <div id="finConcilKpis" class="kpis" style="grid-template-columns:repeat(4,1fr);margin:14px 0"></div>
-      <div class="tblwrap"><table class="tbl" id="finConcil" style="min-width:820px"></table></div>
-      <div class="h2sub" id="finConcilNota" style="margin-top:10px"></div>
-    </div>
-    <div class="card" id="finDetailCard" style="display:none">
-      <div class="cthead">
-        <div><h2 id="finDetailTitle">Detalle</h2><div class="h2sub" id="finDetailSub"></div></div>
-        <button class="refbtn" id="finDetailClose" title="Cerrar detalle" style="width:auto;padding:0 14px;font-size:12.5px;font-weight:700">✕ cerrar</button>
-      </div>
-      <div class="tblwrap"><table class="tbl" id="finDetail" style="min-width:1400px"></table></div>
-    </div>
-    <div class="card">
-      <h2>Seguimiento — dinero detenido</h2>
-      <div class="h2sub">clientes con dinero en validación, cargue o inconsistencia · ordenado por más días detenido</div>
-      <div class="tblwrap"><table class="tbl" id="finSeg" style="min-width:720px"></table></div>
-    </div>
-    <div class="card">
-      <div class="cthead">
-        <div><h2>Detalle de ventas — para revisar y compartir</h2><div class="h2sub" id="finVentasDetSub">todas las ventas del periodo · ID, cliente, correo, vendido y pagado · ⚠️ marca promesas (&lt;20% pagado)</div></div>
-        <button class="refbtn" id="finVentasExport" title="Exportar CSV del detalle" style="width:auto;padding:0 14px;font-size:12.5px;font-weight:700">⤓ CSV</button>
-      </div>
-      <div class="tblwrap"><table class="tbl" id="finVentasDet" style="min-width:1120px"></table></div>
-    </div>
-  </div>
-
-  <div id="carteraView">
-    <div class="kpis" style="grid-template-columns:1fr 1fr;max-width:720px">
-      <div class="card"><div class="label">👥 Clientes por Cobrar</div><div class="val" id="cartN">0</div><div class="delta" id="cartNsub"></div></div>
-      <div class="card hero"><div class="label">💰 Valor Total por Cobrar</div><div class="big"><span class="cur">$ </span><span id="cartVal">0</span> <span class="cur">COP</span></div><div class="delta">saldo pendiente del mes</div></div>
-    </div>
-    <div class="card">
-      <h2>Cartera del mes — <span id="cartTitle"></span></h2>
-      <div class="h2sub" id="cartSub">clientes con próximo pago en el mes seleccionado · ordenados por fecha</div>
-      <div class="tblwrap"><table class="tbl" id="cartTbl" style="min-width:900px"></table></div>
-    </div>
-  </div>
-
 <script>
 // ================== CONFIG (links directos, sin depender del consolidado) ==================
 const CLOSERS=[
@@ -365,12 +296,11 @@ const CLOSERS=[
   {name:"Yeison Velez",     id:"1HeZqHl-jYPlv3w9IIUUxt_yA0m_9tw7GHvEPuLNHOPw"},
   {name:"Camilo Luque",     id:"1dE5Pj5eBM4tQBmSiRaBi8q7cqUpB_YgbU7lRH72Tx9U"},
   {name:"Wendy Ortiz",      id:"1vCHZ7MsvyZPeMjOwRb4JHgenaNAgmYzd7YKXcG1cvXg"},
-  {name:"Karen Quintero",   id:"17RnJ2-6qwm1DoYndQBvskspNWcGV4NE1K2S0WAEFMYc", since:new Date(2026,7,18)}, // solo cuenta desde el 18/08/2026 (lo anterior de su tracker se ignora)
 ];
 const CLOSER_GID="824958696"; // pestaña "KPI´S DIARIOS CLOSER ..."
 const SETTERS=[
   {name:"Natalia Castiblanco", id:"1SnYSXiv-PhGF7hkAPwkOFAZwFYZ0o6i5RMtn9dddFEw"},
-  {name:"Paula Fernández",     id:"1Vofr7NIgx_lynoG1U1o2U3onzraVhcYe_vECEhaEI_4", split:{from:new Date(2026,6,18), to:"Eduardo"}}, // Paula → Eduardo desde el sáb 18/07/2026 (por fecha del registro, sin tocar el histórico)
+  {name:"Paula Fernández",     id:"1Vofr7NIgx_lynoG1U1o2U3onzraVhcYe_vECEhaEI_4"},
   {name:"Carlos Pineda",       id:"1BmVzkCdIK1qvrNL_yNqANuoqUPBhjoAkxGSUszX1-L8"},
 ];
 const SETTER_GID="0"; // pestaña diaria (con el nombre de la persona)
@@ -409,7 +339,7 @@ function refYearOf(hdr){
 }
 
 // ================== PARSER CLOSERS ==================
-function parseCloser(name, txt, cfg){
+function parseCloser(name, txt){
   const rows=parseCSV(txt);
   if(rows.length<19) return [];
   const find=frag=>rows.find(r=>r[0] && r[0].trim()===frag);
@@ -423,9 +353,7 @@ function parseCloser(name, txt, cfg){
     if(!m) continue;
     let y=+m[3]; if(y<2000)y=ref;
     const v=c+1;
-    const dd=new Date(y,+m[2]-1,+m[1]);
-    if(cfg&&cfg.since&&dd<cfg.since) continue; // ej. Karen: solo cuenta desde su fecha de inicio
-    out.push({date:dd, who:name,
+    out.push({date:new Date(y,+m[2]-1,+m[1]), who:name,
       agendas:num(rAg&&rAg[v]), asist:num(rAs&&rAs[v]), ofertas:num(rOf&&rOf[v]),
       cieCon:num(rCie&&rCie[v]), cieRes:num(rRes&&rRes[v]), cieSeg:num(rSeg&&rSeg[v]),
       recaudo:num(rRec&&rRec[v]), recaudoObj:num(rRec&&rRec[c])});
@@ -440,7 +368,7 @@ function isChannelHeader(lab){
   if(low==='objetivos'||lab==='AGENDAS NUEVAS CONSEGUIDAS'||low.startsWith('% agendas')) return false;
   return !SET_PREFIX.some(p=>low.startsWith(p));
 }
-function parseSetter(name, txt, cfg){
+function parseSetter(name, txt){
   const rows=parseCSV(txt);
   if(rows.length<15) return [];
   const hdr=rows[0], ref=refYearOf(hdr);
@@ -455,7 +383,6 @@ function parseSetter(name, txt, cfg){
   const rPr=rows.find(r=>r[0]&&r[0].trim()==="Agendas Programadas (24h antes confirmadas)");
   const rCf=rows.find(r=>r[0]&&r[0].trim()==="Agendas confirmadas (mismo dia)");
   const rSh=rows.find(r=>r[0]&&r[0].trim()==="Asistentes a la agenda");
-  const rOfr=rows.find(r=>r[0]&&r[0].trim().toLowerCase().startsWith("agendas asistidas presentaci")); // "Ofertadas" (presentación de oferta)
   const out=[];
   for(let c=0;c<hdr.length;c++){
     const m=String(hdr[c]).trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
@@ -469,9 +396,8 @@ function parseSetter(name, txt, cfg){
       const lab=(rows[i][0]||'').trim(), val=num(rows[i][v]);
       if(!val) continue;
       const chn=rowChan[i], low=lab.toLowerCase();
-      const cd=ch[chn]||(ch[chn]={con:0,conf:0,asi:0,of:0,cer:0,rec:0});
+      const cd=ch[chn]||(ch[chn]={con:0,asi:0,of:0,cer:0,rec:0});
       if(lab==="# agendas conseguidas"||lab==="Agendas") cd.con+=val;
-      if(lab==="# agendas confirmadas") cd.conf+=val; // RE-Calificadas por canal
       if(lab==="# agendas asistidas"){asistidas+=val; cd.asi+=val;}
       if(lab==="# agendas ofertadas"){ofertadas+=val; cd.of+=val;}
       if(lab==="# Agendas cerradas"){cerradas+=val; cd.cer+=val;}
@@ -480,10 +406,8 @@ function parseSetter(name, txt, cfg){
     const conseguidas=num(rTot&&rTot[v]);
     // limpiar canal "CONFIRMACIONES (HOY)" del desglose (no es fuente de agenda)
     delete ch["CONFIRMACIONES (HOY)"];
-    const dd=new Date(y,+m[2]-1,+m[1]);
-    const who=(cfg&&cfg.split&&dd>=cfg.split.from)?cfg.split.to:name; // transición por fecha (Paula→Eduardo), sin relabelear el histórico
-    out.push({date:dd, who, conseguidas, asistidas, ofertadas, cerradas, recaudo, ch,
-      programadas:num(rPr&&rPr[v]), confirmadas:num(rCf&&rCf[v]), asistieron:num(rSh&&rSh[v]), ofrecieron:num(rOfr&&rOfr[v])});
+    out.push({date:new Date(y,+m[2]-1,+m[1]), who:name, conseguidas, asistidas, ofertadas, cerradas, recaudo, ch,
+      programadas:num(rPr&&rPr[v]), confirmadas:num(rCf&&rCf[v]), asistieron:num(rSh&&rSh[v])});
   }
   return out;
 }
@@ -555,7 +479,7 @@ function loadMode(mode){
   return Promise.all(list.map(t=>
     fetch(gvizUrl(t.id,gid),{cache:'no-store'})
       .then(r=>r.ok?r.text():Promise.reject(r.status))
-      .then(txt=>{const recs=parse(t.name,txt,t); if(!recs.length)FAILED[mode].push(t.name); return recs;})
+      .then(txt=>{const recs=parse(t.name,txt); if(!recs.length)FAILED[mode].push(t.name); return recs;})
       .catch(e=>{console.error(mode,t.name,e);FAILED[mode].push(t.name);return [];})
   )).then(all=>{DATA[mode]=all.flat();});
 }
@@ -567,7 +491,7 @@ function loadProyFuentes(){
 }
 function fetchData(){
   const btn=document.getElementById('refresh'); btn.classList.add('spin');
-  return Promise.all([loadMode('closers'),loadMode('setters'),loadProyFuentes(),loadFinanzas()]).then(()=>{
+  return Promise.all([loadMode('closers'),loadMode('setters'),loadProyFuentes()]).then(()=>{
     if(!built){buildFilters();built=true;applyMode();} // SOLO en la carga inicial se fija el filtro por defecto
     else rerenderCurrent();                            // en auto-refrescos: re-dibuja con datos frescos SIN tocar el filtro del usuario
   }).finally(()=>btn.classList.remove('spin'));
@@ -577,8 +501,6 @@ function rerenderCurrent(){
   if(MODE==='closers'||MODE==='setters'){ setStatus(); render(); }
   else if(MODE==='proyeccion'){ renderProy(CUR_MES); }
   else if(MODE==='fuentes'){ renderFuentes(CUR_MES); }
-  else if(MODE==='finanzas'){ renderFinanzas(); }
-  else if(MODE==='cartera'){ renderCartera(); }
 }
 function records(){return DATA[MODE];}
 function setStatus(){
@@ -598,17 +520,6 @@ function buildFilters(){
   ['from','to'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{clearSeg();document.getElementById('mes').value='';render();}));
   document.getElementById('mes').addEventListener('change',e=>{setMonth(e.target.value);render();});
   document.getElementById('mesSel').addEventListener('change',e=>{CUR_MES=e.target.value; if(MODE==='proyeccion')renderProy(CUR_MES); else if(MODE==='fuentes')renderFuentes(CUR_MES);});
-  // Finanzas: clic en tarjeta/celda -> detalle (delegación)
-  document.getElementById('finanzasView').addEventListener('click',e=>{
-    const el=e.target.closest('[data-fin-metric]'); if(!el)return;
-    finDrill(el.dataset.finCloser||'', el.dataset.finMetric);
-  });
-  document.getElementById('finExport').addEventListener('click',finExport);
-  document.getElementById('finVentasExport').addEventListener('click',finVentasExport);
-  document.getElementById('finDetailClose').addEventListener('click',()=>{FIN_DRILL=null;document.getElementById('finDetailCard').style.display='none';});
-  // Cartera: sus dos filtros propios
-  document.getElementById('cartMes').addEventListener('change',renderCartera);
-  document.getElementById('cartCloser').addEventListener('change',renderCartera);
   document.getElementById('seg').addEventListener('click',e=>{
     const b=e.target.closest('button'); if(!b)return;
     setRange(b.dataset.r); document.getElementById('mes').value=''; render();
@@ -629,25 +540,9 @@ function applyMode(){
   if(MODE==='closers'||MODE==='setters'){
     document.getElementById('persLbl').textContent = MODE==='closers'?'Closer':'Setter';
     const sel=document.getElementById('pers'); sel.innerHTML='<option value="">Todos</option>';
-    let persNames;
-    if(MODE==='closers'){ persNames=CLOSERS.map(t=>t.name); }
-    else { persNames=SETTERS.map(t=>t.name); SETTERS.forEach(t=>{if(t.split&&t.split.to&&!persNames.includes(t.split.to))persNames.push(t.split.to);}); } // incluye Eduardo
-    persNames.forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;sel.appendChild(o);});
+    (MODE==='closers'?CLOSERS:SETTERS).forEach(t=>{const o=document.createElement('option');o.value=t.name;o.textContent=t.name;sel.appendChild(o);});
     setRange('tri'); document.getElementById('mes').value='';
     setStatus(); render();
-  } else if(MODE==='finanzas'){
-    document.getElementById('persLbl').textContent='Closer';
-    const sel=document.getElementById('pers'); sel.innerHTML='<option value="">Todos</option>';
-    ((FIN&&FIN.closers)||[]).forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
-    document.getElementById('mes').value=''; FIN_DRILL=null;
-    if(records()&&records().length) setRange('tri'); // DATA.finanzas trae fechas → setRange funciona igual
-    renderFinanzas();
-  } else if(MODE==='cartera'){
-    const sel=document.getElementById('cartCloser'); sel.innerHTML='<option value="">Todos</option>';
-    ((FIN&&FIN.closers)||[]).forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
-    document.getElementById('cartMes').value=String((new Date()).getMonth()+1); // mes actual por defecto
-    document.getElementById('status').className='live'; document.getElementById('statusTxt').textContent=(FIN?'en vivo':'sin acceso')+' · cartera';
-    renderCartera();
   } else {
     const src = MODE==='proyeccion'?PROY:FUENTES;
     const months=(src&&src.months)||[];
@@ -672,8 +567,7 @@ function setRange(r){
   else if(r==='ayer'){const y=new Date(today);y.setDate(y.getDate()-1);from=new Date(y);to=new Date(y);}
   else if(r==='sem'){const d=new Date(today);const dow=(d.getDay()+6)%7;from=new Date(d);from.setDate(d.getDate()-dow);to=new Date(today);}
   else if(r==='semant'){const d=new Date(today);const dow=(d.getDay()+6)%7;const mon=new Date(d);mon.setDate(d.getDate()-dow);to=new Date(mon);to.setDate(mon.getDate()-1);from=new Date(to);from.setDate(to.getDate()-6);} // semana calendario anterior (lun–dom)
-  else if(r==='mesact'){from=new Date(today.getFullYear(),today.getMonth(),1);to=maxD;} // mes calendario actual (basado en la fecha real)
-  else if(r==='mespas'){from=new Date(today.getFullYear(),today.getMonth()-1,1);to=new Date(today.getFullYear(),today.getMonth(),0);} // mes calendario anterior completo (agosto cuando es septiembre)
+  else if(r==='mesact'){from=new Date(maxD.getFullYear(),maxD.getMonth(),1);to=maxD;}
   else if(r==='tri'){from=new Date(maxD.getFullYear(),maxD.getMonth()-2,1);to=maxD;}
   else if(r==='ano'){from=new Date(maxD.getFullYear(),0,1);to=maxD;}
   else {from=new Date(Math.min(...a.map(x=>x.date)));to=maxD;}
@@ -717,7 +611,6 @@ function setKPI(i,label,val,dec,sub,subClass){
 
 // ================== RENDER ==================
 function render(){
-  if(MODE==='finanzas'){ renderFinanzas(); return; } // módulo Finanzas: render aislado (no afecta closers/setters)
   const data=filtered();
   const pTxt=(document.getElementById('pers').value||('todos los '+(MODE==='closers'?'closers':'setters')));
   document.getElementById('tblSub').textContent=pTxt+' · '+document.getElementById('from').value+'  →  '+document.getElementById('to').value;
@@ -771,12 +664,12 @@ function renderClosers(data){
 
 function renderSetters(data){
   const conseguidas=sum(data,'conseguidas'), asistidas=sum(data,'asistidas'), ofertadas=sum(data,'ofertadas'), cerradas=sum(data,'cerradas'), recaudo=sum(data,'recaudo');
-  const programadas=sum(data,'programadas'), confirmadas=sum(data,'confirmadas'), asistieron=sum(data,'asistieron'), ofrecieron=sum(data,'ofrecieron');
+  const programadas=sum(data,'programadas'), confirmadas=sum(data,'confirmadas'), asistieron=sum(data,'asistieron');
   const showPct=confirmadas>0?Math.round(asistieron/confirmadas*100):null;
   setKPI(0,'Recaudo generado',recaudo,0);
-  setKPI(1,'Agendas en calendario',programadas,0,'las que tenías programadas');
-  setKPI(2,'RE-Calificadas',confirmadas,0,pctStr(confirmadas,programadas)+' de las de calendario');
-  setKPI(3,'% Asistencia',showPct===null?0:showPct,0,asistieron+' de '+confirmadas+' re-calificadas');
+  setKPI(1,'Agendas conseguidas',conseguidas,0,'conseguidas por marketing');
+  setKPI(2,'Confirmadas',confirmadas,0,pctStr(confirmadas,programadas)+' de las programadas');
+  setKPI(3,'% Show (asistencia)',showPct===null?0:showPct,0,asistieron+' de '+confirmadas+' confirmadas');
   document.getElementById('kVal3').textContent=showPct===null?'—':showPct+'%';
   setKPI(4,'Cerradas',cerradas,0,pctStr(cerradas,ofertadas)+' de cierre');
   const s3=document.getElementById('kSub3'); s3.className='delta '+(showPct===null?'':(showPct>=70?'up':(showPct>=50?'warn':'down')));
@@ -786,45 +679,39 @@ function renderSetters(data){
 
   // tarjeta Confirmación & Show
   document.getElementById('confStats').innerHTML=`<div class="confrow">
-    <div class="confstat"><div class="confn">${programadas.toLocaleString('es-CO')}</div><div class="conflbl">Agendas en calendario</div></div>
-    <div class="confarrow">${pctStr(confirmadas,programadas)}<span>re-califican</span></div>
-    <div class="confstat"><div class="confn">${confirmadas.toLocaleString('es-CO')}</div><div class="conflbl">RE-Calificadas</div></div>
-    <div class="confarrow big">${showPct===null?'—':showPct+'%'}<span>asisten</span></div>
-    <div class="confstat"><div class="confn">${asistieron.toLocaleString('es-CO')}</div><div class="conflbl">Asistentes a la consultoría</div></div>
-    <div class="confarrow">${pctStr(ofrecieron,asistieron)}<span>ofrecen</span></div>
-    <div class="confstat"><div class="confn">${ofrecieron.toLocaleString('es-CO')}</div><div class="conflbl">Ofertadas</div></div>
-    <div class="confarrow">${pctStr(cerradas,ofrecieron)}<span>cierran</span></div>
-    <div class="confstat"><div class="confn">${cerradas.toLocaleString('es-CO')}</div><div class="conflbl">Cierres</div></div>
+    <div class="confstat"><div class="confn">${programadas.toLocaleString('es-CO')}</div><div class="conflbl">Programadas en calendario</div></div>
+    <div class="confarrow">${pctStr(confirmadas,programadas)}<span>confirman</span></div>
+    <div class="confstat"><div class="confn">${confirmadas.toLocaleString('es-CO')}</div><div class="conflbl">Confirmadas</div></div>
+    <div class="confarrow big">${showPct===null?'—':showPct+'%'}<span>show · asistencia</span></div>
+    <div class="confstat"><div class="confn">${asistieron.toLocaleString('es-CO')}</div><div class="conflbl">Asistieron (show)</div></div>
   </div>`;
 
   document.getElementById('tblTitle').textContent='Comparativo por setter';
-  document.getElementById('thead').innerHTML='<tr><th>Setter</th><th>Agendas en calendario</th><th>RE-Calificadas</th><th>Asistentes</th><th>Ofertadas</th><th>Cerradas</th><th>Recaudo generado</th></tr>';
-  const by={}; data.forEach(r=>{const b=by[r.who]||(by[r.who]={conseguidas:0,ofertadas:0,cerradas:0,recaudo:0,programadas:0,confirmadas:0,asistieron:0,ofrecieron:0});
-    ['conseguidas','ofertadas','cerradas','recaudo','programadas','confirmadas','asistieron','ofrecieron'].forEach(k=>b[k]+=r[k]);});
+  document.getElementById('thead').innerHTML='<tr><th>Setter</th><th>Conseguidas</th><th>Confirmadas</th><th>Show</th><th>% Show</th><th>Cerradas</th><th>% Cierre</th><th>Recaudo generado</th></tr>';
+  const by={}; data.forEach(r=>{const b=by[r.who]||(by[r.who]={conseguidas:0,ofertadas:0,cerradas:0,recaudo:0,programadas:0,confirmadas:0,asistieron:0});
+    ['conseguidas','ofertadas','cerradas','recaudo','programadas','confirmadas','asistieron'].forEach(k=>b[k]+=r[k]);});
   const list=Object.entries(by).map(([n,v])=>({n,...v})).sort((a,b)=>b.recaudo-a.recaudo);
   const tb=document.getElementById('tbody'), tf=document.getElementById('tfoot');
-  if(!list.length){tb.innerHTML='<tr><td colspan="7" class="empty">Sin datos en el periodo.</td></tr>';tf.innerHTML='';renderFunnel([]);renderChannels([]);renderChannelTime([]);return;}
+  if(!list.length){tb.innerHTML='<tr><td colspan="8" class="empty">Sin datos en el periodo.</td></tr>';tf.innerHTML='';renderFunnel([]);renderChannels([]);renderChannelTime([]);return;}
   const clsK=p=>p===null?'':(p>=30?'g':(p<12?'b':'w')), clsS=p=>p===null?'':(p>=70?'g':(p<50?'b':'w'));
   tb.innerHTML=list.map((t,i)=>{
     const ini=t.n.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const pcie=t.ofertadas>0?Math.round(t.cerradas/t.ofertadas*100):null, psh=t.confirmadas>0?Math.round(t.asistieron/t.confirmadas*100):null;
     return `<tr><td><div class="cl"><div class="av" style="background:${grads[i%grads.length]}">${ini}</div><span class="clname">${t.n}</span></div></td>
-      <td>${t.programadas}</td>
-      <td>${t.confirmadas}<span class="sub2">${pctStr(t.confirmadas,t.programadas)} de calend.</span></td>
-      <td>${t.asistieron}<span class="sub2">${pctStr(t.asistieron,t.confirmadas)} asisten</span></td>
-      <td>${t.ofrecieron}<span class="sub2">${pctStr(t.ofrecieron,t.asistieron)} ofrecen</span></td>
-      <td>${t.cerradas}<span class="sub2">${pctStr(t.cerradas,t.ofrecieron)} cierran</span></td>
+      <td>${t.conseguidas}</td>
+      <td>${t.confirmadas}<span class="sub2">${pctStr(t.confirmadas,t.programadas)} de progr.</span></td>
+      <td>${t.asistieron}</td><td><span class="pct ${clsS(psh)}">${psh===null?'—':psh+'%'}</span></td>
+      <td>${t.cerradas}</td><td><span class="pct ${clsK(pcie)}">${pcie===null?'—':pcie+'%'}</span></td>
       <td class="rec">$${fmtCOP(t.recaudo)}</td></tr>`;
   }).join('');
   const T=k=>list.reduce((s,x)=>s+x[k],0);
-  tf.innerHTML=`<tr><td>Total</td>
-    <td>${T('programadas')}</td>
-    <td>${T('confirmadas')}<span class="sub2">${pctStr(T('confirmadas'),T('programadas'))} de calend.</span></td>
-    <td>${T('asistieron')}<span class="sub2">${pctStr(T('asistieron'),T('confirmadas'))} asisten</span></td>
-    <td>${T('ofrecieron')}<span class="sub2">${pctStr(T('ofrecieron'),T('asistieron'))} ofrecen</span></td>
-    <td>${T('cerradas')}<span class="sub2">${pctStr(T('cerradas'),T('ofrecieron'))} cierran</span></td>
-    <td class="rec">$${fmtCOP(T('recaudo'))}</td></tr>`;
+  const tPcie=T('ofertadas')>0?Math.round(T('cerradas')/T('ofertadas')*100):null, tPsh=T('confirmadas')>0?Math.round(T('asistieron')/T('confirmadas')*100):null;
+  tf.innerHTML=`<tr><td>Total</td><td>${T('conseguidas')}</td>
+    <td>${T('confirmadas')}<span class="sub2">${pctStr(T('confirmadas'),T('programadas'))} de progr.</span></td>
+    <td>${T('asistieron')}</td><td>${tPsh===null?'—':tPsh+'%'}</td>
+    <td>${T('cerradas')}</td><td>${tPcie===null?'—':tPcie+'%'}</td><td class="rec">$${fmtCOP(T('recaudo'))}</td></tr>`;
 
-  renderFunnel([{n:'Agendas en calendario',v:programadas,base:null},{n:'RE-Calificadas',v:confirmadas,base:programadas},{n:'Asistentes a la consultoría',v:asistieron,base:confirmadas},{n:'Ofertadas',v:ofrecieron,base:asistieron},{n:'Cerradas',v:cerradas,base:ofrecieron}]);
+  renderFunnel([{n:'Programadas (calendario)',v:programadas,base:null},{n:'Confirmadas',v:confirmadas,base:programadas},{n:'Asistieron (show)',v:asistieron,base:confirmadas},{n:'Cerradas',v:cerradas,base:asistieron}]);
   renderChannels(data); renderChannelTime(data);
 }
 
@@ -844,7 +731,7 @@ function normChannel(name){
 }
 function renderChannels(data){
   const by={};
-  data.forEach(r=>{ if(!r.ch)return; for(const k in r.ch){const key=normChannel(k); const b=by[key]||(by[key]={con:0,conf:0,asi:0,of:0,cer:0,rec:0}); ['con','conf','asi','of','cer','rec'].forEach(m=>b[m]+=r.ch[k][m]||0);} });
+  data.forEach(r=>{ if(!r.ch)return; for(const k in r.ch){const key=normChannel(k); const b=by[key]||(by[key]={con:0,asi:0,of:0,cer:0,rec:0}); ['con','asi','of','cer','rec'].forEach(m=>b[m]+=r.ch[k][m]||0);} });
   const list=Object.entries(by).map(([n,v])=>({n,...v})).filter(x=>x.con||x.cer||x.rec).sort((a,b)=>b.rec-a.rec);
   const el=document.getElementById('channels');
   if(!list.length){el.innerHTML='<div class="empty">Sin datos de canales en el periodo.</div>';return;}
@@ -854,20 +741,20 @@ function renderChannels(data){
     return `<tr>
       <td><div class="cl"><span class="chdot" style="background:${solid[i%solid.length]}"></span><span class="clname">${t.n}</span></div></td>
       <td>${t.con}</td>
-      <td>${t.asi}<span class="sub2">${pctStr(t.asi,t.con)} asisten</span></td>
-      <td>${t.of}<span class="sub2">${pctStr(t.of,t.asi)} ofrecen</span></td>
-      <td>${t.cer}<span class="sub2">${pctStr(t.cer,t.of)} cierran</span></td>
+      <td>${t.asi}<span class="sub2">${pctStr(t.asi,t.con)} asist.</span></td>
+      <td>${t.of}<span class="sub2">${pctStr(t.of,t.asi)} oferta</span></td>
+      <td>${t.cer}</td>
       <td><span class="pct ${clsK(pcie)}">${pcie===null?'—':pcie+'%'}</span></td>
       <td class="rec">$${fmtCOP(t.rec)}</td></tr>`;
   }).join('');
   const T=k=>list.reduce((s,x)=>s+x[k],0), tPcie=T('of')>0?Math.round(T('cer')/T('of')*100):null;
   el.innerHTML=`<div class="tblwrap"><table class="tbl" style="min-width:720px">
-    <thead><tr><th>Canal</th><th>Agendas</th><th>Asistentes</th><th>Ofertadas</th><th>Cerradas</th><th>% Cierre</th><th>Recaudo</th></tr></thead>
+    <thead><tr><th>Canal</th><th>Agendas</th><th>Asistidas</th><th>Ofertadas</th><th>Cerradas</th><th>% Cierre</th><th>Recaudo</th></tr></thead>
     <tbody>${rows}</tbody>
     <tfoot><tr><td>Total</td><td>${T('con')}</td>
-      <td>${T('asi')}<span class="sub2">${pctStr(T('asi'),T('con'))} asisten</span></td>
-      <td>${T('of')}<span class="sub2">${pctStr(T('of'),T('asi'))} ofrecen</span></td>
-      <td>${T('cer')}<span class="sub2">${pctStr(T('cer'),T('of'))} cierran</span></td><td>${tPcie===null?'—':tPcie+'%'}</td><td class="rec">$${fmtCOP(T('rec'))}</td></tr></tfoot>
+      <td>${T('asi')}<span class="sub2">${pctStr(T('asi'),T('con'))} asist.</span></td>
+      <td>${T('of')}<span class="sub2">${pctStr(T('of'),T('asi'))} oferta</span></td>
+      <td>${T('cer')}</td><td>${tPcie===null?'—':tPcie+'%'}</td><td class="rec">$${fmtCOP(T('rec'))}</td></tr></tfoot>
   </table></div>`;
 }
 
@@ -1014,327 +901,6 @@ function renderFuentes(key){
     <div class="furec">$${fmtCOP(x.rec)}</div></div>`).join('');
   requestAnimationFrame(()=>bars.querySelectorAll('.futrack i').forEach(x=>x.style.width=x.dataset.w+'%'));
   document.getElementById('fuChartSub').textContent=mm?('recaudo por fuente · '+mm.label):'';
-}
-
-// ================================================================
-// ============== MÓDULO FINANZAS (100% aislado) ==================
-// ================================================================
-const FIN_ID="15SLCJWLNWUTmMHvedAJPu473IFm2_C2_4fsIcQAJH0Y";
-const FIN_HV_GID="1210165273";  // High Ventas  (1 fila por venta)
-const FIN_SR_GID="443294330";   // Sales Records (1 fila por transacción, con ESTADO)
-let FIN=null;        // {ventas:{ID:{...}}, trans:[...], closers:[...]}
-let FIN_DRILL=null;  // detalle abierto: {closer, metric}
-const finDate=s=>{const m=String(s).match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);return m?new Date(+m[3],+m[2]-1,+m[1]):null;};
-// SOLO estos 5 closers interesan; el resto (Lanzamiento, Michelle, Kenny, Lorena…) se ignora. Une variantes.
-function finCloser(raw){
-  const l=String(raw||'').toLowerCase().replace(/\s+/g,'');
-  if(l.includes('alejandro'))return 'Alejandro Pulido';
-  if(l.includes('camilo'))return 'Camilo Luque';
-  if(l.includes('yeisson')||l.includes('yeison'))return 'Yeison Velez';
-  if(l.includes('wendy'))return 'Wendy Ortiz';
-  if(l.includes('carlosmejia'))return 'Carlos Mejía';
-  if(l.includes('karen'))return 'Karen Quintero';
-  return null; // excluido
-}
-const finMoney=v=>{const d=String(v).split(',')[0].replace(/[^0-9-]/g,'');return d&&d!=='-'?parseInt(d,10):0;};
-function estadoClass(e){const l=String(e||'').toLowerCase();
-  if(l.includes('inconsist'))return 'inconsistencia';
-  if(l.includes('cargue'))return 'cargue';
-  if(l.includes('validaci'))return 'validacion';
-  if(l.includes('factur'))return 'facturado';
-  if(l.includes('devoluc')||l.includes('nota'))return 'devolucion';
-  return 'otro';}
-const FIN_LBL={recaudo:'Recaudo del mes',ventas:'Ventas del mes',cuotas:'Cuotas cobradas',facturado:'Facturado',validacion:'En Proceso de Validación',cargue:'En Proceso de Cargue',inconsistencia:'Inconsistencia',devolucion:'Devoluciones'};
-
-function parseFinanzas(hvTxt, srTxt){
-  const hv=parseCSV(hvTxt), sr=parseCSV(srTxt);
-  const ventas={};
-  for(let i=1;i<hv.length;i++){const r=hv[i]; const id=(r[1]||'').trim(); if(!id.startsWith('VEN'))continue;
-    const cl=finCloser(r[4]); if(!cl)continue; // solo los 5 closers deseados
-    ventas[id]={id, idCli:(r[2]||'').trim(), date:finDate(r[3]), dateStr:(r[3]||'').trim(), closer:cl, setter:(r[5]||'').trim(),
-      cliente:(r[6]||'').trim(), pactado:finMoney(r[11]), cancelado:finMoney(r[15]), debe:finMoney(r[16]),
-      ultimoPago:(r[17]||'').trim(), proxPago:finDate(r[18]), proxPagoStr:(r[18]||'').trim(), descripcion:(r[23]||'').trim(), correo:(r[27]||'').trim()};
-  }
-  const trans=[];
-  for(let i=1;i<sr.length;i++){const r=sr[i]; const id=(r[1]||'').trim(); if(!id.startsWith('VEN'))continue;
-    // Atribuir el pago al closer de la VENTA (cruce por ID con High Ventas). Si la venta no está, usar el nombre del pago.
-    const vRef=ventas[id]; const cl=vRef?vRef.closer:finCloser(r[4]); if(!cl)continue;
-    trans.push({id, estado:(r[0]||'').trim(), idCli:(r[2]||'').trim(), fechaReg:finDate(r[3]), fechaRegStr:(r[3]||'').trim(),
-      fechaPago:finDate(r[10]), fechaPagoStr:(r[10]||'').trim(), // fecha en que ENTRÓ el dinero
-      closer:cl, setter:(r[5]||'').trim(), cliente:(r[6]||'').trim(), valor:finMoney(r[11]), correccion:(r[14]||'').trim()});
-  }
-  // Marcar CUOTAS/ABONOS: 2º pago en adelante de una misma venta (sin importar el mes).
-  // El 1er pago (por fecha de pago) = inicial; los siguientes = cuotas. Las devoluciones no cuentan.
-  const porVenta={};
-  trans.forEach(tr=>{ if(estadoClass(tr.estado)==='devolucion'){tr.esCuota=false;return;} (porVenta[tr.id]||(porVenta[tr.id]=[])).push(tr); });
-  Object.values(porVenta).forEach(arr=>{
-    arr.sort((a,b)=>{
-      const da=a.fechaPago||a.fechaReg, db=b.fechaPago||b.fechaReg;
-      const t=(da&&db)?da-db:(da?-1:(db?1:0)); if(t)return t;
-      const ra=a.fechaReg||0, rb=b.fechaReg||0; return (ra&&rb)?ra-rb:0;
-    });
-    arr.forEach((tr,i)=>{tr.esCuota=i>0;});
-  });
-  const ORDER=['Alejandro Pulido','Camilo Luque','Yeison Velez','Wendy Ortiz','Carlos Mejía','Karen Quintero'];
-  const closers=ORDER.filter(c=>Object.values(ventas).some(v=>v.closer===c));
-  return {ventas, trans, closers};
-}
-function loadFinanzas(){
-  return Promise.all([
-    fetch(gvizUrl(FIN_ID,FIN_HV_GID),{cache:'no-store'}).then(r=>r.ok?r.text():Promise.reject(r.status)),
-    fetch(gvizUrl(FIN_ID,FIN_SR_GID),{cache:'no-store'}).then(r=>r.ok?r.text():Promise.reject(r.status))
-  ]).then(([hv,sr])=>{FIN=parseFinanzas(hv,sr); DATA.finanzas=Object.values(FIN.ventas);})
-    .catch(e=>{console.error('finanzas',e); FIN=null; DATA.finanzas=[];});
-}
-function finStatus(){
-  document.getElementById('status').className='live'+(FIN?'':' err');
-  const t=new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
-  document.getElementById('statusTxt').textContent=(FIN?'en vivo · actualizado '+t:'sin acceso a las hojas de Finanzas')+' · finanzas';
-}
-// transacciones (cuotas/pagos) cuya FECHA DE PAGO cae en el periodo + closer — esto es "lo entrante del mes"
-function finTransPeriodo(){
-  if(!FIN)return [];
-  const f=new Date(document.getElementById('from').value+'T00:00:00'), t=new Date(document.getElementById('to').value+'T23:59:59'), cl=document.getElementById('pers').value;
-  return FIN.trans.filter(tr=>tr.fechaPago&&tr.fechaPago>=f&&tr.fechaPago<=t&&(!cl||tr.closer===cl));
-}
-// ¿es el pago INICIAL de la venta? (true) o una CUOTA/abono, es decir 2º pago en adelante (false)
-function finEsNueva(tr, from){return !tr.esCuota;}
-
-function renderFinanzas(){
-  const kp=document.getElementById('finKpis'), es=document.getElementById('finEstados');
-  if(!FIN){kp.innerHTML='<div class="empty">Sin acceso a las hojas de Finanzas. Verifica que estén compartidas como "Cualquiera con el enlace".</div>';es.innerHTML='';document.getElementById('finTbl').innerHTML='';document.getElementById('finFunnel').innerHTML='';document.getElementById('finSeg').innerHTML='';document.getElementById('finDetailCard').style.display='none';return;}
-  finStatus();
-  const from=new Date(document.getElementById('from').value+'T00:00:00'), to=new Date(document.getElementById('to').value+'T23:59:59'), cl=document.getElementById('pers').value;
-  // VENTAS del mes = lo VENDIDO (por Fecha de Venta, valor pactado) -> "lo que ellos colocan"
-  const ventasMes=Object.values(FIN.ventas).filter(v=>v.date&&v.date>=from&&v.date<=to&&(!cl||v.closer===cl));
-  const ventasTotal=ventasMes.reduce((s,v)=>s+v.pactado,0);
-  // RECAUDO del mes = lo que ENTRÓ (por Fecha de Pago, sin devoluciones)
-  const trans=finTransPeriodo();
-  const inTx=trans.filter(tr=>estadoClass(tr.estado)!=='devolucion');   // dinero que entró
-  const recaudo=inTx.reduce((s,tr)=>s+tr.valor,0);
-  const devol=trans.filter(tr=>estadoClass(tr.estado)==='devolucion').reduce((s,tr)=>s+tr.valor,0);
-  const recCuotas=inTx.filter(tr=>!finEsNueva(tr,from)).reduce((s,tr)=>s+tr.valor,0);
-  const st={facturado:0,validacion:0,cargue:0,inconsistencia:0};
-  inTx.forEach(tr=>{const c=estadoClass(tr.estado); if(st[c]!==undefined)st[c]+=tr.valor;});
-  const card=(metric,label,val,sub,hero,cls)=>`<div class="card${hero?' hero':''} finclick" data-fin-metric="${metric}"><div class="label">${label}</div><div class="${hero?'big':'val'}">$${fmtCOP(val)}</div><div class="delta ${cls||''}">${sub||''}</div></div>`;
-  kp.innerHTML=
-    card('ventas','Ventas del mes',ventasTotal,ventasMes.length+' ventas cerradas · por fecha de venta','','up')+
-    card('recaudo','Recaudo del mes',recaudo,inTx.length+' pagos · lo que entró (fecha de pago)',true)+
-    card('cuotas','Cuotas cobradas',recCuotas,'abonos: 2º pago en adelante de una venta')+
-    card('devolucion','Devoluciones',devol,'notas crédito (dinero que salió)','',devol>0?'down':'')+
-    `<div class="card"><div class="label">% Cobrado del mes</div><div class="val">${ventasTotal>0?Math.round(recaudo/ventasTotal*100):0}%</div><div class="delta up">recaudo ÷ ventas</div></div>`;
-  es.innerHTML=
-    card('facturado','Facturado',st.facturado,'ingresó y facturado','','up')+
-    card('validacion','En Validación',st.validacion,'detenido en validación','','warn')+
-    card('cargue','En Proceso de Cargue',st.cargue,'detenido en cargue','','warn')+
-    card('inconsistencia','Inconsistencia',st.inconsistencia,'requiere corrección','','down');
-  renderFinFunnel([
-    {n:'Ventas del mes (vendido)',v:ventasTotal,base:null},
-    {n:'Recaudo del mes (entró)',v:recaudo,base:ventasTotal},
-    {n:'Facturado',v:st.facturado,base:ventasTotal},
-    {n:'Cuotas cobradas (2º pago +)',v:recCuotas,base:ventasTotal},
-    {n:'Detenido (valid.+cargue+incons.)',v:st.validacion+st.cargue+st.inconsistencia,base:ventasTotal}]);
-  renderFinTable(ventasMes,inTx,from);
-  renderFinConcil();
-  renderFinSeg(trans);
-  renderFinVentasDetalle();
-  renderFinDetail();
-}
-// Detalle de ventas del periodo (ID, cliente, correo) para revisar anomalías y compartir
-function finVentasList(){
-  if(!FIN)return [];
-  const from=new Date(document.getElementById('from').value+'T00:00:00'), to=new Date(document.getElementById('to').value+'T23:59:59'), cl=document.getElementById('pers').value;
-  return Object.values(FIN.ventas).filter(v=>v.date&&v.date>=from&&v.date<=to&&(!cl||v.closer===cl))
-    .sort((a,b)=>(a.closer||'').localeCompare(b.closer||'')||(a.date-b.date));
-}
-function renderFinVentasDetalle(){
-  const tb=document.getElementById('finVentasDet'); if(!tb)return;
-  if(!FIN){tb.innerHTML='';return;}
-  const list=finVentasList();
-  const sub=document.getElementById('finVentasDetSub');
-  if(!list.length){tb.innerHTML='<tbody><tr><td class="empty">Sin ventas en el periodo.</td></tr></tbody>';return;}
-  const pct=v=>v.pactado>0?Math.round(v.cancelado/v.pactado*100):0;
-  const rows=list.map(v=>{const p=pct(v), prom=v.pactado>0&&p<20;
-    return `<tr>
-      <td style="font-family:ui-monospace,monospace;font-size:12px">${v.id}</td>
-      <td style="font-family:ui-monospace,monospace;font-size:12px;color:var(--muted)">${v.idCli||'—'}</td>
-      <td style="font-weight:600">${v.cliente||'—'}</td>
-      <td style="color:var(--muted);font-size:12px">${v.correo||'—'}</td>
-      <td>${v.closer}</td>
-      <td style="color:var(--muted)">${(v.dateStr||'').slice(0,10)||'—'}</td>
-      <td class="rec">$${fmtCOP(v.pactado)}</td>
-      <td>$${fmtCOP(v.cancelado)}</td>
-      <td style="color:${v.debe>0?'var(--bad)':'var(--muted)'}">$${fmtCOP(v.debe)}</td>
-      <td><span class="pct ${prom?'b':(p>=100?'g':'w')}">${p}%${prom?' ⚠️ promesa':''}</span></td></tr>`;}).join('');
-  if(sub)sub.innerHTML=list.length+' ventas · ID venta, ID cliente, nombre, vendido y pagado · <span style="color:var(--bad)">⚠️ marca promesas (&lt;20% pagado)</span> · <span style="color:var(--faint)">(el correo viene vacío: la columna de email en la hoja está rota #REF!)</span>';
-  tb.innerHTML=`<thead><tr><th>ID Venta</th><th>ID Cliente</th><th>Cliente</th><th>Correo</th><th>Closer</th><th>Fecha</th><th>Vendido</th><th>Pagado</th><th>Falta</th><th>% pago</th></tr></thead><tbody>${rows}</tbody>`;
-}
-function finVentasExport(){
-  const list=finVentasList(); if(!list.length)return;
-  const cols=['ID Venta','ID Cliente','Cliente','Correo','Closer','Setter','Fecha Venta','Vendido','Pagado','Falta','% pago','Próximo Pago'];
-  const data=list.map(v=>[v.id,v.idCli,v.cliente,v.correo,v.closer,v.setter,v.dateStr,v.pactado,v.cancelado,v.debe,(v.pactado>0?Math.round(v.cancelado/v.pactado*100):0)+'%',v.proxPagoStr]);
-  const esc=c=>'"'+String(c==null?'':c).replace(/"/g,'""')+'"';
-  const csv=[cols.map(esc).join(',')].concat(data.map(r=>r.map(esc).join(','))).join('\r\n');
-  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
-  const url=URL.createObjectURL(blob), a=document.createElement('a'); a.href=url; a.download='detalle_ventas.csv'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000);
-}
-// Panel de conciliación: cruza High Ventas (vendido/cartera) + Sales Records (recaudado) + trackers de closers (reportado)
-function renderFinConcil(){
-  const el=document.getElementById('finConcil'), kp=document.getElementById('finConcilKpis'), nota=document.getElementById('finConcilNota');
-  if(!el)return;
-  if(!FIN){el.innerHTML='';kp.innerHTML='';return;}
-  const from=new Date(document.getElementById('from').value+'T00:00:00'), to=new Date(document.getElementById('to').value+'T23:59:59'), cl=document.getElementById('pers').value;
-  const by={}, get=c=>by[c]||(by[c]={vendido:0,promesa:0,recaudado:0,facturado:0,faltaFact:0});
-  Object.values(FIN.ventas).forEach(v=>{ if(!v.date||v.date<from||v.date>to||(cl&&v.closer!==cl))return; const b=get(v.closer);
-    const esPromesa=v.pactado>0 && (v.cancelado/v.pactado)<0.20; // reserva casi sin pagar = promesa, no venta real
-    if(esPromesa) b.promesa+=v.pactado; else b.vendido+=v.pactado; });
-  finTransPeriodo().forEach(tr=>{ if(estadoClass(tr.estado)==='devolucion')return; const b=get(tr.closer); b.recaudado+=tr.valor;
-    if(estadoClass(tr.estado)==='facturado') b.facturado+=tr.valor; else b.faltaFact+=tr.valor; });
-  const ORD=['Yeison Velez','Alejandro Pulido','Wendy Ortiz','Karen Quintero','Camilo Luque','Carlos Mejía'];
-  const list=ORD.filter(c=>by[c]).map(c=>({n:c,...by[c]}));
-  if(!list.length){el.innerHTML='<tbody><tr><td class="empty">Sin datos en el periodo.</td></tr></tbody>';kp.innerHTML='';nota.textContent='';return;}
-  const T=k=>list.reduce((s,x)=>s+(x[k]||0),0);
-  const tV=T('vendido'),tR=T('recaudado'),tF=T('facturado'),tFF=T('faltaFact'),tProm=T('promesa');
-  const card=(lbl,val,sub,cls)=>`<div class="card"><div class="label">${lbl}</div><div class="${cls==='hero'?'big':'val'}">$${fmtCOP(val)}</div><div class="delta ${cls==='hero'?'up':(cls||'')}">${sub||''}</div></div>`;
-  kp.innerHTML=
-    card('Vendido real',tV,'venta cerrada · sin promesas')+
-    card('Entró (en Sales)',tR,'registrado · el número real','hero')+
-    card('Facturado',tF,'ya facturado','up')+
-    card('Falta por facturar',tFF,'en validación / cargue','warn');
-  const row=t=>`<tr>
-    <td style="font-weight:700">${t.n}</td>
-    <td>$${fmtCOP(t.vendido)}</td>
-    <td class="rec">$${fmtCOP(t.recaudado)}</td>
-    <td>$${fmtCOP(t.facturado)}</td>
-    <td style="color:${t.faltaFact>0?'var(--warn)':'var(--muted)'}">$${fmtCOP(t.faltaFact)}</td></tr>`;
-  el.innerHTML=`<thead><tr><th>Closer</th><th>Vendido real</th><th>Entró (Sales)</th><th>Facturado</th><th>Falta facturar</th></tr></thead>
-    <tbody>${list.map(row).join('')}</tbody>
-    <tfoot><tr><td>Total</td><td>$${fmtCOP(tV)}</td><td class="rec">$${fmtCOP(tR)}</td><td>$${fmtCOP(tF)}</td><td style="color:var(--warn)">$${fmtCOP(tFF)}</td></tr></tfoot>`;
-  nota.innerHTML='💡 <b>Vendido real</b> excluye promesas (ventas con menos del 20% pagado — reservas casi sin abonar). '+(tProm>0?'En este periodo hay <b style="color:var(--bad)">$'+fmtCOP(tProm)+'</b> en promesas fuera del vendido (ej. las 3 reservas del 31/08 de Alejo). ':'')+'<b>Entró (en Sales)</b> es el recaudo real registrado por tesorería.';
-}
-function renderFinFunnel(stages){
-  const el=document.getElementById('finFunnel'); const max=stages[0].v||1;
-  el.innerHTML=stages.map((s,i)=>`<div class="fstage">
-    <div class="ftop"><span class="fname">${s.n}</span>
-      <span class="fval">$${fmtCOP(s.v||0)}${s.base!==null?`<span class="fpct">${s.base>0?Math.round((s.v||0)/s.base*100):0}% del vendido</span>`:''}</span></div>
-    <div class="fbar"><i data-w="${Math.max(2,Math.round((s.v||0)/max*100))}" style="background:${grads[i%grads.length]}"></i></div></div>`).join('');
-  requestAnimationFrame(()=>el.querySelectorAll('.fbar i').forEach(x=>x.style.width=x.dataset.w+'%'));
-}
-function renderFinTable(ventasMes,inTx,from){
-  const by={}, get=cl=>by[cl]||(by[cl]={ventas:0,recaudo:0,cuotas:0,facturado:0,validacion:0,cargue:0,inconsistencia:0});
-  ventasMes.forEach(v=>{get(v.closer).ventas+=v.pactado;});
-  inTx.forEach(tr=>{const b=get(tr.closer); b.recaudo+=tr.valor; if(!finEsNueva(tr,from))b.cuotas+=tr.valor;
-    const c=estadoClass(tr.estado); if(b[c]!==undefined)b[c]+=tr.valor;});
-  const list=Object.entries(by).map(([n,v])=>({n,...v})).sort((a,b)=>b.ventas-a.ventas);
-  const tb=document.getElementById('finTbl');
-  if(!list.length){tb.innerHTML='<tbody><tr><td class="empty">Sin datos en el periodo seleccionado.</td></tr></tbody>';return;}
-  const cell=(cl,metric,val)=>`<td class="fincell finclick" data-fin-closer="${cl}" data-fin-metric="${metric}">$${fmtCOP(val)}</td>`;
-  const body=list.map((t,i)=>{const ini=t.n.split(/(?=[A-Z])| /).map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    return `<tr>
-      <td><div class="cl"><div class="av" style="background:${grads[i%grads.length]}">${ini}</div><span class="clname">${t.n}</span></div></td>
-      ${cell(t.n,'ventas',t.ventas)}${cell(t.n,'recaudo',t.recaudo)}${cell(t.n,'cuotas',t.cuotas)}
-      ${cell(t.n,'facturado',t.facturado)}${cell(t.n,'validacion',t.validacion)}${cell(t.n,'cargue',t.cargue)}${cell(t.n,'inconsistencia',t.inconsistencia)}</tr>`;}).join('');
-  const T=k=>list.reduce((s,x)=>s+x[k],0);
-  tb.innerHTML=`<thead><tr><th>Closer</th><th>Ventas del mes</th><th>Recaudo del mes</th><th>Cuotas</th><th>Facturado</th><th>Validación</th><th>Proc. Cargue</th><th>Inconsist.</th></tr></thead>
-    <tbody>${body}</tbody>
-    <tfoot><tr><td>Total</td><td class="rec">$${fmtCOP(T('ventas'))}</td><td class="rec">$${fmtCOP(T('recaudo'))}</td><td>$${fmtCOP(T('cuotas'))}</td><td>$${fmtCOP(T('facturado'))}</td><td>$${fmtCOP(T('validacion'))}</td><td>$${fmtCOP(T('cargue'))}</td><td>$${fmtCOP(T('inconsistencia'))}</td></tr></tfoot>`;
-}
-function renderFinSeg(trans){
-  const today=new Date();
-  const stuck=trans.filter(tr=>['validacion','cargue','inconsistencia'].includes(estadoClass(tr.estado)))
-    .map(tr=>({cliente:tr.cliente,closer:tr.closer,estado:tr.estado,dias:tr.fechaPago?Math.max(0,Math.floor((today-tr.fechaPago)/864e5)):null,comentario:tr.correccion,valor:tr.valor}))
-    .sort((a,b)=>(b.dias||0)-(a.dias||0));
-  const tb=document.getElementById('finSeg');
-  if(!stuck.length){tb.innerHTML='<tbody><tr><td class="empty">No hay dinero detenido en el periodo. 🎉</td></tr></tbody>';return;}
-  const badge=e=>{const c=estadoClass(e);return `<span class="pct ${c==='inconsistencia'?'b':'w'}">${e}</span>`;};
-  tb.innerHTML=`<thead><tr><th>Cliente</th><th>Closer</th><th>Estado</th><th>Valor</th><th>Días detenido</th><th>Comentario</th></tr></thead><tbody>`+
-    stuck.slice(0,80).map(s=>`<tr><td style="font-weight:700">${s.cliente||'—'}</td><td>${s.closer||'—'}</td><td>${badge(s.estado)}</td><td class="rec">$${fmtCOP(s.valor)}</td><td><b>${s.dias===null?'—':s.dias+' días'}</b></td><td style="max-width:280px;white-space:normal;color:var(--muted)">${s.comentario||'—'}</td></tr>`).join('')+`</tbody>`;
-}
-function finDrill(closer, metric){ FIN_DRILL={closer:closer||'', metric}; renderFinDetail(); document.getElementById('finDetailCard').scrollIntoView({behavior:'smooth',block:'start'}); }
-// devuelve las transacciones del detalle según la tarjeta/celda clicada
-function finDetailTrans(){
-  if(!FIN||!FIN_DRILL)return [];
-  const {closer,metric}=FIN_DRILL;
-  const from=new Date(document.getElementById('from').value+'T00:00:00'), to=new Date(document.getElementById('to').value+'T23:59:59');
-  // 'ventas' = ventas cerradas en el periodo (por fecha de venta), no transacciones
-  if(metric==='ventas'){
-    return Object.values(FIN.ventas).filter(v=>v.date&&v.date>=from&&v.date<=to&&(!closer||v.closer===closer))
-      .sort((a,b)=>b.pactado-a.pactado).map(v=>({tr:null, v, nueva:true}));
-  }
-  let tx=finTransPeriodo().filter(tr=>!closer||tr.closer===closer);
-  if(metric==='recaudo') tx=tx.filter(tr=>estadoClass(tr.estado)!=='devolucion');          // lo que entró (sin devoluciones)
-  else if(metric==='cuotas') tx=tx.filter(tr=>estadoClass(tr.estado)!=='devolucion'&&!finEsNueva(tr,from));
-  else if(['facturado','validacion','cargue','inconsistencia','devolucion'].includes(metric)) tx=tx.filter(tr=>estadoClass(tr.estado)===metric);
-  return tx.map(tr=>({tr, v:FIN.ventas[tr.id]||{}, nueva:finEsNueva(tr,from)}));
-}
-const FIN_DET_COLS=['ID Venta','ID Cliente','Cliente','Correo','Closer','Setter','Fecha Venta','Fecha Pago','Valor (esta transacción)','Tipo','Estado','Comentario','Pactado (venta)','Cancelado (venta)','Pendiente (venta)'];
-function finDetailData(){
-  return finDetailTrans().map(({tr,v,nueva})=>[
-    (tr?tr.id:v.id)||'', v.idCli||(tr&&tr.idCli)||'', v.cliente||(tr&&tr.cliente)||'', v.correo||'', (tr?tr.closer:v.closer)||'', (tr?tr.setter:v.setter)||v.setter||'',
-    v.dateStr||'', tr?tr.fechaPagoStr:'—', tr?tr.valor:(v.pactado||0), tr?(nueva?'Pago inicial':'Cuota / abono'):'Venta (pactado)', tr?tr.estado:'—', tr?tr.correccion:'',
-    v.pactado||0, v.cancelado||0, v.debe||0
-  ]);
-}
-function renderFinDetail(){
-  const cardEl=document.getElementById('finDetailCard');
-  if(!FIN_DRILL||!FIN){cardEl.style.display='none';return;}
-  const rows=finDetailData();
-  document.getElementById('finDetailTitle').textContent='Detalle · '+FIN_LBL[FIN_DRILL.metric];
-  document.getElementById('finDetailSub').textContent=(FIN_DRILL.closer?FIN_DRILL.closer+' · ':'todos los closers · ')+rows.length+(FIN_DRILL.metric==='ventas'?' ventas':' registros');
-  const money=new Set([8,12,13,14]);
-  const tb=document.getElementById('finDetail');
-  if(!rows.length){tb.innerHTML='<tbody><tr><td class="empty">Sin transacciones para este filtro.</td></tr></tbody>';cardEl.style.display='block';return;}
-  tb.innerHTML=`<thead><tr>${FIN_DET_COLS.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>`+
-    rows.map(r=>`<tr>${r.map((c,j)=>`<td>${money.has(j)?'$'+fmtCOP(c):(c||'—')}</td>`).join('')}</tr>`).join('')+`</tbody>`;
-  cardEl.style.display='block';
-}
-function finExport(){
-  const openDetail=FIN_DRILL&&document.getElementById('finDetailCard').style.display!=='none';
-  let cols, data, name;
-  if(openDetail){ cols=FIN_DET_COLS; data=finDetailData(); name='finanzas_'+FIN_DRILL.metric+(FIN_DRILL.closer?'_'+FIN_DRILL.closer:'')+'.csv'; }
-  else { // exportar todas las transacciones (recaudo) del periodo filtrado
-    const from=new Date(document.getElementById('from').value+'T00:00:00');
-    cols=['ID Venta','Cliente','Closer','Setter','Fecha Venta','Fecha Pago','Valor','Tipo','Estado'];
-    data=finTransPeriodo().map(tr=>{const v=FIN.ventas[tr.id]||{}; return [tr.id,v.cliente||tr.cliente,tr.closer,tr.setter,v.dateStr||'',tr.fechaPagoStr,tr.valor,finEsNueva(tr,from)?'Venta nueva':'Cuota',tr.estado];});
-    name='finanzas_recaudo_mes.csv';
-  }
-  const esc=c=>'"'+String(c).replace(/"/g,'""')+'"';
-  const csv=[cols.map(esc).join(',')].concat(data.map(r=>r.map(esc).join(','))).join('\r\n');
-  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
-  const url=URL.createObjectURL(blob), a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000);
-}
-
-// ================================================================
-// ============== MÓDULO CARTERA (100% aislado) ===================
-// Reutiliza FIN.ventas (hoja High Ventas ya cargada). Sin nueva conexión.
-// ================================================================
-const CART_MES=['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-function renderCartera(){
-  const tb=document.getElementById('cartTbl');
-  const mes=+(document.getElementById('cartMes').value||((new Date()).getMonth()+1));
-  const closer=document.getElementById('cartCloser').value;
-  document.getElementById('cartTitle').textContent=CART_MES[mes]+(closer?(' · '+closer):'');
-  if(!FIN){document.getElementById('cartN').textContent='0';document.getElementById('cartVal').textContent='0';tb.innerHTML='<tbody><tr><td class="empty">Sin acceso a High Ventas.</td></tr></tbody>';return;}
-  // clientes cuyo PRÓXIMO PAGO cae en el mes elegido, que aún deben, del closer elegido
-  const rows=Object.values(FIN.ventas)
-    .filter(v=>v.proxPago&&(v.proxPago.getMonth()+1)===mes&&v.debe>0&&(!closer||v.closer===closer))
-    .sort((a,b)=>a.proxPago-b.proxPago);
-  const total=rows.reduce((s,v)=>s+v.debe,0);
-  document.getElementById('cartN').textContent=rows.length.toLocaleString('es-CO');
-  document.getElementById('cartNsub').textContent='en '+CART_MES[mes];
-  document.getElementById('cartVal').textContent=fmtCOP(total);
-  document.getElementById('cartSub').textContent=rows.length+' clientes con próximo pago en '+CART_MES[mes]+(closer?(' · '+closer):' · todos los closers');
-  if(!rows.length){tb.innerHTML='<tbody><tr><td class="empty">No hay clientes por cobrar en '+CART_MES[mes]+(closer?(' para '+closer):'')+'. 🎉</td></tr></tbody>';return;}
-  const fdate=v=>{const d=v.proxPago;return d?(String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear()):'—';};
-  tb.innerHTML='<thead><tr><th>Cliente</th><th>Correo</th><th>Teléfono</th><th>Closer</th><th>Fecha Próximo Pago</th><th>Valor a Pagar</th></tr></thead><tbody>'+
-    rows.map(v=>`<tr>
-      <td style="font-weight:700">${v.cliente||'—'}</td>
-      <td style="color:var(--muted)">${v.correo||'—'}</td>
-      <td style="color:var(--muted)">${v.telefono||'—'}</td>
-      <td>${v.closer||'—'}</td>
-      <td><b>${fdate(v)}</b></td>
-      <td class="rec">$${fmtCOP(v.debe)}</td></tr>`).join('')+
-    `</tbody><tfoot><tr><td>Total</td><td></td><td></td><td></td><td>${rows.length} clientes</td><td class="rec">$${fmtCOP(total)}</td></tr></tfoot>`;
 }
 
 fetchData();
