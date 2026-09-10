@@ -127,16 +127,24 @@
   .chbar i{display:block;height:100%;border-radius:99px;width:0;transition:width .9s cubic-bezier(.2,.7,.2,1)}
 
   /* visibilidad por modo */
-  #proyView,#fuentesView,#finanzasView,#carteraView{display:none}
+  #proyView,#fuentesView,#finanzasView,#carteraView,#agendasView{display:none}
   #dailyView{display:none}
   body.m-closers #dailyView,body.m-setters #dailyView{display:block}
   body.m-proyeccion #proyView{display:block}
   body.m-fuentes #fuentesView{display:block}
   body.m-finanzas #finanzasView{display:block}
   body.m-cartera #carteraView{display:block}
+  body.m-agendas #agendasView{display:block}
   #proyKpis,#fuKpis{grid-template-columns:1.7fr 1fr 1fr 1fr}
   .fld.monthly,.fld.cartera{display:none}
-  body.m-proyeccion .fld.daily,body.m-fuentes .fld.daily,body.m-cartera .fld.daily{display:none}
+  body.m-proyeccion .fld.daily,body.m-fuentes .fld.daily,body.m-cartera .fld.daily,body.m-agendas .fld.daily{display:none}
+  body.m-agendas #seg,body.m-agendas #rangoLbl{display:none}
+  /* Agendas (aislado) */
+  .agfilt{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;margin-top:12px}
+  .agpill{font-weight:800;font-size:11px;padding:3px 9px;border-radius:99px;white-space:nowrap}
+  .agpill.ok{color:var(--good);background:rgba(47,224,138,.13)}
+  .agpill.bad{color:var(--bad);background:rgba(255,90,90,.13)}
+  .agpill.warn{color:var(--warn);background:rgba(255,176,32,.13)}
   body.m-proyeccion .fld.monthly,body.m-fuentes .fld.monthly{display:flex}
   body.m-cartera .fld.cartera{display:flex}
   /* Finanzas (aislado) */
@@ -185,7 +193,7 @@
       </div>
     </div>
     <div class="modeseg" id="modeseg">
-      <button data-m="closers" class="on">Closers</button><button data-m="setters">Setters</button><button data-m="proyeccion">Proyección</button><button data-m="fuentes">Fuentes</button><button data-m="finanzas">Finanzas</button><button data-m="cartera">Cartera</button>
+      <button data-m="closers" class="on">Closers</button><button data-m="setters">Setters</button><button data-m="proyeccion">Proyección</button><button data-m="fuentes">Fuentes</button><button data-m="finanzas">Finanzas</button><button data-m="cartera">Cartera</button><button data-m="agendas">Agendas</button>
     </div>
   </div>
 
@@ -358,6 +366,39 @@
     </div>
   </div>
 
+  <div id="agendasView">
+    <div class="card" style="margin-bottom:16px">
+      <div class="lbl" style="margin-bottom:7px">CUÁNDO</div>
+      <div class="seg" id="agSeg">
+        <button data-r="hoy">Hoy</button><button data-r="manana" class="on">Mañana</button><button data-r="sem">Próximos 7 días</button><button data-r="prox">De hoy en adelante</button><button data-r="todas">Todas</button>
+      </div>
+      <div class="agfilt">
+        <div class="fld"><label>Desde</label><input type="date" id="agDesde" autocomplete="off"></div>
+        <div class="fld"><label>Hasta</label><input type="date" id="agHasta" autocomplete="off"></div>
+        <div class="fld"><label>Setter</label><select class="sel" id="agSetter"></select></div>
+        <div class="fld"><label>Embudo</label><select class="sel" id="agEmbudo"></select></div>
+        <div class="fld"><label>Estado</label><select class="sel" id="agEstado"></select></div>
+        <div class="fld"><label>Etapa</label><select class="sel" id="agEtapa"></select></div>
+      </div>
+    </div>
+
+    <div class="kpis" id="agKpis" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px"></div>
+
+    <div class="card">
+      <h2>Agendas por setter y embudo</h2>
+      <div class="h2sub" id="agResSub">cuántas agendas tiene cada setter en cada embudo</div>
+      <div class="tblwrap"><table class="tbl" id="agResumen" style="min-width:620px"></table></div>
+    </div>
+
+    <div class="card">
+      <div class="cthead">
+        <div><h2>Detalle de agendas</h2><div class="h2sub" id="agDetSub"></div></div>
+        <button class="refbtn" id="agExport" title="Exportar CSV" style="width:auto;padding:0 14px;font-size:12.5px;font-weight:700">⤓ CSV</button>
+      </div>
+      <div class="tblwrap"><table class="tbl" id="agTbl" style="min-width:1180px"></table></div>
+    </div>
+  </div>
+
 <script>
 // ================== CONFIG (links directos, sin depender del consolidado) ==================
 const CLOSERS=[
@@ -379,6 +420,10 @@ const PROY_ID="12HorM0a3qzyZdvsucqV_15sSLZ6WgRJrNz6U5NquTrg";
 const PROY_GID="1662874272";   // "KPI's MENSUALES"
 const FUENTE_GID="1228658850"; // "Ventas por fuente"
 let PROY=null, FUENTES=null, CUR_MES=null;
+/* ===== MÓDULO AGENDAS (GoHighLevel) — 100% aislado ===== */
+const AG_ID="1ZbU8gUJMLBvtd_Z1RvpPf4FoC4cpF7YDGVSMvNjEhkA"; // hoja que llena el puente GHL
+const AG_GID="541961051";                                   // pestaña "GHL Agendas"
+let AGENDAS=null, AG_RANGO='manana', AG_DIA=null, AG_MES=null;
 const MESNAME=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const moneyNum=v=>{const d=String(v).split(',')[0].replace(/[^0-9-]/g,''); return d&&d!=='-'?parseInt(d,10):0;};
 const ratioNum=v=>{const n=parseFloat(String(v).replace(/[^0-9,.-]/g,'').replace(',','.')); return isNaN(n)?0:n;};
@@ -567,7 +612,7 @@ function loadProyFuentes(){
 }
 function fetchData(){
   const btn=document.getElementById('refresh'); btn.classList.add('spin');
-  return Promise.all([loadMode('closers'),loadMode('setters'),loadProyFuentes(),loadFinanzas()]).then(()=>{
+  return Promise.all([loadMode('closers'),loadMode('setters'),loadProyFuentes(),loadFinanzas(),loadAgendas()]).then(()=>{
     if(!built){buildFilters();built=true;applyMode();} // SOLO en la carga inicial se fija el filtro por defecto
     else rerenderCurrent();                            // en auto-refrescos: re-dibuja con datos frescos SIN tocar el filtro del usuario
   }).finally(()=>btn.classList.remove('spin'));
@@ -579,6 +624,7 @@ function rerenderCurrent(){
   else if(MODE==='fuentes'){ renderFuentes(CUR_MES); }
   else if(MODE==='finanzas'){ renderFinanzas(); }
   else if(MODE==='cartera'){ renderCartera(); }
+  else if(MODE==='agendas'){ agLlenaSelects(); renderAgendas(); }
 }
 function records(){return DATA[MODE];}
 function setStatus(){
@@ -642,6 +688,13 @@ function applyMode(){
     document.getElementById('mes').value=''; FIN_DRILL=null;
     if(records()&&records().length) setRange('tri'); // DATA.finanzas trae fechas → setRange funciona igual
     renderFinanzas();
+  } else if(MODE==='agendas'){
+    agLlenaSelects();
+    ['agSetter','agEmbudo','agEstado','agEtapa'].forEach(id=>{const e=document.getElementById(id); if(e)e.value='';});
+    AG_RANGO='manana'; agSetRango('manana');
+    const sg=document.getElementById('agSeg');
+    if(sg){sg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.r==='manana'));}
+    renderAgendas();
   } else if(MODE==='cartera'){
     const sel=document.getElementById('cartCloser'); sel.innerHTML='<option value="">Todos</option>';
     ((FIN&&FIN.closers)||[]).forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
@@ -718,6 +771,7 @@ function setKPI(i,label,val,dec,sub,subClass){
 // ================== RENDER ==================
 function render(){
   if(MODE==='finanzas'){ renderFinanzas(); return; } // módulo Finanzas: render aislado (no afecta closers/setters)
+  if(MODE==='agendas'){ renderAgendas(); return; }   // módulo Agendas (GHL): render aislado
   const data=filtered();
   const pTxt=(document.getElementById('pers').value||('todos los '+(MODE==='closers'?'closers':'setters')));
   document.getElementById('tblSub').textContent=pTxt+' · '+document.getElementById('from').value+'  →  '+document.getElementById('to').value;
@@ -1336,6 +1390,163 @@ function renderCartera(){
       <td class="rec">$${fmtCOP(v.debe)}</td></tr>`).join('')+
     `</tbody><tfoot><tr><td>Total</td><td></td><td></td><td></td><td>${rows.length} clientes</td><td class="rec">$${fmtCOP(total)}</td></tr></tfoot>`;
 }
+
+// ================================================================
+// ============= MÓDULO AGENDAS · GHL (100% aislado) ==============
+// ================================================================
+function parseAgendas(txt){
+  const rows=parseCSV(txt); if(rows.length<2) return [];
+  const out=[];
+  for(let i=1;i<rows.length;i++){
+    const r=rows[i]; const iso=(r[12]||'').trim();
+    if(!iso) continue;
+    out.push({
+      fecha:(r[0]||'').trim(), hora:(r[1]||'').trim(), cliente:(r[2]||'').trim(),
+      tel:(r[3]||'').trim(), correo:(r[4]||'').trim(), setter:(r[5]||'').trim(),
+      consultor:(r[6]||'').trim(), embudo:(r[7]||'').trim(), etapa:(r[8]||'').trim(),
+      estado:(r[9]||'').trim(), calendario:(r[10]||'').trim(), fuente:(r[11]||'').trim(), iso:iso
+    });
+  }
+  return out;
+}
+function loadAgendas(){
+  return fetch(gvizUrl(AG_ID,AG_GID),{cache:'no-store'})
+    .then(r=>r.ok?r.text():Promise.reject(r.status))
+    .then(t=>{AGENDAS=parseAgendas(t);})
+    .catch(e=>{console.error('agendas',e); AGENDAS=null;});
+}
+const agHoyISO=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+const agSumaISO=n=>{const d=new Date();d.setDate(d.getDate()+n);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+const AG_MESNOM=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const AG_DIANOM=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+function agMinISO(){const l=(AGENDAS||[]).map(a=>a.iso).filter(Boolean).sort();return l[0]||agHoyISO();}
+function agMaxISO(){const l=(AGENDAS||[]).map(a=>a.iso).filter(Boolean).sort();return l[l.length-1]||agHoyISO();}
+// los botones rápidos solo LLENAN los campos Desde/Hasta
+function agSetRango(r){
+  const hoy=agHoyISO(); let d=hoy, h=hoy;
+  if(r==='manana'){ d=h=agSumaISO(1); }
+  else if(r==='sem'){ d=hoy; h=agSumaISO(7); }
+  else if(r==='prox'){ d=hoy; h=agMaxISO(); }
+  else if(r==='todas'){ d=agMinISO(); h=agMaxISO(); }
+  const D=document.getElementById('agDesde'), H=document.getElementById('agHasta');
+  if(D)D.value=d; if(H)H.value=h;
+}
+// el filtro SIEMPRE se lee de los campos Desde/Hasta
+function agPorRango(list){
+  const D=document.getElementById('agDesde'), H=document.getElementById('agHasta');
+  const d=D?D.value:'', h=H?H.value:'';
+  if(!d&&!h) return list;
+  return list.filter(a=>(!d||a.iso>=d)&&(!h||a.iso<=h));
+}
+function agFechaLarga(iso){const p=iso.split('-'),dd=new Date(+p[0],+p[1]-1,+p[2]);
+  return AG_DIANOM[dd.getDay()]+' '+(+p[2])+' de '+AG_MESNOM[+p[1]-1].toLowerCase();}
+function agFechaCorta(iso){const p=iso.split('-');return (+p[2])+' '+AG_MESNOM[+p[1]-1].slice(0,3).toLowerCase();}
+function agEtiqueta(){
+  const D=document.getElementById('agDesde'), H=document.getElementById('agHasta');
+  const d=D?D.value:'', h=H?H.value:'';
+  if(d&&h&&d===h) return agFechaLarga(d);
+  if(d&&h) return 'del '+agFechaCorta(d)+' al '+agFechaCorta(h);
+  if(d) return 'desde '+agFechaCorta(d);
+  if(h) return 'hasta '+agFechaCorta(h);
+  return 'todas las fechas';
+}
+// aplica también los 4 selects
+function agFiltradas(){
+  if(!AGENDAS) return [];
+  const v=id=>{const e=document.getElementById(id);return e?e.value:'';};
+  const s=v('agSetter'), em=v('agEmbudo'), es=v('agEstado'), et=v('agEtapa');
+  return agPorRango(AGENDAS).filter(a=>
+    (!s||a.setter===s)&&(!em||a.embudo===em)&&(!es||a.estado===es)&&(!et||a.etapa===et)
+  ).sort((a,b)=>(a.iso+a.hora).localeCompare(b.iso+b.hora));
+}
+function agLlenaSelects(){
+  const set=(id,vals,lbl)=>{const e=document.getElementById(id); if(!e)return; const prev=e.value;
+    e.innerHTML='<option value="">'+lbl+'</option>'+vals.map(x=>`<option value="${x}">${x}</option>`).join('');
+    if(vals.includes(prev)) e.value=prev;};
+  const uniq=k=>[...new Set((AGENDAS||[]).map(a=>a[k]).filter(Boolean))].sort();
+  set('agSetter',uniq('setter'),'Todos');
+  set('agEmbudo',uniq('embudo'),'Todos');
+  set('agEstado',uniq('estado'),'Todos');
+  set('agEtapa', uniq('etapa'), 'Todas');
+}
+function renderAgendas(){
+  const kp=document.getElementById('agKpis'); if(!kp) return;
+  document.getElementById('status').className='live'+(AGENDAS?'':' err');
+  document.getElementById('statusTxt').textContent=(AGENDAS?'en vivo · '+new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}):'sin acceso a la hoja de GHL')+' · agendas';
+  if(!AGENDAS){kp.innerHTML='<div class="empty">Sin acceso a la hoja de Agendas (GHL). Verifica que esté compartida como "Cualquiera con el enlace".</div>';
+    ['agResumen','agTbl'].forEach(i=>{const e=document.getElementById(i); if(e)e.innerHTML='';}); return;}
+
+  const list=agFiltradas();
+  const conf=list.filter(a=>/confirm/i.test(a.estado)).length;
+  const canc=list.filter(a=>/cancel/i.test(a.estado)).length;
+  const setters=new Set(list.map(a=>a.setter).filter(Boolean)).size;
+  const etiq=agEtiqueta();
+  kp.innerHTML=
+    `<div class="card hero"><div class="label">Agendas ${etiq}</div><div class="big">${list.length}</div><div class="delta up">citas en el filtro</div></div>`+
+    `<div class="card"><div class="label">Confirmadas</div><div class="val">${conf}</div><div class="delta up">${list.length?Math.round(conf/list.length*100):0}% del total</div></div>`+
+    `<div class="card"><div class="label">Canceladas</div><div class="val">${canc}</div><div class="delta down">${list.length?Math.round(canc/list.length*100):0}% del total</div></div>`+
+    `<div class="card"><div class="label">Setters con agenda</div><div class="val">${setters}</div><div class="delta">personas activas</div></div>`;
+
+  // ---- Resumen: setter x embudo ----
+  const embudos=[...new Set((AGENDAS||[]).map(a=>a.embudo).filter(Boolean))].sort();
+  const by={};
+  list.forEach(a=>{const k=a.setter||'(sin setter)'; const b=by[k]||(by[k]={tot:0}); b.tot++; b[a.embudo]=(b[a.embudo]||0)+1;});
+  const filas=Object.entries(by).map(([n,v])=>({n,...v})).sort((a,b)=>b.tot-a.tot);
+  const rt=document.getElementById('agResumen');
+  document.getElementById('agResSub').textContent=`${etiq} · ${list.length} agendas · ${filas.length} setters`;
+  if(!filas.length){rt.innerHTML='<tbody><tr><td class="empty">Sin agendas para este filtro.</td></tr></tbody>';}
+  else{
+    const T=k=>filas.reduce((s,x)=>s+(x[k]||0),0);
+    rt.innerHTML=`<thead><tr><th>Setter</th>${embudos.map(e=>`<th>${e}</th>`).join('')}<th>Total</th></tr></thead>`+
+      `<tbody>${filas.map((t,i)=>{const ini=t.n.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+        return `<tr><td><div class="cl"><div class="av" style="background:${grads[i%grads.length]}">${ini}</div><span class="clname">${t.n}</span></div></td>`+
+          embudos.map(e=>`<td>${t[e]||0}</td>`).join('')+`<td class="rec">${t.tot}</td></tr>`;}).join('')}</tbody>`+
+      `<tfoot><tr><td>Total</td>${embudos.map(e=>`<td>${T(e)}</td>`).join('')}<td class="rec">${T('tot')}</td></tr></tfoot>`;
+  }
+
+  // ---- Detalle ----
+  const tb=document.getElementById('agTbl');
+  document.getElementById('agDetSub').textContent=`${list.length} agendas · ordenadas por fecha y hora`;
+  if(!list.length){tb.innerHTML='<tbody><tr><td class="empty">Sin agendas para este filtro.</td></tr></tbody>'; return;}
+  const badge=e=>{const c=/confirm/i.test(e)?'ok':(/cancel/i.test(e)?'bad':'warn'); return `<span class="agpill ${c}">${e||'—'}</span>`;};
+  tb.innerHTML=`<thead><tr><th>Fecha</th><th>Hora</th><th>Cliente</th><th>Teléfono</th><th>Setter</th><th>Consultor</th><th>Embudo</th><th>Etapa</th><th>Estado</th></tr></thead><tbody>`+
+    list.slice(0,400).map(a=>`<tr>
+      <td style="white-space:nowrap">${a.fecha}</td>
+      <td style="font-weight:700">${a.hora}</td>
+      <td style="font-weight:600">${a.cliente||'—'}</td>
+      <td style="color:var(--muted);font-size:12.5px;white-space:nowrap">${a.tel||'—'}</td>
+      <td style="font-weight:700;color:var(--c3)">${a.setter||'—'}</td>
+      <td>${a.consultor||'—'}</td>
+      <td>${a.embudo||'—'}</td>
+      <td style="color:var(--muted);font-size:12.5px">${a.etapa||'—'}</td>
+      <td>${badge(a.estado)}</td></tr>`).join('')+`</tbody>`;
+}
+function agExportCSV(){
+  const list=agFiltradas(); if(!list.length)return;
+  const cols=['Fecha','Hora','Cliente','Teléfono','Correo','Setter','Consultor','Embudo','Etapa','Estado','Calendario','Fuente'];
+  const data=list.map(a=>[a.fecha,a.hora,a.cliente,a.tel,a.correo,a.setter,a.consultor,a.embudo,a.etapa,a.estado,a.calendario,a.fuente]);
+  const esc=c=>'"'+String(c==null?'':c).replace(/"/g,'""')+'"';
+  const csv=[cols.map(esc).join(',')].concat(data.map(r=>r.map(esc).join(','))).join('\r\n');
+  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download='agendas_ghl.csv';document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+// listeners propios del módulo
+(function(){
+  const seg=document.getElementById('agSeg');
+  if(seg) seg.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b)return;
+    seg.querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+    AG_RANGO=b.dataset.r; agSetRango(AG_RANGO); renderAgendas();});
+  // si escribes una fecha a mano, se apagan los botones rápidos
+  ['agDesde','agHasta'].forEach(id=>{
+    const e=document.getElementById(id); if(e) e.addEventListener('change',()=>{
+      if(seg) seg.querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+      AG_RANGO=''; renderAgendas();});});
+  ['agSetter','agEmbudo','agEstado','agEtapa'].forEach(id=>{
+    const e=document.getElementById(id); if(e) e.addEventListener('change',renderAgendas);});
+  const ex=document.getElementById('agExport'); if(ex) ex.addEventListener('click',agExportCSV);
+})();
 
 fetchData();
 setInterval(fetchData, 60000);
