@@ -1,0 +1,32 @@
+TRACKER HIGH TICKET CDI — archivo para subir a GitHub
+======================================================
+
+ESTA es la carpeta oficial del dashboard. Aquí siempre está
+la versión más reciente del index.html listo para subir.
+
+CÓMO SUBIRLO
+------------
+1) Abre:  https://github.com/consultoriaimportacion-crypto/GHL---CDI/upload/main
+2) Arrastra el archivo  index.html  de esta carpeta
+3) Abajo → "Commit changes"
+4) Abre el sitio con un link nuevo para saltar la caché, ej:
+   https://consultoriaimportacion-crypto.github.io/GHL---CDI/?v=2
+
+CÓMO VERIFICAR QUE ES EL CORRECTO
+---------------------------------
+Abre el index.html con doble clic. Arriba debe decir:
+
+     Tracker High Ticket CDI
+
+Si dice "Arsenal de Ventas" o "Intranet Comercial", es OTRO archivo.
+
+OJO — NO CONFUNDIR CON ESTAS CARPETAS
+-------------------------------------
+  Escritorio/SUBIR-A-GITHUB   (guiones)  -> Arsenal de Ventas
+  Escritorio/SUBIR A GITHUB   (espacios) -> copia del tracker
+  Escritorio/ARSENAL-DE-VENTAS           -> Arsenal de Ventas
+
+QUÉ TIENE ESTE DASHBOARD
+------------------------
+Módulos: Closers · Setters · Proyección · Fuentes · Finanzas ·
+         Cartera · Agendas (conectado a GoHighLevel)
