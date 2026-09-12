@@ -1,1555 +1,600 @@
-<!doctype html>
-<html lang="es">
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ATRAE · KPI Closers & Setters</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Arsenal de Ventas — recursos de entrenamiento comercial de CDI." />
+<meta name="theme-color" content="#0b0907" />
+<title>Arsenal de Ventas · CDI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <style>
-  :root{
-    --bg:#0b0a10; --bg2:#13111b; --ink:#f4f1ff; --muted:#a49db8; --faint:#726b86;
-    --line:rgba(255,255,255,.08); --glass:rgba(255,255,255,.035); --glass2:rgba(255,255,255,.05);
-    --c1:#ff6a2b; --c2:#ff2e8b; --c3:#ffb020; --good:#2fe08a; --bad:#ff5a5a; --warn:#ffb020;
-    --font:ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  }
-  *{box-sizing:border-box} html,body{margin:0}
-  body{
-    font-family:var(--font); color:var(--ink); min-height:100vh;
-    padding:24px clamp(16px,3.5vw,40px) 44px;
-    background:
-      radial-gradient(900px 500px at 12% -8%, rgba(255,106,43,.20), transparent 60%),
-      radial-gradient(800px 520px at 100% 0%, rgba(255,46,139,.16), transparent 55%),
-      linear-gradient(180deg,var(--bg2),var(--bg));
-    background-attachment:fixed; -webkit-font-smoothing:antialiased;
-  }
-  .top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:18px;margin-bottom:18px}
-  .brand{display:flex;align-items:center;gap:13px}
-  .mark{width:44px;height:44px;border-radius:13px;background:linear-gradient(135deg,var(--c1),var(--c2));display:grid;place-items:center;color:#fff;font-weight:900;font-size:21px;box-shadow:0 8px 24px rgba(255,46,139,.35)}
-  h1{margin:0;font-size:19px;font-weight:800;letter-spacing:-.02em}
-  .sub{font-size:12px;color:var(--muted);margin-top:3px;display:flex;align-items:center;gap:7px}
-  .live{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--good)}
-  .live i{width:7px;height:7px;border-radius:99px;background:var(--good);animation:pulse 2s infinite}
-  .live.err{color:var(--bad)} .live.err i{background:var(--bad);animation:none}
-  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(47,224,138,.5)}70%{box-shadow:0 0 0 7px rgba(47,224,138,0)}100%{box-shadow:0 0 0 0 rgba(47,224,138,0)}}
-
-  /* toggle Closers | Setters */
-  .modeseg{display:flex;background:var(--glass);border:1px solid var(--line);border-radius:13px;padding:4px;gap:3px}
-  .modeseg button{font:inherit;font-size:14px;font-weight:800;color:var(--muted);background:none;border:0;padding:9px 22px;border-radius:9px;cursor:pointer;transition:.2s;letter-spacing:.01em}
-  .modeseg button:hover{color:var(--ink)}
-  .modeseg button.on{background:linear-gradient(135deg,var(--c1),var(--c2));color:#fff;box-shadow:0 6px 18px rgba(255,46,139,.4)}
-
-  .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:16px}
-  .fld{display:flex;flex-direction:column;gap:5px}
-  .fld label{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--faint);font-weight:700}
-  .fld input,.sel{font:inherit;font-size:12.5px;color:var(--ink);background:var(--glass);border:1px solid var(--line);border-radius:11px;padding:8px 12px;color-scheme:dark}
-  .sel option{background:var(--bg2)}
-  .seg{display:flex;background:var(--glass);border:1px solid var(--line);border-radius:11px;padding:3px;gap:2px}
-  .seg button{font:inherit;font-size:12.5px;font-weight:600;color:var(--muted);background:none;border:0;padding:7px 12px;border-radius:8px;cursor:pointer;transition:.2s;white-space:nowrap}
-  .seg button:hover{color:var(--ink)}
-  .seg button.on{background:linear-gradient(135deg,var(--c1),var(--c2));color:#fff;box-shadow:0 4px 14px rgba(255,46,139,.35)}
-  .refbtn{font:inherit;font-size:16px;line-height:1;color:var(--ink);background:var(--glass);border:1px solid var(--line);border-radius:11px;width:38px;height:37px;cursor:pointer;display:grid;place-items:center;transition:.2s}
-  .refbtn:hover{border-color:var(--c1);color:var(--c1)}
-  .refbtn.spin i{display:inline-block;animation:spin .7s linear infinite}
-  @keyframes spin{to{transform:rotate(360deg)}}
-
-  .kpis{display:grid;grid-template-columns:1.7fr 1fr 1fr 1fr 1fr;gap:14px;margin-bottom:16px}
-  .card{background:var(--glass);border:1px solid var(--line);border-radius:18px;padding:18px 20px;position:relative;overflow:hidden;backdrop-filter:blur(6px)}
-  .card::before{content:"";position:absolute;inset:0;border-radius:18px;padding:1px;background:linear-gradient(135deg,rgba(255,255,255,.14),transparent 40%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
-  .label{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--faint);font-weight:700}
-  .hero{background:radial-gradient(420px 200px at 100% 0%, rgba(255,106,43,.26), transparent 60%),var(--glass)}
-  .hero .big{font-size:clamp(24px,3.1vw,38px);font-weight:900;letter-spacing:-.02em;line-height:1.05;margin-top:12px;background:linear-gradient(135deg,#fff,#ffd9c4 45%,var(--c3));-webkit-background-clip:text;background-clip:text;color:transparent;font-variant-numeric:tabular-nums}
-  .hero .cur{font-size:15px;font-weight:700;color:var(--muted);-webkit-text-fill-color:var(--muted)}
-  .val{font-size:30px;font-weight:800;letter-spacing:-.02em;margin-top:10px;font-variant-numeric:tabular-nums}
-  .delta{margin-top:9px;font-size:11.5px;font-weight:700;display:inline-flex;align-items:center;gap:6px;color:var(--muted);line-height:1.4}
-  .delta.up{color:var(--good)} .delta.down{color:var(--bad)} .delta.warn{color:var(--warn)}
-
-  .grid2{display:grid;grid-template-columns:1fr 1.2fr;gap:16px;margin-top:16px}
-  h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink);margin:0 0 3px;font-weight:800}
-  .h2sub{font-size:12px;color:var(--faint);margin-bottom:16px}
-  svg{display:block;width:100%;height:auto;overflow:visible}
-  .xlab{display:flex;justify-content:space-between;margin-top:8px}
-  .xlab span{font-size:11px;color:var(--faint);font-variant-numeric:tabular-nums}
-
-  .tblwrap{overflow-x:auto}
-  .tbl{width:100%;border-collapse:collapse;font-size:13px;min-width:820px}
-  .tbl th{text-align:right;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--faint);font-weight:700;padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
-  .tbl th:first-child{text-align:left}
-  .tbl td{text-align:right;padding:13px 10px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums;white-space:nowrap}
-  .tbl td:first-child{text-align:left}
-  .tbl tbody tr{transition:background .15s} .tbl tbody tr:hover{background:var(--glass)}
-  .tbl tbody tr:last-child td{border-bottom:0}
-  .cl{display:flex;align-items:center;gap:10px}
-  .av{width:32px;height:32px;border-radius:9px;flex:none;display:grid;place-items:center;font-weight:800;font-size:11px;color:#fff}
-  .clname{font-weight:700;font-size:13.5px}
-  .sub2{display:block;font-size:10px;color:var(--faint);font-weight:600;margin-top:3px}
-  .rec{font-weight:800;font-size:13.5px}
-  .pct{font-weight:700;padding:3px 9px;border-radius:99px;font-size:11.5px;background:rgba(255,255,255,.07);color:var(--muted)}
-  .pct.g{color:var(--good);background:rgba(47,224,138,.12)} .pct.b{color:var(--bad);background:rgba(255,90,90,.12)} .pct.w{color:var(--warn);background:rgba(255,176,32,.12)}
-  .tbl tfoot td{padding:14px 10px;border-top:2px solid var(--line);font-weight:800;color:var(--ink)}
-  .tbl tfoot .rec{color:var(--c3);font-size:14px}
-  .empty{color:var(--faint);font-size:13px;padding:20px 0;text-align:center}
-
-  .fstage{margin:0 0 14px}
-  .fstage:last-child{margin-bottom:0}
-  .ftop{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;gap:8px}
-  .fname{font-weight:700;font-size:13px}
-  .fval{font-variant-numeric:tabular-nums;font-weight:800;font-size:15px}
-  .fpct{font-size:11px;color:var(--faint);font-weight:600;margin-left:6px}
-  .fbar{height:24px;border-radius:8px;background:rgba(255,255,255,.05);overflow:hidden}
-  .fbar i{display:block;height:100%;border-radius:8px;width:0;transition:width .9s cubic-bezier(.2,.7,.2,1)}
-
-  /* canales (solo setters) */
-  #channelCard{display:none;margin-top:16px}
-  body.m-setters #channelCard{display:block}
-  #chanTimeCard{display:none;margin-top:16px}
-  body.m-setters #chanTimeCard{display:block}
-  .ctlegend{display:flex;flex-wrap:wrap;gap:10px 16px;margin:8px 0 14px}
-  .ctlegi{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);font-weight:600}
-  .ctsw{width:11px;height:11px;border-radius:3px;flex:none}
-  .cthead{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px}
-  #confCard{display:none;margin-bottom:16px}
-  body.m-setters #confCard{display:block}
-  .confrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-  .confstat{flex:1;min-width:120px;text-align:center;padding:6px 4px}
-  .confn{font-size:clamp(26px,3.4vw,36px);font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
-  .conflbl{font-size:11px;color:var(--faint);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-top:4px}
-  .confarrow{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);font-weight:800;font-size:14px;font-variant-numeric:tabular-nums}
-  .confarrow span{font-size:9.5px;color:var(--faint);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
-  .confarrow::before{content:"→";display:block;font-size:16px;color:var(--faint);margin-bottom:2px}
-  .confarrow.big{color:var(--good);font-size:17px} .confarrow.big span{color:var(--good)}
-  @media(max-width:620px){.confrow{flex-direction:column}.confarrow::before{content:"↓"}}
-  .chan{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
-  .chan:last-child{border-bottom:0}
-  .chdot{width:10px;height:10px;border-radius:99px;flex:none}
-  .chname{flex:1;font-weight:700;font-size:13px}
-  .chmeta{font-size:11px;color:var(--faint);margin-top:2px;font-weight:600}
-  .chrec{text-align:right;font-weight:800;font-variant-numeric:tabular-nums}
-  .chbar{height:5px;border-radius:99px;background:rgba(255,255,255,.06);margin-top:7px;overflow:hidden}
-  .chbar i{display:block;height:100%;border-radius:99px;width:0;transition:width .9s cubic-bezier(.2,.7,.2,1)}
-
-  /* visibilidad por modo */
-  #proyView,#fuentesView,#finanzasView,#carteraView,#agendasView{display:none}
-  #dailyView{display:none}
-  body.m-closers #dailyView,body.m-setters #dailyView{display:block}
-  body.m-proyeccion #proyView{display:block}
-  body.m-fuentes #fuentesView{display:block}
-  body.m-finanzas #finanzasView{display:block}
-  body.m-cartera #carteraView{display:block}
-  body.m-agendas #agendasView{display:block}
-  #proyKpis,#fuKpis{grid-template-columns:1.7fr 1fr 1fr 1fr}
-  .fld.monthly,.fld.cartera{display:none}
-  body.m-proyeccion .fld.daily,body.m-fuentes .fld.daily,body.m-cartera .fld.daily,body.m-agendas .fld.daily{display:none}
-  body.m-agendas #seg,body.m-agendas #rangoLbl{display:none}
-  /* Agendas (aislado) */
-  .agfilt{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;margin-top:12px}
-  .agpill{font-weight:800;font-size:11px;padding:3px 9px;border-radius:99px;white-space:nowrap}
-  .agpill.ok{color:var(--good);background:rgba(47,224,138,.13)}
-  .agpill.bad{color:var(--bad);background:rgba(255,90,90,.13)}
-  .agpill.warn{color:var(--warn);background:rgba(255,176,32,.13)}
-  body.m-proyeccion .fld.monthly,body.m-fuentes .fld.monthly{display:flex}
-  body.m-cartera .fld.cartera{display:flex}
-  /* Finanzas (aislado) */
-  .finclick{cursor:pointer;transition:transform .12s}
-  .finclick:hover{transform:translateY(-2px)}
-  #finTbl td.fincell{cursor:pointer} #finTbl td.fincell:hover{color:var(--c3)}
-  #finEstados{margin-bottom:16px}
-  .tbl tr.grouprow td{background:linear-gradient(90deg,rgba(255,106,43,.22),rgba(255,46,139,.10));font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;color:#ffd9c4;font-weight:800;padding:10px 12px;text-align:left;border-top:1px solid rgba(255,106,43,.35);border-bottom:1px solid var(--line)}
-  .tbl tr.cartera td{color:var(--c3)} .tbl tr.cartera td:first-child{font-weight:800}
-  .etapa{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:rgba(255,255,255,.07);color:var(--muted)}
-  .etapa.ok{color:var(--good);background:rgba(47,224,138,.12)} .etapa.proc{color:var(--warn);background:rgba(255,176,32,.12)}
-  .fubar{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
-  .fubar:last-child{border-bottom:0}
-  .funame{flex:1;min-width:0;font-weight:700;font-size:13px}
-  .fumeta{font-size:11px;color:var(--faint);font-weight:600;margin-top:2px}
-  .futrack{height:6px;border-radius:99px;background:rgba(255,255,255,.06);margin-top:7px;overflow:hidden}
-  .futrack i{display:block;height:100%;border-radius:99px;width:0;transition:width .9s cubic-bezier(.2,.7,.2,1)}
-  .furec{text-align:right;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
-  @media(max-width:1040px){.kpis{grid-template-columns:1fr 1fr 1fr}.grid2{grid-template-columns:1fr}}
-  @media(max-width:620px){
-    .controls{width:100%}
-    .seg{flex-wrap:wrap}
-    .kpis{grid-template-columns:1fr 1fr;gap:12px}
-    .kpis .hero{grid-column:1/-1}
-    .hero .big{font-size:clamp(26px,8vw,40px)}
-  }
-  @media(max-width:380px){.kpis{grid-template-columns:1fr}}
-  @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+:root{
+  --ff:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --cdi:#E8541E; --cdi-2:#F58634; --gold:#e0a83d;
+  --acc-video-1:#F58634; --acc-video-2:#E8541E;
+  --acc-guion-1:#7c9cff; --acc-guion-2:#6a5cff;
+  --acc-apert-1:#35c46a; --acc-apert-2:#16a34a;
+  --acc-tec-1:#f0b429; --acc-tec-2:#de911d;
+  --acc-obj-1:#f06595; --acc-obj-2:#d6336c;
+  --radius:22px; --radius-sm:14px; --radius-xs:11px; --maxw:1160px;
+  --ease:cubic-bezier(.22,.61,.36,1); --ease-out:cubic-bezier(.16,1,.3,1);
+  --shadow-sm:0 1px 2px rgba(0,0,0,.16); --shadow:0 10px 30px -12px rgba(0,0,0,.5); --shadow-lg:0 30px 60px -20px rgba(0,0,0,.6);
+}
+[data-theme="dark"]{--bg:#0b0907;--bg-2:#0e0b09;--panel:rgba(23,19,16,.72);--panel-2:rgba(30,25,21,.6);--tile:rgba(255,255,255,.028);--tile-h:rgba(255,255,255,.055);--line:rgba(255,255,255,.09);--line-2:rgba(255,255,255,.06);--text:#f3efec;--muted:#b1a89f;--faint:#7f766d;--kbd:rgba(255,255,255,.06);--spot:rgba(255,255,255,.06);--blu:#3d8bff;color-scheme:dark;}
+[data-theme="light"]{--bg:#f6f4f1;--bg-2:#efece7;--panel:rgba(255,255,255,.86);--panel-2:rgba(255,255,255,.7);--tile:#fff;--tile-h:#fff;--line:rgba(24,18,12,.10);--line-2:rgba(24,18,12,.07);--text:#211a14;--muted:#6d635a;--faint:#9a9089;--kbd:rgba(24,18,12,.05);--spot:rgba(232,84,30,.07);--blu:#2f6fd0;color-scheme:light;--shadow:0 10px 30px -14px rgba(60,40,20,.22);--shadow-lg:0 30px 60px -24px rgba(60,40,20,.24);}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-family:var(--ff);background:var(--bg);color:var(--text);line-height:1.5;min-height:100dvh;overflow-x:hidden;-webkit-font-smoothing:antialiased;letter-spacing:-0.011em;transition:background .5s var(--ease),color .35s var(--ease)}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:none}
+img,svg{display:block}
+::selection{background:color-mix(in srgb,var(--cdi) 40%,transparent)}
+[hidden]{display:none!important}
+.ambient{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+.ambient::after{content:"";position:absolute;inset:0;background:radial-gradient(120% 80% at 50% -10%,transparent 40%,var(--bg) 100%)}
+.orb{position:absolute;border-radius:50%;filter:blur(70px);opacity:.5}
+.orb--a{width:46vw;height:46vw;top:-14vw;left:-8vw;background:radial-gradient(circle,var(--cdi) 0%,transparent 68%);opacity:.28;animation:float1 22s var(--ease) infinite}
+.orb--b{width:38vw;height:38vw;top:24vh;right:-12vw;background:radial-gradient(circle,var(--acc-guion-2) 0%,transparent 68%);opacity:.2;animation:float2 26s var(--ease) infinite}
+.orb--c{width:34vw;height:34vw;bottom:-12vw;left:30vw;background:radial-gradient(circle,var(--gold) 0%,transparent 68%);opacity:.16;animation:float1 30s var(--ease) infinite reverse}
+[data-theme="light"] .orb{opacity:.18;filter:blur(80px)}
+.grid-lines{position:absolute;inset:0;background-image:linear-gradient(var(--line-2) 1px,transparent 1px),linear-gradient(90deg,var(--line-2) 1px,transparent 1px);background-size:64px 64px;mask-image:radial-gradient(120% 90% at 50% 0%,#000 5%,transparent 70%);opacity:.5}
+@keyframes float1{50%{transform:translate(4vw,4vh) scale(1.08)}}
+@keyframes float2{50%{transform:translate(-5vw,3vh) scale(1.1)}}
+.topbar{position:sticky;top:0;z-index:40;backdrop-filter:saturate(1.4) blur(16px);-webkit-backdrop-filter:saturate(1.4) blur(16px);background:color-mix(in srgb,var(--bg) 72%,transparent);border-bottom:1px solid transparent;transition:border-color .3s,background .3s}
+.topbar.is-stuck{border-bottom-color:var(--line)}
+.topbar__inner{max-width:var(--maxw);margin:0 auto;padding:13px 24px;display:flex;align-items:center;gap:18px}
+.brand{display:flex;align-items:center;gap:11px;flex-shrink:0}
+.brand__mark{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;color:#fff;background:linear-gradient(140deg,var(--cdi-2),var(--cdi));box-shadow:0 6px 16px -6px var(--cdi),inset 0 1px 0 rgba(255,255,255,.3)}
+.brand__text{display:flex;flex-direction:column;line-height:1.05}
+.brand__text strong{font-size:15px;font-weight:800;letter-spacing:.02em}
+.brand__text em{font-style:normal;font-size:11px;color:var(--muted);font-weight:500}
+.backlink{margin-left:6px;display:inline-flex;align-items:center;gap:8px;padding:8px 13px;border-radius:11px;color:var(--muted);font-size:13px;font-weight:600;background:var(--tile);border:1px solid var(--line);transition:border-color .2s,background .2s,color .2s,transform .2s}
+.backlink:hover{border-color:color-mix(in srgb,var(--cdi) 40%,var(--line));color:var(--text);transform:translateX(-2px)}
+.backlink svg{width:15px;height:15px}
+.topbar__right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.clock{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;font-weight:500}
+.icon-btn{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:var(--muted);border:1px solid var(--line);background:var(--tile);transition:color .2s,border-color .2s,transform .2s}
+.icon-btn:hover{color:var(--text);transform:translateY(-1px)}
+.ic-moon{display:none}
+[data-theme="light"] .ic-sun{display:none}
+[data-theme="light"] .ic-moon{display:block}
+main{max-width:var(--maxw);margin:0 auto;padding:0 24px 64px}
+.hero{padding:60px 4px 38px}
+.hero__eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--tile)}
+.pulse{width:7px;height:7px;border-radius:50%;background:var(--acc-apert-1);box-shadow:0 0 0 0 color-mix(in srgb,var(--acc-apert-1) 70%,transparent);animation:pulse 2.4s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--acc-apert-1) 60%,transparent)}70%{box-shadow:0 0 0 9px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.hero__title{margin:22px 0 14px;font-size:clamp(2.3rem,5.6vw,3.7rem);font-weight:800;line-height:1.02;letter-spacing:-0.03em;max-width:16ch;background:linear-gradient(180deg,var(--text) 62%,color-mix(in srgb,var(--text) 55%,var(--bg)));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero__sub{font-size:clamp(1rem,1.8vw,1.15rem);color:var(--muted);max-width:58ch;font-weight:450}
+.hero__stats{margin-top:32px;display:inline-flex;align-items:center;gap:22px;padding:16px 24px;border:1px solid var(--line);border-radius:16px;background:var(--panel);backdrop-filter:blur(10px);box-shadow:var(--shadow-sm)}
+.stat{display:flex;flex-direction:column;gap:2px}
+.stat__num{font-size:1.5rem;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;background:linear-gradient(120deg,var(--cdi-2),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
+.stat__label{font-size:11.5px;color:var(--muted);font-weight:500}
+.stat__div{width:1px;height:30px;background:var(--line)}
+.sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:8px 4px 20px;flex-wrap:wrap}
+.sec-title{font-size:clamp(1.3rem,3vw,1.7rem);font-weight:800;letter-spacing:-.025em}
+.sec-sub{font-size:13.5px;color:var(--muted);margin-top:4px}
+.sec-count{font-size:11.5px;font-weight:600;color:var(--muted);padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--tile);white-space:nowrap}
+.sec-count b{color:var(--text)}
+/* HUB cards */
+.modgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.modcard{position:relative;display:flex;flex-direction:column;gap:16px;text-align:left;padding:24px;border-radius:var(--radius);background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(14px);min-height:232px;overflow:hidden;box-shadow:var(--shadow);transition:transform .3s var(--ease-out),background .3s,border-color .3s,box-shadow .3s}
+.modcard::before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:linear-gradient(90deg,var(--a1),var(--a2));opacity:.9}
+.modcard::after{content:"";position:absolute;inset:0;opacity:0;transition:opacity .3s;pointer-events:none;background:radial-gradient(220px circle at var(--mx,50%) var(--my,50%),var(--spot),transparent 70%)}
+a.modcard,button.modcard{cursor:pointer}
+a.modcard:hover,button.modcard:hover{transform:translateY(-4px);background:var(--tile-h);border-color:color-mix(in srgb,var(--a2) 45%,var(--line));box-shadow:0 22px 44px -22px color-mix(in srgb,var(--a2) 60%,transparent)}
+a.modcard:hover::after,button.modcard:hover::after{opacity:1}
+.modcard__ic{width:54px;height:54px;border-radius:15px;display:grid;place-items:center;color:var(--a2);background:color-mix(in srgb,var(--a1) 14%,transparent);border:1px solid color-mix(in srgb,var(--a1) 24%,transparent);flex-shrink:0;transition:transform .3s var(--ease-out)}
+a.modcard:hover .modcard__ic,button.modcard:hover .modcard__ic{transform:scale(1.06) rotate(-2deg)}
+.modcard__body{flex:1;display:flex;flex-direction:column;gap:7px}
+.modcard__name{font-size:18px;font-weight:800;letter-spacing:-.02em}
+.modcard__desc{font-size:13.5px;color:var(--muted);line-height:1.5}
+.modcard__foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:4px}
+.modcard__cta{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:700;color:var(--a2)}
+.modcard__cta svg{width:15px;height:15px;transition:transform .25s var(--ease-out)}
+a.modcard:hover .modcard__cta svg,button.modcard:hover .modcard__cta svg{transform:translateX(3px)}
+.status{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:5px 10px;border-radius:999px}
+.status--live{color:var(--acc-apert-1);background:color-mix(in srgb,var(--acc-apert-1) 13%,transparent);border:1px solid color-mix(in srgb,var(--acc-apert-1) 30%,transparent)}
+.status--live .dot{width:6px;height:6px;border-radius:50%;background:var(--acc-apert-1);animation:pulse 2.4s infinite}
+.status--soon{color:var(--gold);background:color-mix(in srgb,var(--gold) 12%,transparent);border:1px solid color-mix(in srgb,var(--gold) 30%,transparent)}
+.modcard--soon{opacity:.74;cursor:default}
+.modcard--soon .modcard__cta{color:var(--muted)}
+.site-foot{margin-top:46px;padding-top:24px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:12.5px;color:var(--faint)}
+.site-foot__ver{padding:4px 10px;border:1px solid var(--line);border-radius:999px}
+.toast{position:fixed;left:50%;bottom:30px;transform:translate(-50%,20px);padding:12px 20px;border-radius:12px;background:var(--panel);border:1px solid var(--line);color:var(--text);font-size:13.5px;font-weight:500;box-shadow:var(--shadow-lg);backdrop-filter:blur(16px);opacity:0;pointer-events:none;z-index:130;transition:opacity .3s,transform .3s var(--ease-out)}
+.toast.is-visible{opacity:1;transform:translate(-50%,0)}
+.reveal{opacity:0;transform:translateY(22px)}
+.reveal.is-in{opacity:1;transform:none;transition:opacity .7s var(--ease-out),transform .7s var(--ease-out)}
+/* toolbar (videos) */
+.toolbar{display:flex;flex-direction:column;gap:12px;margin:6px 4px 22px}
+.searchbox{position:relative;max-width:560px}
+.searchbox input{width:100%;background:var(--tile);border:1px solid var(--line);border-radius:var(--radius-sm);color:var(--text);font-family:var(--ff);font-size:15px;padding:13px 42px 13px 44px;outline:none;transition:border-color .2s,background .2s}
+.searchbox input:focus{border-color:color-mix(in srgb,var(--cdi) 45%,var(--line));background:var(--tile-h)}
+.searchbox input::placeholder{color:var(--faint)}
+.searchbox .ic{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:var(--faint);display:grid}
+.searchbox .clr{position:absolute;right:9px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:8px;color:var(--muted);background:var(--kbd);border:1px solid var(--line);display:none;place-items:center}
+.searchbox .clr.on{display:grid}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-size:12.5px;font-weight:600;color:var(--muted);padding:7px 13px;border-radius:999px;background:var(--tile);border:1px solid var(--line);transition:.18s}
+.chip:hover{color:var(--text);border-color:color-mix(in srgb,var(--cdi) 40%,var(--line))}
+.chip.on{color:#fff;background:linear-gradient(140deg,var(--cdi-2),var(--cdi));border-color:transparent}
+.chip .ct{opacity:.7;margin-left:4px}
+.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
+.vcard{position:relative;display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);backdrop-filter:blur(14px);box-shadow:var(--shadow);transition:transform .3s var(--ease-out),border-color .3s,box-shadow .3s}
+.vcard:hover{transform:translateY(-4px);border-color:color-mix(in srgb,var(--a2) 45%,var(--line));box-shadow:0 22px 44px -22px color-mix(in srgb,var(--a2) 60%,transparent)}
+.vthumb{position:relative;aspect-ratio:16/9;cursor:pointer;overflow:hidden;display:grid;place-items:center;background:radial-gradient(120% 120% at 20% 0%,color-mix(in srgb,var(--a1) 30%,transparent),transparent 60%),linear-gradient(150deg,color-mix(in srgb,var(--a2) 22%,var(--bg-2)),var(--bg-2))}
+.vthumb .play{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(140deg,var(--cdi-2),var(--cdi));box-shadow:0 8px 22px -6px var(--cdi),inset 0 1px 0 rgba(255,255,255,.3);transition:transform .28s var(--ease-out)}
+.vcard:hover .vthumb .play{transform:scale(1.08)}
+.vthumb .play svg{width:22px;height:22px;fill:#fff;margin-left:3px}
+.vthumb .num{position:absolute;top:11px;left:11px;font-size:11px;font-weight:700;color:var(--text);background:color-mix(in srgb,var(--bg) 55%,transparent);border:1px solid var(--line);backdrop-filter:blur(6px);padding:4px 9px;border-radius:8px}
+.vthumb .etag{position:absolute;bottom:11px;left:11px;font-size:10.5px;font-weight:700;color:#fff;background:color-mix(in srgb,var(--a2) 92%,#000);padding:4px 10px;border-radius:8px}
+.vthumb .money{position:absolute;bottom:11px;right:11px;font-size:11px;font-weight:800;color:#06240f;background:linear-gradient(140deg,#4ade80,#22c55e);padding:4px 10px;border-radius:8px}
+.vbody{padding:16px 17px 17px;display:flex;flex-direction:column;flex:1}
+.vtitle{font-size:15.5px;font-weight:700;letter-spacing:-.015em;line-height:1.35;margin-bottom:4px}
+.vcli{font-size:12.5px;color:var(--muted);margin-bottom:12px}
+.vtags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.vt2{font-size:10.5px;font-weight:600;color:var(--a2);background:color-mix(in srgb,var(--a1) 13%,transparent);border:1px solid color-mix(in srgb,var(--a1) 26%,transparent);padding:3px 9px;border-radius:999px}
+.vacts{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:auto}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:var(--ff);font-size:13px;font-weight:700;padding:11px 14px;border-radius:var(--radius-xs);border:1px solid transparent;transition:.18s var(--ease-out)}
+.btn svg{width:15px;height:15px}
+.btn--primary{color:#fff;background:linear-gradient(140deg,var(--cdi-2),var(--cdi));box-shadow:0 8px 20px -10px var(--cdi),inset 0 1px 0 rgba(255,255,255,.25)}
+.btn--primary:hover{transform:translateY(-1px)}
+.btn--ghost{color:var(--text);background:var(--tile);border-color:var(--line)}
+.btn--ghost:hover{background:var(--tile-h);border-color:color-mix(in srgb,var(--cdi) 40%,var(--line))}
+.btn--ok{color:#06240f!important;background:linear-gradient(140deg,#4ade80,#22c55e)!important}
+.empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty .big{font-size:38px;margin-bottom:12px;opacity:.6}
+/* modal */
+.ov{position:fixed;inset:0;z-index:100;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(6px)}
+[data-theme="light"] .ov{background:rgba(40,30,20,.34)}
+.ov.on{display:flex}
+@media(min-width:640px){.ov{align-items:center;padding:24px}}
+.modal{position:relative;width:100%;max-width:760px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius) var(--radius) 0 0;backdrop-filter:blur(24px) saturate(1.4);box-shadow:var(--shadow-lg);animation:mIn .3s var(--ease-out)}
+@media(min-width:640px){.modal{border-radius:var(--radius)}}
+@keyframes mIn{from{opacity:0;transform:translateY(14px) scale(.99)}}
+.modal::before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:linear-gradient(90deg,var(--a1),var(--a2));z-index:1}
+.mhead{display:flex;align-items:flex-start;gap:13px;padding:18px 20px;border-bottom:1px solid var(--line)}
+.mhead .mn{flex-shrink:0;font-size:11px;font-weight:700;color:#fff;background:color-mix(in srgb,var(--a2) 92%,#000);padding:5px 10px;border-radius:8px}
+.mhead h2{flex:1;font-size:17px;font-weight:800;letter-spacing:-.02em;line-height:1.32}
+.mhead .x{flex-shrink:0;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;color:var(--muted);background:var(--tile);border:1px solid var(--line);font-size:18px}
+.mhead .x:hover{color:var(--text)}
+.mtabs{display:flex;gap:6px;padding:12px 20px 0;flex-wrap:wrap}
+.mtab{font-size:13px;font-weight:700;color:var(--muted);padding:8px 4px;border-bottom:2px solid transparent}
+.mtab.on{color:var(--text);border-color:var(--cdi)}
+.mbody{padding:18px 20px;overflow-y:auto;flex:1}
+.vwrap{aspect-ratio:16/9;border-radius:var(--radius-sm);overflow:hidden;margin-bottom:16px;display:grid;place-items:center;gap:12px;padding:20px;text-align:center;color:var(--muted);background:radial-gradient(120% 120% at 20% 0%,color-mix(in srgb,var(--a1) 24%,transparent),transparent 60%),linear-gradient(150deg,color-mix(in srgb,var(--a2) 16%,var(--bg-2)),var(--bg-2));border:1px solid var(--line)}
+.vwrap .vi{font-size:34px}
+.closer{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--muted);background:var(--tile);border:1px solid var(--line);padding:6px 12px;border-radius:999px;margin-bottom:14px}
+.closer b{color:var(--text)}
+.analisis{font-size:14.5px;color:var(--text);line-height:1.7;white-space:pre-wrap}
+.nomsg{color:var(--faint);font-size:13.5px;padding:6px 0}
+.mfoot{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 20px;border-top:1px solid var(--line)}
+.mfoot .btn{padding:13px}
+/* guion reader */
+.gpicker{display:flex;flex-wrap:wrap;gap:8px;margin:4px 4px 22px}
+.gpick{font-size:13px;font-weight:600;color:var(--muted);padding:9px 15px;border-radius:999px;background:var(--tile);border:1px solid var(--line);transition:.18s}
+.gpick:hover{color:var(--text);border-color:color-mix(in srgb,var(--cdi) 40%,var(--line))}
+.gpick.on{color:#fff;background:linear-gradient(140deg,var(--cdi-2),var(--cdi));border-color:transparent}
+.ghead{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);backdrop-filter:blur(14px);box-shadow:var(--shadow);padding:24px;margin-bottom:24px;position:relative;overflow:hidden}
+.ghead::before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:linear-gradient(90deg,var(--cdi-2),var(--cdi))}
+.ghead__title{font-size:clamp(1.4rem,3vw,1.9rem);font-weight:800;letter-spacing:-.025em}
+.ghead__author{font-size:13.5px;color:var(--muted);margin-top:4px}
+.ghead__meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.gmeta{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);padding:8px 13px;border-radius:999px;background:var(--tile);border:1px solid var(--line)}
+.gmeta b{color:var(--text);font-weight:600}
+.gmeta svg{width:15px;height:15px;color:var(--cdi-2)}
+.gnote{display:flex;gap:11px;align-items:flex-start;margin-top:16px;padding:13px 15px;border-radius:12px;background:color-mix(in srgb,var(--gold) 8%,var(--tile));border:1px solid color-mix(in srgb,var(--gold) 26%,var(--line));font-size:13px;color:var(--muted);line-height:1.55}
+.gnote svg{width:16px;height:16px;color:var(--gold);flex-shrink:0;margin-top:1px}
+.gnote b{color:var(--text)}
+.ghead__actions{margin-top:18px}
+.glayout{display:grid;grid-template-columns:232px 1fr;gap:26px;align-items:start}
+.gnav{position:sticky;top:82px;display:flex;flex-direction:column;gap:4px}
+.gnav__lbl{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);padding:4px 12px 8px}
+.gnav a{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:var(--radius-xs);color:var(--muted);font-size:13.5px;font-weight:600;border:1px solid transparent;transition:.16s}
+.gnav a:hover{background:var(--tile);color:var(--text)}
+.gnav a.on{background:var(--tile-h);color:var(--text);border-color:color-mix(in srgb,var(--cdi) 34%,var(--line))}
+.gnav a .gn{width:24px;height:24px;flex-shrink:0;display:grid;place-items:center;border-radius:7px;font-size:12px;font-weight:800;color:var(--cdi-2);background:color-mix(in srgb,var(--cdi) 14%,transparent);border:1px solid color-mix(in srgb,var(--cdi) 24%,transparent)}
+.gblocks{display:flex;flex-direction:column;gap:18px;min-width:0}
+.block{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);backdrop-filter:blur(14px);box-shadow:var(--shadow);overflow:hidden;scroll-margin-top:90px}
+.block__head{display:flex;align-items:center;gap:13px;padding:18px 20px;border-bottom:1px solid var(--line)}
+.block__n{flex-shrink:0;width:38px;height:38px;display:grid;place-items:center;border-radius:11px;font-size:16px;font-weight:800;color:#fff;background:linear-gradient(140deg,var(--cdi-2),var(--cdi));box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
+.block__title{flex:1;font-size:16px;font-weight:800;letter-spacing:-.02em}
+.block__body{padding:8px 20px 18px}
+.subh{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--cdi-2);margin:16px 0 8px;padding-left:2px}
+.subh:first-child{margin-top:10px}
+.say{position:relative;display:flex;gap:12px;padding:13px 14px;margin:8px 0;border-radius:12px;background:var(--tile);border:1px solid var(--line-2);border-left:3px solid var(--cdi)}
+.say__q{flex-shrink:0;color:var(--cdi-2);font-size:18px;line-height:1.2;font-weight:800;opacity:.5}
+.say__t{font-size:15px;color:var(--text);line-height:1.62}
+.say__cp{position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:var(--faint);background:var(--bg-2);border:1px solid var(--line);opacity:0;transition:.16s}
+.say:hover .say__cp{opacity:1}
+.say__cp:hover{color:var(--text)}
+.say__cp svg{width:15px;height:15px}
+.tip{display:flex;gap:10px;align-items:flex-start;padding:9px 13px;margin:8px 0 8px 6px;font-size:13px;color:var(--muted);font-style:italic}
+.tip svg{width:15px;height:15px;flex-shrink:0;margin-top:2px;color:var(--gold)}
+.wait{display:flex;align-items:center;gap:11px;justify-content:center;margin:12px 4px;color:var(--faint);font-size:12px;font-weight:600}
+.wait::before,.wait::after{content:"";height:1px;flex:1;background:var(--line)}
+.wait span{display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.wait svg{width:15px;height:15px;color:var(--blu)}
+.src{display:inline-flex;align-items:center;gap:8px;margin:2px 4px 22px;font-size:13px;color:var(--muted);padding:9px 14px;border-radius:999px;background:var(--tile);border:1px solid var(--line)}
+.src a{color:var(--cdi-2);font-weight:600}
+.tsec-title{font-size:1.15rem;font-weight:800;letter-spacing:-.02em;margin:10px 4px 14px}
+.acc{border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--panel);backdrop-filter:blur(14px);box-shadow:var(--shadow);overflow:hidden;margin-bottom:12px}
+.acc__head{width:100%;display:flex;align-items:center;gap:14px;padding:16px 18px;text-align:left}
+.acc__head:hover{background:var(--tile)}
+.acc__n{flex-shrink:0;width:34px;height:34px;display:grid;place-items:center;border-radius:10px;font-size:14px;font-weight:800;color:#fff;background:linear-gradient(140deg,var(--acc-tec-1),var(--acc-tec-2));box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
+.acc__ttl{flex:1;min-width:0}
+.acc__t{font-size:15.5px;font-weight:700;letter-spacing:-.01em;display:block}
+.acc__when{font-size:12.5px;color:var(--muted);display:block;margin-top:2px}
+.acc__chev{flex-shrink:0;color:var(--muted);transition:transform .25s}
+.acc.open .acc__chev{transform:rotate(180deg)}
+.acc__body{padding:4px 18px 18px;border-top:1px solid var(--line-2)}
+.tsub{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--acc-tec-2);margin:15px 0 6px}
+.tp{font-size:14px;color:var(--text);line-height:1.65;margin:6px 0}
+.tclave{display:flex;gap:10px;align-items:flex-start;margin-top:14px;padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--acc-tec-1) 10%,var(--tile));border:1px solid color-mix(in srgb,var(--acc-tec-1) 26%,var(--line));font-size:13.5px;color:var(--text);line-height:1.5}
+.tclave svg{width:16px;height:16px;color:var(--acc-tec-2);flex-shrink:0;margin-top:1px}
+.tclave b{color:var(--text)}
+#objecionesApp .acc__n{background:linear-gradient(140deg,var(--acc-obj-1),var(--acc-obj-2))}
+#objecionesApp .tsub{color:var(--acc-obj-2)}
+#objecionesApp .tclave{background:color-mix(in srgb,var(--acc-obj-1) 10%,var(--tile));border-color:color-mix(in srgb,var(--acc-obj-1) 26%,var(--line))}
+#objecionesApp .tclave svg{color:var(--acc-obj-2)}
+@media(max-width:900px){.modgrid{grid-template-columns:1fr 1fr}}
+@media(max-width:860px){.glayout{grid-template-columns:1fr}.gnav{position:static;flex-direction:row;overflow-x:auto;gap:8px;padding-bottom:6px}.gnav::-webkit-scrollbar{display:none}.gnav__lbl{display:none}.gnav a{white-space:nowrap;flex:0 0 auto;padding:9px}.gnav a span.txt{display:none}}
+@media(max-width:760px){.clock{display:none}.hero{padding:46px 2px 28px}}
+@media(max-width:560px){main{padding:0 16px 48px}.topbar__inner{padding:11px 16px;gap:10px}.modgrid,.vgrid{grid-template-columns:1fr}.hero__stats{flex-wrap:wrap;gap:14px 18px}.site-foot{flex-direction:column;align-items:flex-start}.brand__text{display:none}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important}.reveal{opacity:1;transform:none}}
 </style>
 </head>
-<body class="m-closers">
-  <div class="top">
-    <div class="brand">
-      <div class="mark" style="background:#0b0a10;padding:6px;box-shadow:0 8px 24px rgba(238,106,53,.4)">
-        <svg viewBox="0 0 100 100" fill="none" width="100%" height="100%" aria-label="Círculo de Importadores">
-          <circle cx="50" cy="56" r="26" stroke="#ee6a35" stroke-width="15"/>
-          <path d="M42 33 C40 17 43 8 46 4 C44 15 49 23 51 31Z" fill="#ee6a35"/>
-          <path d="M53 31 C54 16 59 9 65 8 C58 17 60 25 61 33Z" fill="#ee6a35"/>
-          <circle cx="65" cy="37" r="5" fill="#0b0a10"/>
-          <circle cx="60" cy="32" r="2.3" fill="#ee6a35"/>
-        </svg>
-      </div>
-      <div>
-        <h1>KPIs Diarios · CDI HT</h1>
-        <div class="sub"><span class="live" id="status"><i></i><span id="statusTxt">conectando…</span></span></div>
-      </div>
-    </div>
-    <div class="modeseg" id="modeseg">
-      <button data-m="closers" class="on">Closers</button><button data-m="setters">Setters</button><button data-m="proyeccion">Proyección</button><button data-m="fuentes">Fuentes</button><button data-m="finanzas">Finanzas</button><button data-m="cartera">Cartera</button><button data-m="agendas">Agendas</button>
+<body>
+<div class="ambient" aria-hidden="true"><span class="orb orb--a"></span><span class="orb orb--b"></span><span class="orb orb--c"></span><span class="grid-lines"></span></div>
+
+<header class="topbar" id="topbar">
+  <div class="topbar__inner">
+    <a class="brand" href="#/" aria-label="Arsenal de Ventas · CDI">
+      <span class="brand__mark"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M13 3 4 14h6l-1 7 9-11h-6l1-7Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg></span>
+      <span class="brand__text"><strong>Arsenal de Ventas</strong><em id="brandSub">CDI · Entrenamiento comercial</em></span>
+    </a>
+    <a class="backlink" href="#/" id="backHub" style="display:none"><svg viewBox="0 0 24 24"><path d="m14 6-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Arsenal de Ventas</a>
+    <div class="topbar__right">
+      <span class="clock" id="clock" aria-hidden="true">—</span>
+      <button class="icon-btn" id="themeToggle" type="button" aria-label="Cambiar tema">
+        <svg class="ic-sun" viewBox="0 0 24 24" width="18" height="18"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><g stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3v2.4M12 18.6V21M3 12h2.4M18.6 12H21M5.6 5.6l1.7 1.7M16.7 16.7l1.7 1.7M18.4 5.6l-1.7 1.7M7.3 16.7l-1.7 1.7"/></g></svg>
+        <svg class="ic-moon" viewBox="0 0 24 24" width="18" height="18"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" fill="currentColor"/></svg>
+      </button>
     </div>
   </div>
+</header>
 
-  <div class="controls">
-    <div class="fld daily" id="fldRango"><label>Rango rápido</label>
-      <div class="seg" id="seg">
-        <button data-r="hoy">Hoy</button><button data-r="ayer">Ayer</button><button data-r="sem">Esta semana</button><button data-r="semant">Semana pasada</button><button data-r="mesact">Este mes</button><button data-r="mespas">Mes pasado</button><button data-r="tri" class="on">Trimestre</button>
-      </div>
-    </div>
-    <div class="fld daily" id="fldMes"><label>Mes</label>
-      <select class="sel" id="mes">
-        <option value="">Todos</option><option value="5">Mayo</option><option value="6">Junio</option><option value="7">Julio</option>
-      </select>
-    </div>
-    <div class="fld daily" id="fldPers"><label id="persLbl">Closer</label><select class="sel" id="pers"><option value="">Todos</option></select></div>
-    <div class="fld daily" id="fldFrom"><label>Desde</label><input type="date" id="from"></div>
-    <div class="fld daily" id="fldTo"><label>Hasta</label><input type="date" id="to"></div>
-    <div class="fld monthly" id="fldMesSel"><label>Mes</label><select class="sel" id="mesSel"></select></div>
-    <div class="fld cartera" id="fldCartMes"><label>Mes</label>
-      <select class="sel" id="cartMes">
-        <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option><option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option><option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option><option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
-      </select>
-    </div>
-    <div class="fld cartera" id="fldCartCloser"><label>Closer</label><select class="sel" id="cartCloser"></select></div>
-    <div class="fld"><label>&nbsp;</label><button class="refbtn" id="refresh" title="Actualizar datos"><i>↻</i></button></div>
-  </div>
-
-  <div id="dailyView">
-  <div class="kpis">
-    <div class="card hero">
-      <div class="label" id="kLbl0">Recaudo</div>
-      <div class="big"><span class="cur">$ </span><span id="kVal0">0</span> <span class="cur">COP</span></div>
-      <div class="delta" id="kSub0"></div>
-    </div>
-    <div class="card"><div class="label" id="kLbl1"></div><div class="val" id="kVal1">0</div><div class="delta" id="kSub1"></div></div>
-    <div class="card"><div class="label" id="kLbl2"></div><div class="val" id="kVal2">0</div><div class="delta" id="kSub2"></div></div>
-    <div class="card"><div class="label" id="kLbl3"></div><div class="val" id="kVal3">0</div><div class="delta" id="kSub3"></div></div>
-    <div class="card"><div class="label" id="kLbl4"></div><div class="val" id="kVal4">0</div><div class="delta" id="kSub4"></div></div>
-  </div>
-
-  <div class="card" id="confCard">
-    <div class="cthead"><div><h2>Embudo del setter</h2><div class="h2sub">Agendas en calendario → RE-Calificadas → Asistentes a la consultoría → Ofertadas → Cierres</div></div></div>
-    <div id="confStats"></div>
-  </div>
-
-  <div class="card">
-    <h2 id="tblTitle">Comparativo</h2>
-    <div class="h2sub" id="tblSub">periodo seleccionado</div>
-    <div class="tblwrap">
-      <table class="tbl">
-        <thead id="thead"></thead>
-        <tbody id="tbody"></tbody>
-        <tfoot id="tfoot"></tfoot>
-      </table>
-    </div>
-  </div>
-
-  <div class="card" id="channelCard">
-    <h2>Desglose por canal</h2>
-    <div class="h2sub" id="chanSub">de dónde vienen las agendas · en el periodo</div>
-    <div id="channels"></div>
-  </div>
-
-  <div class="card" id="chanTimeCard">
-    <div class="cthead">
-      <div><h2>Canales en el tiempo</h2><div class="h2sub" id="ctSub">por periodo, cada barra dividida por canal</div></div>
-      <div class="seg" id="ctMetric"><button data-k="ag" class="on">Agendas</button><button data-k="cer">Cerradas</button><button data-k="rec">Recaudo</button></div>
-    </div>
-    <div class="ctlegend" id="ctLegend"></div>
-    <svg id="ctChart" viewBox="0 0 620 250" preserveAspectRatio="none"></svg>
-    <div class="xlab" id="ctXlab"></div>
-  </div>
-
-  <div class="grid2">
-    <div class="card">
-      <h2>Embudo de conversión</h2>
-      <div class="h2sub">del periodo seleccionado</div>
-      <div id="funnel"></div>
-    </div>
-    <div class="card">
-      <h2>Recaudo por mes</h2>
-      <div class="h2sub" id="chartSub">pesos COP</div>
-      <svg id="chart" viewBox="0 0 620 240" preserveAspectRatio="none"></svg>
-      <div class="xlab" id="xlab"></div>
-    </div>
-  </div>
-  </div><!-- /dailyView -->
-
-  <div id="proyView">
-    <div class="kpis" id="proyKpis"></div>
-    <div class="card">
-      <h2>Proyección vs. real — <span id="proyMesLbl"></span></h2>
-      <div class="h2sub">meta mensual vs. lo alcanzado · % logrado con semáforo</div>
-      <div class="tblwrap"><table class="tbl" id="proyTbl" style="min-width:640px"></table></div>
-    </div>
-    <div class="card">
-      <h2>Recaudo: meta vs. real (trimestre)</h2>
-      <div class="h2sub" id="proyChartSub">millones COP</div>
-      <svg id="proyChart" viewBox="0 0 620 240" preserveAspectRatio="none"></svg>
-      <div class="xlab" id="proyXlab"></div>
-    </div>
-  </div>
-
-  <div id="fuentesView">
-    <div class="kpis" id="fuKpis"></div>
-    <div class="card">
-      <h2>Ventas por fuente — <span id="fuMesLbl"></span></h2>
-      <div class="h2sub">inversión, recaudo, ROAS y ventas por cada fuente</div>
-      <div class="tblwrap"><table class="tbl" id="fuTbl" style="min-width:720px"></table></div>
-    </div>
-    <div class="card">
-      <h2>Recaudo por fuente</h2>
-      <div class="h2sub" id="fuChartSub">pesos COP</div>
-      <div id="fuBars"></div>
-    </div>
-  </div>
-
-  <div id="finanzasView">
-    <div class="kpis" id="finKpis"></div>
-    <div class="kpis" id="finEstados" style="grid-template-columns:1fr 1fr 1fr 1fr;margin-bottom:16px"></div>
-    <div class="card">
-      <h2>Flujo del dinero — vendido vs. recaudado</h2>
-      <div class="h2sub">Ventas = lo vendido (por fecha de venta) · Recaudo = lo que entró (por fecha de pago) · la diferencia es la cartera · <span style="color:var(--faint)">clic en cualquier tarjeta o celda para ver el detalle</span></div>
-      <div id="finFunnel"></div>
-    </div>
-    <div class="card">
-      <div class="cthead">
-        <div><h2>Comparativo por closer</h2><div class="h2sub" id="finTblSub">clic en una celda para filtrar el detalle</div></div>
-        <button class="refbtn" id="finExport" title="Exportar CSV de lo filtrado" style="width:auto;padding:0 14px;font-size:12.5px;font-weight:700">⤓ CSV</button>
-      </div>
-      <div class="tblwrap"><table class="tbl" id="finTbl" style="min-width:1000px"></table></div>
-    </div>
-    <div class="card" id="finConcilCard">
-      <h2>Conciliación — venta real → recaudo → facturación</h2>
-      <div class="h2sub"><b>Vendido</b> = venta real (sin promesas &lt;20% pagado) · <b>Entró</b> = lo registrado en Sales · <b>Facturado</b> = ya facturado · <b>Falta facturar</b> = en validación/cargue/inconsistencia</div>
-      <div id="finConcilKpis" class="kpis" style="grid-template-columns:repeat(4,1fr);margin:14px 0"></div>
-      <div class="tblwrap"><table class="tbl" id="finConcil" style="min-width:820px"></table></div>
-      <div class="h2sub" id="finConcilNota" style="margin-top:10px"></div>
-    </div>
-    <div class="card" id="finDetailCard" style="display:none">
-      <div class="cthead">
-        <div><h2 id="finDetailTitle">Detalle</h2><div class="h2sub" id="finDetailSub"></div></div>
-        <button class="refbtn" id="finDetailClose" title="Cerrar detalle" style="width:auto;padding:0 14px;font-size:12.5px;font-weight:700">✕ cerrar</button>
-      </div>
-      <div class="tblwrap"><table class="tbl" id="finDetail" style="min-width:1400px"></table></div>
-    </div>
-    <div class="card">
-      <h2>Seguimiento — dinero detenido</h2>
-      <div class="h2sub">clientes con dinero en validación, cargue o inconsistencia · ordenado por más días detenido</div>
-      <div class="tblwrap"><table class="tbl" id="finSeg" style="min-width:720px"></table></div>
-    </div>
-    <div class="card">
-      <div class="cthead">
-        <div><h2>Detalle de ventas — para revisar y compartir</h2><div class="h2sub" id="finVentasDetSub">todas las ventas del periodo · ID, cliente, correo, vendido y pagado · ⚠️ marca promesas (&lt;20% pagado)</div></div>
-        <button class="refbtn" id="finVentasExport" title="Exportar CSV del detalle" style="width:auto;padding:0 14px;font-size:12.5px;font-weight:700">⤓ CSV</button>
-      </div>
-      <div class="tblwrap"><table class="tbl" id="finVentasDet" style="min-width:1120px"></table></div>
-    </div>
-  </div>
-
-  <div id="carteraView">
-    <div class="kpis" style="grid-template-columns:1fr 1fr;max-width:720px">
-      <div class="card"><div class="label">👥 Clientes por Cobrar</div><div class="val" id="cartN">0</div><div class="delta" id="cartNsub"></div></div>
-      <div class="card hero"><div class="label">💰 Valor Total por Cobrar</div><div class="big"><span class="cur">$ </span><span id="cartVal">0</span> <span class="cur">COP</span></div><div class="delta">saldo pendiente del mes</div></div>
-    </div>
-    <div class="card">
-      <h2>Cartera del mes — <span id="cartTitle"></span></h2>
-      <div class="h2sub" id="cartSub">clientes con próximo pago en el mes seleccionado · ordenados por fecha</div>
-      <div class="tblwrap"><table class="tbl" id="cartTbl" style="min-width:900px"></table></div>
-    </div>
-  </div>
-
-  <div id="agendasView">
-    <div class="card" style="margin-bottom:16px">
-      <div class="lbl" style="margin-bottom:7px">CUÁNDO</div>
-      <div class="seg" id="agSeg">
-        <button data-r="hoy">Hoy</button><button data-r="manana" class="on">Mañana</button><button data-r="sem">Próximos 7 días</button><button data-r="prox">De hoy en adelante</button><button data-r="todas">Todas</button>
-      </div>
-      <div class="agfilt">
-        <div class="fld"><label>Desde</label><input type="date" id="agDesde" autocomplete="off"></div>
-        <div class="fld"><label>Hasta</label><input type="date" id="agHasta" autocomplete="off"></div>
-        <div class="fld"><label>Setter</label><select class="sel" id="agSetter"></select></div>
-        <div class="fld"><label>Embudo</label><select class="sel" id="agEmbudo"></select></div>
-        <div class="fld"><label>Estado</label><select class="sel" id="agEstado"></select></div>
-        <div class="fld"><label>Etapa</label><select class="sel" id="agEtapa"></select></div>
+<main>
+  <!-- ============ HUB ============ -->
+  <section id="view-hub">
+    <div class="hero reveal is-in">
+      <p class="hero__eyebrow"><span class="pulse"></span> Módulo · Entrenamiento comercial</p>
+      <h1 class="hero__title">Todo tu arsenal para vender, en un solo lugar.</h1>
+      <p class="hero__sub">Recursos vivos para el equipo comercial: ventas reales grabadas, guiones de llamada, aperturas, técnicas de cierre y manejo de objeciones.</p>
+      <div class="hero__stats">
+        <div class="stat"><span class="stat__num">5</span><span class="stat__label">Recursos disponibles</span></div>
+        <span class="stat__div"></span>
+        <div class="stat"><span class="stat__num">100%</span><span class="stat__label">Completo</span></div>
+        <span class="stat__div"></span>
+        <div class="stat"><span class="stat__num">∞</span><span class="stat__label">Por crecer</span></div>
       </div>
     </div>
-
-    <div class="kpis" id="agKpis" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px"></div>
-
-    <div class="card">
-      <h2>Agendas por setter y embudo</h2>
-      <div class="h2sub" id="agResSub">cuántas agendas tiene cada setter en cada embudo</div>
-      <div class="tblwrap"><table class="tbl" id="agResumen" style="min-width:620px"></table></div>
+    <div class="sec-head"><div><h2 class="sec-title">Recursos</h2><p class="sec-sub">Elige un recurso para entrar a su biblioteca.</p></div><span class="sec-count">5 recursos</span></div>
+    <div class="modgrid">
+      <a class="modcard" href="#/videos" style="--a1:var(--acc-video-1);--a2:var(--acc-video-2)">
+        <div class="modcard__ic"><svg viewBox="0 0 24 24" width="26" height="26"><rect x="3" y="5" width="18" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m10 9 5 3-5 3V9Z" fill="currentColor"/></svg></div>
+        <div class="modcard__body"><h3 class="modcard__name">Videos de Cierre</h3><p class="modcard__desc">Biblioteca de ventas reales grabadas. Estudia cómo se cerró cada una: quién cerró, técnicas y aprendizajes.</p></div>
+        <div class="modcard__foot"><span class="status status--live"><span class="dot"></span> Disponible</span><span class="modcard__cta">Ingresar <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></div>
+      </a>
+      <a class="modcard" href="#/guiones" style="--a1:var(--acc-guion-1);--a2:var(--acc-guion-2)">
+        <div class="modcard__ic"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M5 4h11l3 3v13H5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8.5 9h7M8.5 12.5h7M8.5 16h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+        <div class="modcard__body"><h3 class="modcard__name">Guion Setter</h3><p class="modcard__desc">Guiones de llamada paso a paso, listos para seguir en vivo. Frases exactas, indicaciones y pausas.</p></div>
+        <div class="modcard__foot"><span class="status status--live"><span class="dot"></span> Disponible</span><span class="modcard__cta">Ingresar <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></div>
+      </a>
+      <a class="modcard" href="#/aperturas" style="--a1:var(--acc-apert-1);--a2:var(--acc-apert-2)">
+        <div class="modcard__ic"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M4 12a8 8 0 0 1 16 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M12 12v7M9 19h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="7" r="2.4" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></div>
+        <div class="modcard__body"><h3 class="modcard__name">Apertura Closer</h3><p class="modcard__desc">Cómo iniciar la llamada para generar confianza y control desde los primeros segundos.</p></div>
+        <div class="modcard__foot"><span class="status status--live"><span class="dot"></span> Disponible</span><span class="modcard__cta">Ingresar <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></div>
+      </a>
+      <a class="modcard" href="#/tecnicas" style="--a1:var(--acc-tec-1);--a2:var(--acc-tec-2)">
+        <div class="modcard__ic"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M12 3.5l2.5 5 5.5.8-4 3.9.95 5.5L12 16.9 7.1 18.7 8 13.2 4 9.3l5.5-.8L12 3.5Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></div>
+        <div class="modcard__body"><h3 class="modcard__name">Técnicas de Cierre</h3><p class="modcard__desc">Los fundamentos del cierre y las técnicas para guiar al cliente a la decisión, con las frases exactas.</p></div>
+        <div class="modcard__foot"><span class="status status--live"><span class="dot"></span> Disponible</span><span class="modcard__cta">Ingresar <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></div>
+      </a>
+      <a class="modcard" href="#/objeciones" style="--a1:var(--acc-obj-1);--a2:var(--acc-obj-2)">
+        <div class="modcard__ic"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M4 5h16v10H8l-4 4V5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 8v3M12 13h.01" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></div>
+        <div class="modcard__body"><h3 class="modcard__name">Manejo de Objeciones</h3><p class="modcard__desc">Cómo identificar la barrera real y resolverla: precio, "lo tengo que pensar", la pareja y el miedo.</p></div>
+        <div class="modcard__foot"><span class="status status--live"><span class="dot"></span> Disponible</span><span class="modcard__cta">Ingresar <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></div>
+      </a>
     </div>
+    <footer class="site-foot"><span>© <span id="year">2026</span> CDI · Consultoría de Importación</span><span>Arsenal de Ventas · Módulo del Central de Ventas</span><span class="site-foot__ver">v1.0</span></footer>
+  </section>
 
-    <div class="card">
-      <div class="cthead">
-        <div><h2>Detalle de agendas</h2><div class="h2sub" id="agDetSub"></div></div>
-        <button class="refbtn" id="agExport" title="Exportar CSV" style="width:auto;padding:0 14px;font-size:12.5px;font-weight:700">⤓ CSV</button>
-      </div>
-      <div class="tblwrap"><table class="tbl" id="agTbl" style="min-width:1180px"></table></div>
+  <!-- ============ VIDEOS ============ -->
+  <section id="view-videos" hidden>
+    <div class="hero"><p class="hero__eyebrow"><span class="pulse"></span> Biblioteca · Ventas reales grabadas</p><h1 class="hero__title">Videos de Cierre</h1><p class="hero__sub">Ventas reales del equipo, grabadas y listas para estudiar. Mira cómo se cerró cada una: quién cerró, qué técnicas usó y qué aprendizaje te llevas.</p>
+      <div class="hero__stats"><div class="stat"><span class="stat__num" id="stTotal">0</span><span class="stat__label">Videos</span></div><span class="stat__div"></span><div class="stat"><span class="stat__num" id="stPaid">0</span><span class="stat__label">Pagaron en llamada</span></div><span class="stat__div"></span><div class="stat"><span class="stat__num" id="stTec">0</span><span class="stat__label">Técnicas</span></div></div>
     </div>
-  </div>
+    <div class="toolbar"><div class="searchbox"><span class="ic"><svg viewBox="0 0 24 24" width="18" height="18"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="m20 20-3.2-3.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><input id="q" type="search" autocomplete="off" placeholder="Busca cliente, técnica, objeción, producto…" /><button class="clr" id="clr" aria-label="Limpiar">&times;</button></div><div class="chips" id="chips"></div></div>
+    <div class="sec-head"><span class="sec-count" id="count"></span></div>
+    <div class="vgrid" id="grid"></div>
+    <div class="empty" id="empty" style="display:none"><div class="big">🔍</div><div>Ningún video coincide.</div></div>
+    <footer class="site-foot"><span>© 2026 CDI · Consultoría de Importación</span><span>Videos de Cierre · Arsenal de Ventas</span><span class="site-foot__ver">v1.0</span></footer>
+  </section>
+
+  <!-- ============ APERTURAS ============ -->
+  <section id="view-aperturas" hidden>
+    <div class="hero"><p class="hero__eyebrow"><span class="pulse"></span> Guiones · Inicio de la llamada</p><h1 class="hero__title">Apertura Closer</h1><p class="hero__sub">Cómo iniciar la llamada para generar confianza, tomar el control y sondear al prospecto antes de presentar.</p></div>
+    <div id="aperturasApp"></div>
+    <footer class="site-foot"><span>© 2026 CDI · Consultoría de Importación</span><span>Apertura Closer · Arsenal de Ventas</span><span class="site-foot__ver">v1.0</span></footer>
+  </section>
+
+  <!-- ============ GUIONES ============ -->
+  <section id="view-guiones" hidden>
+    <div class="hero"><p class="hero__eyebrow"><span class="pulse"></span> Guiones de llamada</p><h1 class="hero__title">Guion Setter</h1><p class="hero__sub">Guiones de llamada paso a paso, listos para seguir en vivo. Las frases exactas, las indicaciones internas y los espacios para que el cliente responda.</p></div>
+    <div id="guionesApp"></div>
+    <footer class="site-foot"><span>© 2026 CDI · Consultoría de Importación</span><span>Guion Setter · Arsenal de Ventas</span><span class="site-foot__ver">v1.0</span></footer>
+  </section>
+
+  <!-- ============ TÉCNICAS DE CIERRE ============ -->
+  <section id="view-tecnicas" hidden>
+    <div class="hero"><p class="hero__eyebrow"><span class="pulse"></span> Técnicas · Cierre de ventas</p><h1 class="hero__title">Técnicas de Cierre</h1><p class="hero__sub">Los fundamentos psicológicos del cierre y las técnicas para guiar al cliente a la decisión — con las frases exactas para usar en el momento justo.</p></div>
+    <div id="tecnicasApp"></div>
+    <footer class="site-foot"><span>© 2026 CDI · Consultoría de Importación</span><span>Técnicas de Cierre · Arsenal de Ventas</span><span class="site-foot__ver">v1.0</span></footer>
+  </section>
+
+  <!-- ============ MANEJO DE OBJECIONES ============ -->
+  <section id="view-objeciones" hidden>
+    <div class="hero"><p class="hero__eyebrow"><span class="pulse"></span> Cierre · Barreras del cliente</p><h1 class="hero__title">Manejo de Objeciones</h1><p class="hero__sub">Detrás de cada "lo tengo que pensar", "no tengo la plata" o "lo hablo con mi pareja" hay una barrera real. Aquí aprendes a identificarla y resolverla — con las frases exactas, adaptadas al Círculo de Importadores.</p></div>
+    <div id="objecionesApp"></div>
+    <footer class="site-foot"><span>© 2026 CDI · Consultoría de Importación</span><span>Manejo de Objeciones · Arsenal de Ventas</span><span class="site-foot__ver">v1.0</span></footer>
+  </section>
+</main>
+
+<div class="ov" id="ov"><div class="modal"><div class="mhead"><span class="mn" id="mn"></span><h2 id="mtitle"></h2><button class="x" id="mx" aria-label="Cerrar">&times;</button></div><div class="mtabs" id="mtabs"></div><div class="mbody"><div id="paneVideo"></div><div id="paneAnalisis" class="analisis"></div><div id="paneMomentos" style="display:none"></div></div><div class="mfoot"><button class="btn btn--ghost" id="mCopyLink">🔗 Copiar link</button><a class="btn btn--primary" id="mPlay" target="_blank" rel="noopener">▶ Abrir grabación</a></div></div></div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
-// ================== CONFIG (links directos, sin depender del consolidado) ==================
-const CLOSERS=[
-  {name:"Alejandro Pulido", id:"1gDcQWO-vHZphKp0X0aRP5_diaUB_k1AqM3stIQdXrIY"},
-  {name:"Yeison Velez",     id:"1HeZqHl-jYPlv3w9IIUUxt_yA0m_9tw7GHvEPuLNHOPw"},
-  {name:"Camilo Luque",     id:"1dE5Pj5eBM4tQBmSiRaBi8q7cqUpB_YgbU7lRH72Tx9U"},
-  {name:"Wendy Ortiz",      id:"1vCHZ7MsvyZPeMjOwRb4JHgenaNAgmYzd7YKXcG1cvXg"},
-  {name:"Karen Quintero",   id:"17RnJ2-6qwm1DoYndQBvskspNWcGV4NE1K2S0WAEFMYc", since:new Date(2026,7,18)}, // solo cuenta desde el 18/08/2026 (lo anterior de su tracker se ignora)
+const $ = id => document.getElementById(id);
+const esc = s => (s||'').replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
+const ICONS={copy:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>',tip:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 1 4 10.5c-.7.7-1 1.2-1 2.5H9c0-1.3-.3-1.8-1-2.5A6 6 0 0 1 12 3Z"/></svg>',wait:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a9 9 0 0 1 0 14"/></svg>',aim:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.4"/></svg>',call:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l1.5 5-2 1.5a12 12 0 0 0 5 5l1.5-2 5 1.5v4a1 1 0 0 1-1 1A16 16 0 0 1 4 5a1 1 0 0 1 1-1Z"/></svg>',note:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>'};
+
+/* ============ DATOS: VIDEOS ============ */
+const VIDEOS=[
+  {n:1,title:"Shalen Mora — Imperius Barber Supply (Plan Max)",cliente:"Barbería · importa a EE. UU. · nicho claro (barber supply)",monto:"",closer:"Yeison V.",link:"https://dashboard.samu.ai/share/6a64f2da16bfd3c5c7b31a70",tecnicas:["plan Max","escalar negocio","importación recurrente"],analisis:"Empresa de barbería con foco en importar a EE. UU. Cerró plan Max, buscando escalar un negocio ya existente en un nicho muy claro (barber supply). Ve mucho valor en el acompañamiento para estructurar importaciones recurrentes y profesionalizar ventas online.",momentos:[]},
+  {n:2,title:"Antonio José Gómez Camacho — Minicurso (puerta de entrada)",cliente:"Perfil formativo · valida el modelo antes de ticket alto",monto:"",closer:"Alejandro P.",link:"https://dashboard.samu.ai/share/6a64f2e6f693b63cbaef398a",tecnicas:["ticket de entrada","minicurso","validación del ecosistema"],analisis:"Cerró minicurso de importaciones y ventas online. Perfil más formativo: quiere entender el modelo antes de irse a un ticket más alto. Ve el minicurso como puerta de entrada para validar el ecosistema y empezar a generar primeras ventas rápido.",momentos:[]},
+  {n:3,title:"Heidy Jhoanna Pastas Ramírez — Pagó en la llamada",cliente:"Alta urgencia · necesidad de cambiar su situación económica",monto:"$2.500.000",closer:"Wendy Ortiz",link:"https://dashboard.samu.ai/share/6a64f2f116bfd3c5c7b31ae8",tecnicas:["urgencia","contención emocional","facilidades de pago","acción inmediata"],analisis:"Pagó durante la llamada (2.500.000 COP). Llegó con alta urgencia y necesidad de cambiar su situación económica; el cierre se apoyó en mucha contención emocional y en mostrarle un camino claro paso a paso. Es un caso típico de \"acción inmediata\" cuando se resuelven miedos y formas de pago.",momentos:[]},
+  {n:4,title:"Alexandra Espinosa / Angie Alexandra Gil — CDI Max",cliente:"Dúo de socias · una financiera, otra operativa",monto:"$600.000 (reserva) + saldo",closer:"Alejandro P.",link:"https://dashboard.samu.ai/share/6a64f2fcf693b63cbaef3a1d",tecnicas:["reserva + saldo","venta a dúo","horizonte 9 meses"],analisis:"Cierre de CDI Max con reserva inicial de 600.000 COP y saldo posterior. Dúo de socias: una más financiera y otra más operativa. El foco del cierre fue mostrar cómo el Max les da tiempo suficiente (9 meses) para aprender, importar y montar sistema de ventas sin ir \"a la carrera\".",momentos:[]},
+  {n:5,title:"Claudia Andrade — Piñatería (CDI Max)",cliente:"Microempresa de piñatería · margen y capital limitado",monto:"Pago parcial + saldo en 1 mes",closer:"Alejandro Pulido",link:"https://dashboard.samu.ai/share/6a64eba5f693b63cbaef279b",tecnicas:["dolor de margen","capital limitado","consolidado","validación de producto"],analisis:"Claudia y Fabián tienen una microempresa de piñatería y querían dejar de comprar a intermediarios. Alejandro trabajó mucho el dolor de margen y capital limitado, les mostró cómo podían empezar con consolidado y validación de producto. Pagaron en la llamada una parte y se comprometieron a completar el resto en un mes, entrando a CDI Max para escalar línea de piñatería y materia prima.",momentos:[]}
 ];
-const CLOSER_GID="824958696"; // pestaña "KPI´S DIARIOS CLOSER ..."
-const SETTERS=[
-  {name:"Natalia Castiblanco", id:"1SnYSXiv-PhGF7hkAPwkOFAZwFYZ0o6i5RMtn9dddFEw"},
-  {name:"Paula Fernández",     id:"1Vofr7NIgx_lynoG1U1o2U3onzraVhcYe_vECEhaEI_4", split:{from:new Date(2026,6,18), to:"Eduardo"}}, // Paula → Eduardo desde el sáb 18/07/2026 (por fecha del registro, sin tocar el histórico)
-  {name:"Carlos Pineda",       id:"1BmVzkCdIK1qvrNL_yNqANuoqUPBhjoAkxGSUszX1-L8"},
-];
-const SETTER_GID="0"; // pestaña diaria (con el nombre de la persona)
-// tracker de proyección mensual + ventas por fuente
-const PROY_ID="12HorM0a3qzyZdvsucqV_15sSLZ6WgRJrNz6U5NquTrg";
-const PROY_GID="1662874272";   // "KPI's MENSUALES"
-const FUENTE_GID="1228658850"; // "Ventas por fuente"
-let PROY=null, FUENTES=null, CUR_MES=null;
-/* ===== MÓDULO AGENDAS (GoHighLevel) — 100% aislado ===== */
-const AG_ID="1ZbU8gUJMLBvtd_Z1RvpPf4FoC4cpF7YDGVSMvNjEhkA"; // hoja que llena el puente GHL
-const AG_GID="541961051";                                   // pestaña "GHL Agendas"
-let AGENDAS=null, AG_RANGO='manana', AG_DIA=null, AG_MES=null;
-const MESNAME=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-const moneyNum=v=>{const d=String(v).split(',')[0].replace(/[^0-9-]/g,''); return d&&d!=='-'?parseInt(d,10):0;};
-const ratioNum=v=>{const n=parseFloat(String(v).replace(/[^0-9,.-]/g,'').replace(',','.')); return isNaN(n)?0:n;};
-const isMoneyStr=s=>/\$|cop/i.test(String(s));
+const ACCENTS=[['var(--acc-video-1)','var(--acc-video-2)'],['var(--acc-guion-1)','var(--acc-guion-2)'],['var(--acc-apert-1)','var(--acc-apert-2)'],['var(--acc-tec-1)','var(--acc-tec-2)'],['var(--acc-obj-1)','var(--acc-obj-2)']];
+const accentOf=v=>ACCENTS[(v.n-1)%ACCENTS.length];
 
-const gvizUrl=(id,gid)=>`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&gid=${gid}&_=${Date.now()}`;
-const rm=matchMedia('(prefers-reduced-motion:reduce)').matches;
-const grads=['linear-gradient(135deg,#ff6a2b,#ff2e8b)','linear-gradient(135deg,#ffb020,#ff6a2b)','linear-gradient(135deg,#7a5cff,#ff2e8b)','linear-gradient(135deg,#2fe08a,#12b5c9)','linear-gradient(135deg,#12b5c9,#7a5cff)','linear-gradient(135deg,#ff5a5a,#ffb020)','linear-gradient(135deg,#9b5cff,#12b5c9)'];
-const solid=['#ff6a2b','#ffb020','#7a5cff','#2fe08a','#12b5c9','#ff5a5a','#9b5cff'];
+/* ============ DATOS: APERTURAS ============ */
+const APERTURAS=[{id:'apertura-sondeo',title:'Apertura y Sondeo',autor:'Carlos Mejía · Director Comercial · Círculo de Importadores',contexto:'Llamada agendada · aplicación revisada',objetivo:'Encuadrar, sondear y crear urgencia antes de presentar',bloques:[
+ {n:1,icon:'🔹',title:'Apertura y encuadre',items:[{t:'say',x:'Hola, ¿cómo estás? Mucho gusto. Mi nombre es Carlos Mejía, soy Director Comercial aquí en el Círculo de Importadores.'},{t:'say',x:'¿Cómo estás? ¿Qué tal tu día?'},{t:'tip',x:'Generas conexión breve.'},{t:'say',x:'Te explico cómo vamos a manejar esta llamada: revisé tu aplicación y voy a hacerte algunas preguntas puntuales para validar si realmente puedo ayudarte. Si confirmo que sí, te explicaré exactamente cómo trabajaremos y la estrategia que implementaremos. Si no hay buen match, te lo diré con claridad y te recomiendo otros recursos.'},{t:'say',x:'¿Te suena bien?'}]},
+ {n:2,icon:'🔎',title:'Sondeo estructurado',subs:[
+  {h:'Contexto actual',items:[{t:'say',x:'Cuéntame, ¿por qué estamos aquí?'},{t:'say',x:'¿A qué te dedicas actualmente? ¿Eres empleado, independiente o comerciante?'},{t:'tip',x:'Si es comerciante:'},{t:'say',x:'¿Qué comercializas? ¿Hace cuánto estás en ese mercado? ¿Cuánto le ganas a tu producto? ¿Y eso está bien para ti?'}]},
+  {h:'Interés en importaciones',items:[{t:'say',x:'¿Por qué quieres importar? ¿Qué fue lo que más te llamó la atención cuando viste nuestra publicidad?'},{t:'say',x:'¿Ya has importado antes o sería tu primera vez? ¿Crees que comprar por Temu es importar?'},{t:'say',x:'¿Has hecho algún programa?'}]},
+  {h:'Decisión',items:[{t:'say',x:'¿Este negocio lo quieres hacer solo o con alguien?'},{t:'tip',x:'Si depende de alguien más:'},{t:'say',x:'¿Por qué esa persona no está aquí?'},{t:'tip',x:'Esta pregunta evita que después te digan "déjame hablarlo".'}]},
+  {h:'Capacidad económica',items:[{t:'say',x:'Si hoy decidieras empezar, ¿con cuánto capital cuentas aproximadamente para tu primera importación?'},{t:'tip',x:'Con liderazgo, sin miedo.'},{t:'say',x:'Porque algo importante es que aquí no solo enseñamos teoría, enseñamos a ejecutar.'},{t:'say',x:'No puedo decirte cuánto necesitas; la idea es orientarte. Por eso necesito saber cuál es tu capital.'}]}
+ ]},
+ {n:3,icon:'🔥',title:'Profundización — hacer soñar + necesidad',items:[{t:'tip',x:'Aquí marcas diferencia.'},{t:'say',x:'[Nombre], dime algo con total honestidad… ¿Qué te motiva realmente a buscar esto? ¿Generar más ingresos? ¿Libertad? ¿Escalar tu negocio? ¿Dejar de depender de un salario?'},{t:'say',x:'Si esto te funciona, ¿qué cambiaría en tu vida en los próximos 6 a 12 meses?'},{t:'tip',x:'Silencio estratégico. Déjalo hablar.'},{t:'say',x:'Y al contrario… ¿qué pasa si sigues exactamente igual dentro de un año?'},{t:'tip',x:'Aquí generas contraste emocional.'}]},
+ {n:4,icon:'🚨',title:'Importancia y urgencia',items:[{t:'say',x:'Déjame preguntarte algo importante… ¿Qué tan importante es para ti iniciar este proyecto este año?'},{t:'tip',x:'Esperas respuesta.'},{t:'say',x:'Y si lo aterrizamos más… del 1 al 10, ¿qué tan importante es empezarlo ahora y no seguir postergándolo?'},{t:'say',x:'¿Por qué no me dices un número menor?'},{t:'tip',x:'Esta pregunta hace que defienda su urgencia.'},{t:'say',x:'Si es tan importante como me estás diciendo… ¿qué tendría que pasar hoy para que tomes acción?'}]},
+ {n:5,icon:'🚀',title:'Transición a presentación',items:[{t:'say',x:'Perfecto. Con todo lo que me acabas de contar, realmente veo que sí te podemos ayudar.'},{t:'say',x:'Te voy a mostrar cómo lo hacemos y, si surge alguna duda en el camino, la vamos solucionando, ¿vale?'}]}
+]}];
 
-// ================== CSV ==================
-function parseCSV(t){
-  const rows=[]; let row=[],f='',q=false;
-  for(let i=0;i<t.length;i++){const c=t[i];
-    if(q){ if(c==='"'){ if(t[i+1]==='"'){f+='"';i++;} else q=false;} else f+=c; }
-    else{ if(c==='"')q=true; else if(c===','){row.push(f);f='';} else if(c==='\n'){row.push(f);rows.push(row);row=[];f='';} else if(c!=='\r')f+=c; }
+/* ============ DATOS: GUIONES (setter) ============ */
+const GUIONES=[{id:'setter-cdi',title:'Llamada de Setter — Previa a la consultoría',autor:'Círculo de Importadores · Setter (Paula)',contexto:'Llamada previa · el cliente ya agendó consultoría',objetivo:'Calificar, generar valor y dejar la consultoría amarrada y confirmada',nota:'El setter lee en voz alta las frases; deja que el cliente responda en cada espacio marcado; y continúa. Las indicaciones en cursiva son internas — no se leen.',bloques:[
+ {n:1,icon:'📞',title:'Apertura y encuadre',items:[{t:'say',x:'Hola [nombre], ¿cómo estás? Te habla Paula, del equipo del Círculo de Importadores. ¿Cómo va tu día?'},{t:'wait'},{t:'say',x:'Mira [nombre], te marco personalmente porque agendaste tu consultoría — y eso ya me dice que vas en serio, que no eres de los que solo lo piensan. Esta llamada de hoy es para prepararte y que llegues a ese espacio sacándole el máximo.'},{t:'say',x:'Este espacio es un plus que te damos para prepararte y conocerte antes de la consultoría. No todos lo tienen. La idea es que llegues a ese día con la metodología clara, los costos claros, y aprovechándolo al 100%.'},{t:'say',x:'Entonces cuéntame para conocerte: ¿a qué te dedicas hoy y qué te llevó a interesarte por importar?'},{t:'wait'}]},
+ {n:2,icon:'🔎',title:'Sondeo de contexto',items:[{t:'tip',x:'El setter recoge primero lo que el cliente soltó, antes de seguir.'},{t:'say',x:'Te entiendo [nombre], y de hecho lo que me cuentas es justo lo que le pasa a mucha de la gente que hoy ya está importando con nosotros.'}],subs:[
+  {h:'Qué sabe del Círculo',items:[{t:'say',x:'Cuéntame una cosa: de lo que has visto de Juan y del Círculo, ¿qué entendiste que hacemos exactamente? Quiero asegurarme de que tengas el panorama completo.'},{t:'wait'}]},
+  {h:'El panorama del ecosistema',items:[{t:'say',x:'Te completo el panorama: el Círculo es un ecosistema que te lleva, desde la práctica, a lograr tu importación y a aprender exactamente cómo hacerlo sin cometer errores. Trabajamos con una metodología clara de 5 pasos — producto, proveedores, negociación, logística y ventas — y te damos herramientas como Importools, que te valida un producto, te estudia el proveedor y te calcula la rentabilidad antes de que inviertas un peso.'},{t:'wait'}]},
+  {h:'Profundizar en el dolor',items:[{t:'say',x:'Y dime algo con honestidad — eso que me cuentas, ¿hace cuánto te viene dando vueltas? ¿Qué es lo que más te pesa de seguir como estás hoy?'},{t:'wait'}]},
+  {h:'Puente a la calificación',items:[{t:'say',x:'Mira [nombre], te voy a ser honesta: lo que me cuentas tiene solución, y por eso estás en el lugar correcto. Déjame hacerte unas preguntas para entender bien tu caso y ver cómo te podemos ayudar de verdad.'}]}
+ ]},
+ {n:3,icon:'✅',title:'Calificación por criterios',subs:[
+  {h:'Criterio 1 · Producto',items:[{t:'say',x:'Empecemos por lo más importante: el producto. ¿Ya sabes qué quieres importar, o estás abierto a que te ayudemos a elegir el más rentable?'},{t:'wait'}]},
+  {h:'Criterio 2 · Urgencia',items:[{t:'say',x:'Ahora hablemos de tiempos: si todo sale bien, ¿cuándo te gustaría ver tu primera importación funcionando?'},{t:'wait'},{t:'tip',x:'Si dice "para luego / más adelante", el setter confronta:'},{t:'say',x:'Mira, con todo el cariño: "para luego" es lo que mantiene a la mayoría exactamente donde están hoy. Los que arrancan ahora son los que en unos meses ya tienen su negocio andando. ¿De verdad quieres seguir esperando, o le entras ahora que tienes la oportunidad al frente?'},{t:'wait'}]},
+  {h:'Criterio 3 · Capital',items:[{t:'say',x:'Algo importante: aquí no venimos a aprender teoría, venimos a ejecutar — y para ejecutar se necesita capital. Si arrancaras hoy, ¿con cuánto cuentas para invertir en tu importación?'},{t:'wait'},{t:'say',x:'Te voy a ser clara con los números para que no haya sorpresas: se necesitan mínimo $1.500 dólares para empezar bien — unos $1.000 son el ingreso al Círculo con toda la formación y herramientas, y los otros $500 son para que hagas tu primera importación. ¿Cuentas con eso o estarías cerca?'},{t:'wait'}]},
+  {h:'Criterio 4 · Decisión',items:[{t:'say',x:'Una última cosa importante: esta decisión, ¿la tomas tú solo o hay alguien más contigo en el proyecto? Te lo pregunto porque en tu consultoría se define todo, incluso hay un beneficio especial por decidir ahí — y quiero que quien decida esté presente para que no lo pierdas.'},{t:'wait'}]}
+ ]},
+ {n:4,icon:'🏅',title:'Calificaste · eres de los nuestros',items:[{t:'say',x:'Mira [nombre], con lo que me cuentas te confirmo una cosa: tú calificas, y de sobra. Tienes el perfil que funciona en el Círculo. Por eso quiero que llegues a tu consultoría sabiendo que no es una llamada cualquiera — es tu entrada a algo que muy pocos tienen la oportunidad de vivir.'},{t:'wait'}]},
+ {n:5,icon:'🔥',title:'Instalación de valor · hacer soñar',items:[{t:'tip',x:'Engancha aquí el dolor exacto que el cliente soltó en el sondeo.'},{t:'say',x:'Imagínate por un momento que ya no tienes que lidiar con [lo que dijo que le pesa], que ya tienes tu negocio funcionando y entrando plata. ¿Qué sería lo primero que cambiarías en tu día a día?'},{t:'wait'},{t:'say',x:'Piénsalo un segundo — todo este tiempo que llevas dándole vueltas a esto, ¿cuánto crees que has dejado de ganar por no haber arrancado antes? Esa es la plata que se va cada mes que lo seguimos dejando.'},{t:'wait'},{t:'say',x:'Por eso esta consultoría es tan importante, [nombre]. No es una llamada más — es la puerta para entrar al mejor núcleo de importadores de Latinoamérica. Ahí dejas de estar solo: tienes una comunidad de más de mil quinientas personas, el respaldo en China, las herramientas y un equipo que te lleva de la mano hasta que lo logres. Eso es lo que se decide ese día.'},{t:'wait'}]},
+ {n:6,icon:'🤝',title:'Cierre y compromiso',items:[{t:'say',x:'Entonces dejémoslo amarrado: tu consultoría queda para el [día] a las [hora]. Ese va a ser tu espacio, así que quiero que llegues con toda la disposición porque ahí se define tu arranque.'},{t:'wait'},{t:'say',x:'Una cosa más, importante: ese día hay un beneficio especial reservado solo para quienes asisten en vivo a su consultoría. Es una razón más para que no te lo pierdas, porque fuera de ese espacio ya no aplica.'},{t:'wait'},{t:'say',x:'Para conservar tu espacio, confírmame por favor una hora antes que sí vas a estar. Tenemos mucha demanda y solo podemos reagendar una vez, así que lo ideal es que lo dejemos firme desde ya. ¿Te parece?'},{t:'wait'},{t:'say',x:'Perfecto. Dime una cosa para quedar tranquila: ¿seguro puedes ese día a esa hora, sin nada que se cruce?'},{t:'wait'},{t:'say',x:'Genial, [nombre]. Quedamos firmes entonces. Recuerda: esta es la oportunidad de arrancar lo que llevas tiempo queriendo. Te veo en tu consultoría.'}]}
+]}];
+
+/* ============ toast + copiar ============ */
+let toT; function toast(m){const el=$('toast');el.textContent=m;el.classList.add('is-visible');clearTimeout(toT);toT=setTimeout(()=>el.classList.remove('is-visible'),1600);}
+function copy(text,btn,msg){const done=()=>{toast(msg||'Copiado');if(btn){const o=btn.innerHTML;const isBtn=btn.classList.contains('btn');btn.classList.add(isBtn?'btn--ok':'is-ok');btn.innerHTML=isBtn?'✓ Copiado':'✓';setTimeout(()=>{btn.classList.remove('btn--ok','is-ok');btn.innerHTML=o;},1200);}};if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(text).then(done).catch(()=>fb(text,done));else fb(text,done);}
+function fb(text,done){const t=document.createElement('textarea');t.value=text;t.style.position='fixed';t.style.opacity=0;document.body.appendChild(t);t.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(t);done();}
+
+/* ============ VIDEOS render ============ */
+let vRendered=false, activeTecs=new Set(), vQuery='';
+function renderVideos(){
+  VIDEOS.forEach(v=>{v.tecnicas=v.tecnicas||[];v.momentos=v.momentos||[];v._s=norm([v.title,v.cliente,v.analisis,v.tecnicas.join(' '),v.closer].join(' '));});
+  const tecCounts={};VIDEOS.forEach(v=>v.tecnicas.forEach(t=>tecCounts[t]=(tecCounts[t]||0)+1));
+  const TECS=Object.keys(tecCounts).sort((a,b)=>tecCounts[b]-tecCounts[a]);
+  $('stTotal').textContent=VIDEOS.length;$('stPaid').textContent=VIDEOS.filter(v=>v.monto).length;$('stTec').textContent=TECS.length;
+  $('chips').innerHTML=TECS.map(t=>`<button class="chip" data-t="${t}">${esc(t)}<span class="ct">${tecCounts[t]}</span></button>`).join('');
+  $('chips').querySelectorAll('.chip').forEach(ch=>ch.onclick=()=>{const t=ch.dataset.t;activeTecs.has(t)?activeTecs.delete(t):activeTecs.add(t);drawVideos();});
+  const qEl=$('q');qEl.oninput=()=>{vQuery=qEl.value.trim();$('clr').classList.toggle('on',!!vQuery);drawVideos();};
+  $('clr').onclick=()=>{qEl.value='';vQuery='';$('clr').classList.remove('on');drawVideos();qEl.focus();};
+  drawVideos();
+}
+function norm(s){return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');}
+function vTokens(){return norm(vQuery).split(/\s+/).filter(Boolean);}
+function vMatch(v){if(activeTecs.size&&![...activeTecs].every(t=>v.tecnicas.includes(t)))return false;const tk=vTokens();if(tk.length&&!tk.every(w=>v._s.includes(w)))return false;return true;}
+function vcard(v){const[a1,a2]=accentOf(v);const tg=v.tecnicas.slice(0,3).map(t=>`<span class="vt2">${esc(t)}</span>`).join('');const money=v.monto?`<span class="money">${esc(v.monto)}</span>`:'';return `<div class="vcard" style="--a1:${a1};--a2:${a2}"><a class="vthumb" href="${v.link}" target="_blank" rel="noopener" title="Ver grabación"><span class="num">VIDEO ${v.n}</span><span class="etag">Cierre</span>${money}<span class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span></a><div class="vbody"><p class="vtitle">${esc(v.title)}</p>${v.cliente?`<p class="vcli">${esc(v.cliente)}</p>`:''}<div class="vtags">${tg}</div><div class="vacts"><button class="btn btn--primary" data-open="${v.n}">▶ Analizar</button><button class="btn btn--ghost" data-copy="${v.n}" aria-label="Copiar link">🔗</button></div></div></div>`;}
+function drawVideos(){const res=VIDEOS.filter(vMatch);$('count').innerHTML=`<b>${res.length}</b> de ${VIDEOS.length} videos`;$('grid').innerHTML=res.map(vcard).join('');$('empty').style.display=res.length?'none':'block';$('grid').style.display=res.length?'grid':'none';$('grid').querySelectorAll('[data-open]').forEach(e=>e.onclick=()=>openModal(+e.dataset.open));$('grid').querySelectorAll('[data-copy]').forEach(e=>e.onclick=ev=>{ev.stopPropagation();copy(VIDEOS.find(v=>v.n===+e.dataset.copy).link,e);});$('chips').querySelectorAll('.chip').forEach(ch=>ch.classList.toggle('on',activeTecs.has(ch.dataset.t)));}
+
+/* modal videos */
+let curV=null;
+function openModal(n){const v=VIDEOS.find(x=>x.n===n);curV=v;const[a1,a2]=accentOf(v);const modal=document.querySelector('.modal');modal.style.setProperty('--a1',a1);modal.style.setProperty('--a2',a2);$('mn').textContent='VIDEO '+v.n;$('mn').style.background=`color-mix(in srgb, ${a2} 92%, #000)`;$('mtitle').textContent=v.title;$('mPlay').href=v.link;$('paneVideo').innerHTML=`<div class="vwrap"><span class="vi">🎬</span><span>Grabación en Samu</span><a class="btn btn--primary" href="${v.link}" target="_blank" rel="noopener">▶ Abrir grabación</a></div>`;const closerLine=v.closer?`<div class="closer">👤 Cerró: <b>${esc(v.closer)}</b></div>`:'';$('paneAnalisis').innerHTML=closerLine+(esc(v.analisis)||'<div class="nomsg">Sin análisis.</div>');$('paneMomentos').innerHTML=v.momentos.length?v.momentos.map(m=>`<div class="moment"><span class="mt">${esc(m.t)}</span><span class="md">${esc(m.d)}</span></div>`).join(''):'<div class="nomsg">Sin momentos clave marcados todavía.</div>';const tabs=[['analisis','Análisis'],['momentos','Momentos clave']];$('mtabs').innerHTML=tabs.map((t,i)=>`<button class="mtab${i===0?' on':''}" data-t="${t[0]}">${t[1]}</button>`).join('');$('mtabs').querySelectorAll('.mtab').forEach(b=>b.onclick=()=>setTab(b.dataset.t));setTab('analisis');$('ov').classList.add('on');document.body.style.overflow='hidden';document.querySelector('.mbody').scrollTop=0;}
+function closeModal(){$('ov').classList.remove('on');document.body.style.overflow='';}
+function setTab(t){document.querySelectorAll('.mtab').forEach(b=>b.classList.toggle('on',b.dataset.t===t));$('paneAnalisis').style.display=t==='analisis'?'block':'none';$('paneMomentos').style.display=t==='momentos'?'block':'none';}
+$('mx').onclick=closeModal;$('ov').onclick=e=>{if(e.target===$('ov'))closeModal();};$('mCopyLink').onclick=()=>copy(curV.link,$('mCopyLink'));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+/* ============ GUION reader (reusable) ============ */
+function saysOf(b){const out=[];(b.items||[]).forEach(i=>{if(i.t==='say')out.push(i.x);});(b.subs||[]).forEach(s=>s.items.forEach(i=>{if(i.t==='say')out.push(i.x);}));return out;}
+function itemHTML(i){if(i.t==='wait')return `<div class="wait"><span>${ICONS.wait} Espacio para que responda el cliente</span></div>`;if(i.t==='tip')return `<div class="tip">${ICONS.tip}<span>${esc(i.x)}</span></div>`;return `<div class="say"><span class="say__q">“</span><span class="say__t">${esc(i.x)}</span><button class="say__cp" data-say="${encodeURIComponent(i.x)}" aria-label="Copiar frase">${ICONS.copy}</button></div>`;}
+function renderGuion(root,guiones){
+  let cur=0;
+  root.innerHTML=`<div class="gpicker"></div><div class="gheadWrap"></div><div class="glayout"><nav class="gnav"></nav><div class="gblocks"></div></div>`;
+  const pickerEl=root.querySelector('.gpicker'),headEl=root.querySelector('.gheadWrap'),navEl=root.querySelector('.gnav'),blocksEl=root.querySelector('.gblocks');
+  let spy;
+  function paint(){
+    const g=guiones[cur];
+    if(guiones.length<2){pickerEl.innerHTML='';}else{pickerEl.innerHTML=guiones.map((x,idx)=>`<button class="gpick${idx===cur?' on':''}" data-g="${idx}">${esc(x.title)}</button>`).join('');pickerEl.querySelectorAll('.gpick').forEach(b=>b.onclick=()=>{cur=+b.dataset.g;paint();window.scrollTo(0,0);});}
+    const nota=g.nota?`<div class="gnote">${ICONS.note}<span><b>Cómo se usa:</b> ${esc(g.nota)}</span></div>`:'';
+    headEl.innerHTML=`<div class="ghead"><div class="ghead__title">${esc(g.title)}</div><div class="ghead__author">${esc(g.autor)}</div><div class="ghead__meta"><span class="gmeta">${ICONS.call} <b>${esc(g.contexto)}</b></span><span class="gmeta">${ICONS.aim} Objetivo: <b>${esc(g.objetivo)}</b></span><span class="gmeta"><b>${g.bloques.length}</b> secciones</span></div>${nota}<div class="ghead__actions"><button class="btn btn--primary cAll">${ICONS.copy} Copiar guion completo</button></div></div>`;
+    headEl.querySelector('.cAll').onclick=e=>{const txt=g.bloques.map(b=>`${b.n}. ${b.title.toUpperCase()}\n`+saysOf(b).map(s=>`- ${s}`).join('\n')).join('\n\n');copy(txt,e.currentTarget,'Guion copiado');};
+    navEl.innerHTML=`<span class="gnav__lbl">Secciones</span>`+g.bloques.map(b=>`<a href="javascript:void(0)" data-b="${b.n}"><span class="gn">${b.n}</span><span class="txt">${esc(b.title)}</span></a>`).join('');
+    blocksEl.innerHTML=g.bloques.map(b=>{let inner=(b.items||[]).map(itemHTML).join('');if(b.subs)inner+=b.subs.map(s=>`<div class="subh">${esc(s.h)}</div>`+s.items.map(itemHTML).join('')).join('');return `<section class="block" id="b${g.id}_${b.n}"><div class="block__head"><span class="block__n">${b.icon||b.n}</span><span class="block__title">${esc(b.title)}</span><button class="btn btn--ghost" data-block="${b.n}">${ICONS.copy} Copiar</button></div><div class="block__body">${inner}</div></section>`;}).join('');
+    navEl.querySelectorAll('a').forEach(a=>a.onclick=()=>{const el=root.querySelector('#b'+g.id+'_'+a.dataset.b);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});});
+    blocksEl.querySelectorAll('[data-say]').forEach(btn=>btn.onclick=()=>copy(decodeURIComponent(btn.dataset.say),btn,'Frase copiada'));
+    blocksEl.querySelectorAll('[data-block]').forEach(btn=>btn.onclick=()=>{const b=g.bloques.find(x=>x.n===+btn.dataset.block);copy(saysOf(b).join('\n\n'),btn,'Sección copiada');});
+    if(spy)spy.disconnect();const links=[...navEl.querySelectorAll('a')];const map={};links.forEach(a=>map[a.dataset.b]=a);spy=new IntersectionObserver(ents=>{ents.forEach(e=>{if(e.isIntersecting){links.forEach(a=>a.classList.remove('on'));const n=e.target.id.split('_').pop();if(map[n])map[n].classList.add('on');}});},{rootMargin:'-40% 0px -55% 0px'});blocksEl.querySelectorAll('.block').forEach(b=>spy.observe(b));
   }
-  if(f.length||row.length){row.push(f);rows.push(row);}
-  return rows;
-}
-const num=v=>{const d=String(v).replace(/[^0-9-]/g,'');const n=parseInt(d,10);return isNaN(n)?0:n;};
-const fmtCOP=v=>Math.round(v).toLocaleString('es-CO');
-const pctStr=(a,b)=>b>0?Math.round(a/b*100)+'%':'—';
-function refYearOf(hdr){
-  const years={};
-  hdr.forEach(h=>{const m=String(h).trim().match(/^\d{2}\/\d{2}\/(\d{4})$/); if(m){const y=+m[1]; if(y>=2000)years[y]=(years[y]||0)+1;}});
-  return +Object.keys(years).sort((a,b)=>years[b]-years[a])[0]||2026;
+  paint();
 }
 
-// ================== PARSER CLOSERS ==================
-function parseCloser(name, txt, cfg){
-  const rows=parseCSV(txt);
-  if(rows.length<19) return [];
-  const find=frag=>rows.find(r=>r[0] && r[0].trim()===frag);
-  const rAg=find("AGENDAS NUEVAS"), rAs=find("ASISTENCIAS AGENDAS NUEVAS"),
-        rOf=find("PRESENTACIONES DE OFERTA AGENDAS NUEVAS"),
-        rCie=find("CIERRES AGENDAS NUEVAS CONTADO"), rRes=find("CIERRES AGENDAS NUEVAS RESERVAS"),
-        rSeg=find("CIERRES SEGUIMIENTOS"), rRec=find("$ RECAUDO TOTAL");
-  const hdr=rows[0], out=[], ref=refYearOf(hdr);
-  for(let c=0;c<hdr.length;c++){
-    const m=String(hdr[c]).trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-    if(!m) continue;
-    let y=+m[3]; if(y<2000)y=ref;
-    const v=c+1;
-    const dd=new Date(y,+m[2]-1,+m[1]);
-    if(cfg&&cfg.since&&dd<cfg.since) continue; // ej. Karen: solo cuenta desde su fecha de inicio
-    out.push({date:dd, who:name,
-      agendas:num(rAg&&rAg[v]), asist:num(rAs&&rAs[v]), ofertas:num(rOf&&rOf[v]),
-      cieCon:num(rCie&&rCie[v]), cieRes:num(rRes&&rRes[v]), cieSeg:num(rSeg&&rSeg[v]),
-      recaudo:num(rRec&&rRec[v]), recaudoObj:num(rRec&&rRec[c])});
-  }
-  return out;
+/* ============ TÉCNICAS DE CIERRE ============ */
+function renderTecnicas(root){
+  const FUNDAMENTOS=[
+    {title:'La psicología del cierre',sub:'Los 2 antecedentes que debes tener',como:[
+      {t:'p',x:'1) Entusiasmo. Más del 50% de tu efectividad al cerrar viene de tu nivel de entusiasmo. Una venta no es más que una transferencia de entusiasmo: cuando transmites tu fe y convicción, la venta sucede casi sola.'},
+      {t:'p',x:'No es entusiasmo teatral, sino contenido — esa energía interna que se nota en tu mirada, tu tono y tu presencia. "Nada grandioso se ha logrado jamás sin entusiasmo" (Emerson).'},
+      {t:'p',x:'2) Expectativa confiada. Espera con certeza y serenidad que el cliente diga que sí. La diferencia es gigante — no preguntes con duda, afirma con seguridad:'},
+      {t:'say',x:'¿Le gustaría el rojo o el verde hoy?'},
+      {t:'p',x:'…en vez de "¿va a querer uno o no?". La confianza se siente: entre más seguro estés de que venderás, más venderás.'}
+    ]},
+    {title:'Califica al prospecto',sub:'4 preguntas antes de intentar cerrar',como:[
+      {t:'p',x:'No puedes venderle a quien no lo necesita o no puede comprarlo. Antes de cerrar, hazte estas 4 preguntas:'},
+      {t:'p',x:'1) ¿Necesita lo que vendo?  2) ¿Puede usarlo realmente?  3) ¿Tiene capacidad de pagarlo?  4) ¿Desea los beneficios de mi producto?'},
+      {t:'p',x:'Cuando cumple los cuatro y muestra interés genuino, estás listo para cerrar.'}
+    ]},
+    {title:'Entiende los miedos',sub:'El del cliente… y el tuyo',como:[
+      {t:'p',x:'El cliente siente el "remordimiento del comprador anticipado": ¿y si me equivoco? ¿y si pago de más? Por eso dice "déjame pensarlo" o "tengo que hablarlo". No son excusas, son señales de duda: tu trabajo no es presionar, sino guiar con calma.'},
+      {t:'p',x:'Tu miedo es el miedo al "no". Pero incluso los mejores escuchan "no" 4 de cada 5 veces. No es personal: el "no" va hacia las circunstancias, no hacia ti.'},
+      {t:'p',x:'Recuerda: más del 80% de las ventas se cierran después del quinto intento.'}
+    ]},
+    {title:'Consigue la cita (teléfono)',sub:'Vende la cita, no el producto',como:[
+      {t:'p',x:'En los primeros segundos debes: romper la distracción, captar la atención y conectar con un beneficio inmediato.'},
+      {t:'say',x:'Hola, soy [tu nombre]. ¿Le gustaría conocer un método probado para aumentar sus ventas un 30% este año?'},
+      {t:'p',x:'Cuando pregunten "¿de qué se trata?", vendes la CITA, no el producto. No intentes explicar todo por teléfono.'},
+      {t:'say',x:'Justamente eso es lo que quiero mostrarle. Solo necesito 10 minutos de su tiempo, y luego decidirá usted mismo.'},
+      {t:'p',x:'Si piden precio: "Si no es lo que busca, no le costará nada." Si piden info por correo: "Prefiero pasársela personalmente" y agenda la visita.'},
+      {t:'say',x:'Solo necesito 10 minutos. En 10 minutos usted decide, usted lo juzgará por sí mismo.'},
+      {t:'p',x:'Esa frase reduce la resistencia: el prospecto siente que tiene el control.'}
+    ]}
+  ];
+  const TECNICAS=[
+    {n:1,title:'Cierre de enfoque',cuando:'Al inicio de la presentación · productos de uso común',
+     que:'Logra que el prospecto se comprometa a darte una respuesta concreta al final, en lugar de dejar todo abierto con un "necesito pensarlo".',
+     como:[{t:'p',x:'Rompe la resistencia inicial y establece un acuerdo:'},{t:'say',x:'Señor prospecto, no intentaré venderle nada en este momento, así que puede relajarse. Solo le mostraré algunas de las razones por las que tantas personas han decidido adquirir este producto. Le pido que escuche con mente abierta y, al final, me diga si también aplican a su situación. ¿Le parece justo?'},{t:'p',x:'La mayoría dice "de acuerdo". Ahí queda el pacto implícito: no le vendo si usted escucha con disposición.'},{t:'p',x:'Si al final aparece el "tengo que pensarlo":'},{t:'say',x:'Al comienzo usted me prometió que al final me daría una respuesta de una u otra forma. Y por lo que me ha comentado, este producto encaja perfectamente con sus necesidades…'},{t:'p',x:'…y pasas directo al cierre.'}],
+     clave:'Consigues el compromiso de decidir ANTES de empezar a presentar.'},
+    {n:2,title:'Cierre de demostración',cuando:'Al inicio · para calificar interés y capacidad de pago',
+     que:'Con una sola pregunta poderosa confirmas si el prospecto está en condiciones de comprar (interés + dinero) antes de presentar.',
+     como:[{t:'say',x:'Señor prospecto, si pudiera mostrarle la mejor oportunidad de inversión que haya visto en su vida, ¿estaría en posición de invertir hoy mismo?'},{t:'p',x:'Si dice que no cuenta con el monto, negocias la cifra hasta encontrar la real ("¿qué tal X?… ¿y X?"). Luego rematas:'},{t:'say',x:'Perfecto. Entonces, si pudiera mostrarle la mejor inversión que haya visto, ¿estaría dispuesto a invertir esa cantidad?'},{t:'p',x:'Así eliminas desde el principio el clásico "tengo que consultarlo": ya confirmaste que puede decidir y que tiene el dinero. Adaptable a inversión, capacitación o bienes raíces: "Si encontráramos la casa exacta, ¿cuándo le gustaría tomar posesión?".'}],
+     clave:'Calificas interés y dinero con una sola pregunta, antes de invertir tu tiempo.'},
+    {n:3,title:'Cierre del botón caliente',cuando:'Durante la presentación · cuando descubres qué desea de verdad',
+     que:'El 80–90% de la decisión depende del 10–20% de las características. Tu trabajo es descubrir el 1 o 2 puntos que realmente encienden el deseo del cliente… y presionarlos una y otra vez.',
+     como:[{t:'p',x:'Haz preguntas inteligentes y escucha. Si le das espacio, el cliente te dirá exactamente qué necesita oír para comprar (su "beneficio clave").'},{t:'p',x:'Ejemplo: en una casa vieja y con defectos, la esposa se enamoró del cerezo en flor del jardín. Cada vez que el esposo señalaba un defecto, el vendedor respondía:'},{t:'say',x:'Sí, pero mire qué hermosa vista del cerezo en flor se tiene desde aquí.'},{t:'p',x:'Repitió el botón caliente habitación tras habitación… y compraron la casa.'},{t:'p',x:'Hablar no es vender. Solo vendes cuando preguntas, escuchas e identificas ese botón, y construyes toda tu estrategia alrededor de él.'}],
+     clave:'Descubre las 1 o 2 cosas que le importan y machácalas; ignora el resto.'},
+    {n:4,title:'Cierre de prueba',cuando:'A lo largo de toda la conversación · como termómetro',
+     que:'Mide el interés y el compromiso emocional del cliente ANTES del cierre final, con preguntas suaves que no presionan pero revelan mucho.',
+     como:[{t:'p',x:'En vez de esperar al final, lanza preguntas suaves durante la presentación:'},{t:'say',x:'¿Qué opina hasta ahora? ¿Cree que esto podría funcionarle? ¿Cómo se sentiría usándolo? ¿Le gustaría algo así en su empresa o su hogar?'},{t:'p',x:'Si responde con entusiasmo, vas bien. Si hay dudas o respuestas vagas, hay objeciones ocultas que debes resolver antes de cerrar.'},{t:'p',x:'Regla de oro: nunca intentes cerrar sin al menos tres cierres de prueba exitosos durante la presentación.'}],
+     clave:'Toma la temperatura del cliente varias veces; así el cierre final no es una sorpresa.'}
+  ];
+  const scriptHTML=x=>`<div class="say"><span class="say__q">“</span><span class="say__t">${esc(x)}</span><button class="say__cp" data-say="${encodeURIComponent(x)}" aria-label="Copiar frase">${ICONS.copy}</button></div>`;
+  function bodyHTML(t){let h='';if(t.que){h+=`<div class="tsub">Qué es</div><p class="tp">${esc(t.que)}</p>`;}if(t.cuando){h+=`<div class="tsub">Cuándo usarla</div><p class="tp">${esc(t.cuando)}</p>`;}if(t.como&&t.como.length){h+=`<div class="tsub">Cómo aplicarla</div>`+t.como.map(i=>i.t==='say'?scriptHTML(i.x):`<p class="tp">${esc(i.x)}</p>`).join('');}if(t.clave){h+=`<div class="tclave">${ICONS.tip}<span><b>La clave:</b> ${esc(t.clave)}</span></div>`;}return h;}
+  const chev='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
+  const accHTML=(item,badge)=>`<div class="acc"><button class="acc__head" aria-expanded="false"><span class="acc__n">${badge}</span><span class="acc__ttl"><span class="acc__t">${esc(item.title)}</span>${item.cuando?`<span class="acc__when">${esc(item.cuando)}</span>`:(item.sub?`<span class="acc__when">${esc(item.sub)}</span>`:'')}</span><span class="acc__chev">${chev}</span></button><div class="acc__body" hidden>${bodyHTML(item)}</div></div>`;
+  root.innerHTML=`<div class="src">📚 Basado en <a href="https://www.youtube.com/watch?v=ViDcgj-kMT4" target="_blank" rel="noopener">Brian Tracy — 24 técnicas de cierre</a></div>`+
+    `<h2 class="tsec-title">Fundamentos del cierre</h2>`+FUNDAMENTOS.map(f=>accHTML(f,'◆')).join('')+
+    `<h2 class="tsec-title" style="margin-top:26px">Las técnicas</h2>`+TECNICAS.map(t=>accHTML(t,t.n)).join('');
+  root.querySelectorAll('.acc__head').forEach(h=>h.onclick=()=>{const acc=h.parentElement;const open=acc.classList.toggle('open');h.setAttribute('aria-expanded',open);acc.querySelector('.acc__body').hidden=!open;});
+  root.querySelectorAll('[data-say]').forEach(b=>b.onclick=e=>{e.stopPropagation();copy(decodeURIComponent(b.dataset.say),b,'Frase copiada');});
 }
 
-// ================== PARSER SETTERS ==================
-const SET_PREFIX=['#','%','agenda','asist','cierre','recaudo','objetiv'];
-function isChannelHeader(lab){
-  const low=lab.toLowerCase();
-  if(low==='objetivos'||lab==='AGENDAS NUEVAS CONSEGUIDAS'||low.startsWith('% agendas')) return false;
-  return !SET_PREFIX.some(p=>low.startsWith(p));
-}
-function parseSetter(name, txt, cfg){
-  const rows=parseCSV(txt);
-  if(rows.length<15) return [];
-  const hdr=rows[0], ref=refYearOf(hdr);
-  // asignar canal a cada fila métrica
-  const rowChan={}; let cur=null;
-  for(let i=1;i<rows.length;i++){
-    const lab=(rows[i][0]||'').trim(); if(!lab) continue;
-    if(isChannelHeader(lab)){cur=lab; continue;}
-    rowChan[i]=cur||'—';
-  }
-  const rTot=rows.find(r=>r[0]&&r[0].trim()==="AGENDAS NUEVAS CONSEGUIDAS");
-  const rPr=rows.find(r=>r[0]&&r[0].trim()==="Agendas Programadas (24h antes confirmadas)");
-  const rCf=rows.find(r=>r[0]&&r[0].trim()==="Agendas confirmadas (mismo dia)");
-  const rSh=rows.find(r=>r[0]&&r[0].trim()==="Asistentes a la agenda");
-  const rOfr=rows.find(r=>r[0]&&r[0].trim().toLowerCase().startsWith("agendas asistidas presentaci")); // "Ofertadas" (presentación de oferta)
-  const out=[];
-  for(let c=0;c<hdr.length;c++){
-    const m=String(hdr[c]).trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-    if(!m) continue;
-    let y=+m[3]; if(y<2000)y=ref;
-    const v=c+1;
-    let asistidas=0, ofertadas=0, cerradas=0, recaudo=0;
-    const ch={};
-    for(let i=1;i<rows.length;i++){
-      if(!(i in rowChan)) continue;
-      const lab=(rows[i][0]||'').trim(), val=num(rows[i][v]);
-      if(!val) continue;
-      const chn=rowChan[i], low=lab.toLowerCase();
-      const cd=ch[chn]||(ch[chn]={con:0,conf:0,asi:0,of:0,cer:0,rec:0});
-      if(lab==="# agendas conseguidas"||lab==="Agendas") cd.con+=val;
-      if(lab==="# agendas confirmadas") cd.conf+=val; // RE-Calificadas por canal
-      if(lab==="# agendas asistidas"){asistidas+=val; cd.asi+=val;}
-      if(lab==="# agendas ofertadas"){ofertadas+=val; cd.of+=val;}
-      if(lab==="# Agendas cerradas"){cerradas+=val; cd.cer+=val;}
-      if(low.startsWith("recaudo") && low!=="recaudo closer"){recaudo+=val; cd.rec+=val;}
-    }
-    const conseguidas=num(rTot&&rTot[v]);
-    // limpiar canal "CONFIRMACIONES (HOY)" del desglose (no es fuente de agenda)
-    delete ch["CONFIRMACIONES (HOY)"];
-    const dd=new Date(y,+m[2]-1,+m[1]);
-    const who=(cfg&&cfg.split&&dd>=cfg.split.from)?cfg.split.to:name; // transición por fecha (Paula→Eduardo), sin relabelear el histórico
-    out.push({date:dd, who, conseguidas, asistidas, ofertadas, cerradas, recaudo, ch,
-      programadas:num(rPr&&rPr[v]), confirmadas:num(rCf&&rCf[v]), asistieron:num(rSh&&rSh[v]), ofrecieron:num(rOfr&&rOfr[v])});
-  }
-  return out;
+/* ============ MANEJO DE OBJECIONES ============ */
+function renderObjeciones(root){
+  const INTRO=[
+    {title:'Los 3 tipos de objeción',sub:'Aprende a reconocerlas',como:[
+      {t:'p',x:'Toda objeción cae en uno de tres tipos, aunque se disfrace de "dinero", "pareja" o "lo quiero pensar":'},
+      {t:'p',x:'1) Pantalla de humo — una excusa que tapa la objeción real.  2) Logística — quiere avanzar, pero algo concreto (el capital, la forma de pago) se lo impide.  3) Miedo — le cuesta tomar la decisión.'},
+      {t:'p',x:'Tu trabajo siempre es el mismo: indagar hasta encontrar la barrera real, validarla y resolverla. Nunca pelees con la objeción de la superficie.'}
+    ]}
+  ];
+  const OBJECIONES=[
+    {n:1,title:'"Lo tengo que pensar"',cuando:'Pantalla de humo · "lo quiero pensar", "después te confirmo"',
+     que:'Casi nunca necesita pensar nada: es una excusa educada que tapa la objeción real. Tu meta es destapar qué es lo que de verdad lo frena.',
+     como:[{t:'p',x:'No pelees con la objeción: baja la guardia y ábrela con una pregunta.'},{t:'say',x:'Buenísimo, tranquilo, no hay ningún problema en que lo quieras pensar. Solo para ayudarte mejor: ¿qué es eso que te queda dando vueltas o que no te termina de cerrar para arrancar con tu importación?'},{t:'p',x:'Ahí aparece la objeción real (capital, pareja, miedo). La resuelves con el bloque que corresponda… y cierras.'}],
+     clave:'"Lo tengo que pensar" no se rebate: se destapa. Indaga hasta la objeción real.'},
+    {n:2,title:'Dinero / logística',cuando:'Logística · quiere avanzar pero no tiene todo el capital hoy',
+     que:'La persona SÍ quiere entrar, pero por algo concreto no puede pagar el total hoy (lo tiene en efectivo, le falta una parte, depende de una tarjeta).',
+     como:[{t:'p',x:'1) Valida el deseo y hazlo autoconvencerse:'},{t:'say',x:'Buenísimo. Más allá del tema del pago, el Círculo lo querés hacer, ¿verdad? ¿Qué fue lo que más sentido le viste para tu caso?'},{t:'p',x:'2) Ofrece reserva o cuotas. Si no tiene el monto completo, que deje una reserva para congelar el precio y guardar el cupo, y complete el saldo después (como ya lo han hecho varios que entraron a CDI Max).'},{t:'say',x:'Podemos hacer algo: dejas hoy una reserva para congelar el valor y asegurar tu lugar, y completas el saldo apenas tengas el resto. ¿Te sirve así?'},{t:'p',x:'La reserva es un pago de compromiso: sin ella, es muy probable que después desaparezca. Con ella, subís muchísimo las chances de que complete.'}],
+     clave:'Valida el deseo, hazlo autoconvencerse y asegura un pago de compromiso (reserva).'},
+    {n:3,title:'"Lo tengo que hablar con mi pareja / socio"',cuando:'Puede ser real o excusa · alinea a la tercera persona',
+     que:'Puede ser real o una excusa. La clave es alinear a esa tercera persona a tu favor y devolverle la decisión al prospecto.',
+     como:[{t:'p',x:'1) Valida y alinéate con la pareja:'},{t:'say',x:'Me parece perfecto que lo quieras hablar con ella. Dime una cosa: ¿cómo crees que se sentiría al ver que inviertes en aprender a importar para generar un ingreso extra e incluso dejar de depender de tu trabajo actual?'},{t:'p',x:'2) Justifica el beneficio para la pareja:'},{t:'say',x:'¿Y por qué crees que ella querría eso para ti? ¿Cómo la beneficiaría a ella que tengas más tiempo y más ingresos?'},{t:'p',x:'3) Devuélvele la decisión:'},{t:'say',x:'El programa, ¿quién lo quiere hacer, tú o ella? Y en el peor de los casos, si ella no te apoyara pero tú de verdad le ves el valor y sientes que te va a servir… ¿lo harías igual?'},{t:'p',x:'4) Si dice que sí, confirma y asegura la reserva:'},{t:'say',x:'Entonces, por lo que me dices, no es que la decisión dependa de ella, sino que como pareja te gusta escuchar su opinión, ¿cierto? Buenísimo. Dejemos hoy una reserva para asegurar tu cupo, lo hablas con ella con calma y completas el saldo.'}],
+     clave:'Alinea a la pareja como beneficiaria, devuelve la decisión al prospecto y asegura la reserva.'},
+    {n:4,title:'Miedo a decidir',cuando:'Miedo · le cuesta dar el paso',
+     que:'El patrón de pensar y actuar que tiene hoy es el que lo trajo hasta donde está. Para cambiar su resultado, tiene que cambiar el patrón — y eso da miedo.',
+     como:[{t:'p',x:'1) Valida el miedo (es humano):'},{t:'say',x:'Es totalmente normal que sientas algo de miedo: estás frente a una decisión que puede cambiarte la situación. ¿Quién no sentiría algo así?'},{t:'p',x:'2) Reencuadra: el miedo señala crecimiento.'},{t:'say',x:'Ese freno que sientes es justamente la señal de que estás saliendo de tu zona de confort — y afuera de ahí es donde está el crecimiento. Si sigues haciendo lo mismo, vas a seguir teniendo los mismos resultados. Para resultados distintos hacen falta decisiones distintas.'},{t:'p',x:'3) Convierte el miedo en combustible:'},{t:'say',x:'No uses el miedo como una barrera, úsalo como combustible para dar el paso. Esa es la diferencia entre quienes avanzan y quienes se quedan igual.'}],
+     clave:'Valida el miedo, reencuádralo como señal de crecimiento y conviértelo en combustible.'},
+    {n:5,title:'Miedo a invertir (el monto le pesa)',cuando:'Miedo · el valor de la inversión le representa mucho',
+     que:'El monto le costó meses de ahorro o mucho trabajo, y le da miedo invertirlo. Pero ese mismo miedo es la señal de que necesita empezar a generar más ingresos.',
+     como:[{t:'p',x:'1) Comprende y valida:'},{t:'say',x:'Entiendo perfecto que te dé respeto invertir esta cantidad; es lógico, te costó tiempo y esfuerzo ahorrarla.'},{t:'p',x:'2) Reencuadra el miedo como la razón para entrar (retorno):'},{t:'say',x:'Y justamente que te pese tanto es la mejor señal de que necesitas empezar a generar más. Hoy esta inversión te representa mucho; la idea es que con lo que vas a aprender importando, esa cantidad la recuperes en una o dos ventas, no en meses de ahorro.'},{t:'p',x:'Apóyate en las analogías de la zona de confort y del miedo como combustible.'}],
+     clave:'El miedo a invertir es la razón para invertir: reencuadra el monto como retorno, no como gasto.'},
+    {n:6,title:'Miedo disfrazado de "la pareja"',cuando:'Miedo disfrazado · usa a la pareja como escudo',
+     que:'No es que dependa de la pareja: tiene miedo de que no lo apoye (muchas veces por resultados malos del pasado). Hay que separar el miedo de la excusa.',
+     como:[{t:'p',x:'1) Confirma el apoyo real:'},{t:'say',x:'¿Tu pareja suele apoyarte en decisiones importantes que también les hacen bien a los dos?'},{t:'p',x:'2) Explora el miedo:'},{t:'say',x:'¿Qué es lo que te daría miedo que ella te diga?'},{t:'p',x:'3) Si es por fracasos pasados, rompe el patrón:'},{t:'say',x:'Lo que te pasó antes no te define. Si sigues decidiendo desde los resultados del pasado, tu situación no va a cambiar. Y a fin de cuentas, esto también le va a traer beneficios a ella.'},{t:'p',x:'4) Reafirma y cierra con un empujón:'},{t:'say',x:'Tu pareja te va a apoyar, créeme — y más contenta va a estar cuando llegues con tu primera importación vendida y el dinero sobre la mesa. Dejemos hoy tu reserva y avancemos.'}],
+     clave:'Separa el miedo de la excusa: no depende de la pareja, depende de él. El pasado no lo define.'}
+  ];
+  const scriptHTML=x=>`<div class="say"><span class="say__q">“</span><span class="say__t">${esc(x)}</span><button class="say__cp" data-say="${encodeURIComponent(x)}" aria-label="Copiar frase">${ICONS.copy}</button></div>`;
+  function bodyHTML(t){let h='';if(t.que){h+=`<div class="tsub">Qué hay detrás</div><p class="tp">${esc(t.que)}</p>`;}if(t.cuando){h+=`<div class="tsub">Cuándo aparece</div><p class="tp">${esc(t.cuando)}</p>`;}if(t.como&&t.como.length){h+=`<div class="tsub">Cómo resolverla</div>`+t.como.map(i=>i.t==='say'?scriptHTML(i.x):`<p class="tp">${esc(i.x)}</p>`).join('');}if(t.clave){h+=`<div class="tclave">${ICONS.tip}<span><b>La clave:</b> ${esc(t.clave)}</span></div>`;}return h;}
+  const chev='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
+  const accHTML=(item,badge)=>`<div class="acc"><button class="acc__head" aria-expanded="false"><span class="acc__n">${badge}</span><span class="acc__ttl"><span class="acc__t">${esc(item.title)}</span>${item.cuando?`<span class="acc__when">${esc(item.cuando)}</span>`:(item.sub?`<span class="acc__when">${esc(item.sub)}</span>`:'')}</span><span class="acc__chev">${chev}</span></button><div class="acc__body" hidden>${bodyHTML(item)}</div></div>`;
+  root.innerHTML=`<div class="src">🛡️ Marco de manejo de objeciones · <a href="https://www.youtube.com/watch?v=495KbuR4cBA" target="_blank" rel="noopener">fuente</a> · adaptado al Círculo de Importadores</div>`+
+    `<h2 class="tsec-title">El marco</h2>`+INTRO.map(f=>accHTML(f,'◆')).join('')+
+    `<h2 class="tsec-title" style="margin-top:26px">Las objeciones</h2>`+OBJECIONES.map(t=>accHTML(t,t.n)).join('');
+  root.querySelectorAll('.acc__head').forEach(h=>h.onclick=()=>{const acc=h.parentElement;const open=acc.classList.toggle('open');h.setAttribute('aria-expanded',open);acc.querySelector('.acc__body').hidden=!open;});
+  root.querySelectorAll('[data-say]').forEach(b=>b.onclick=e=>{e.stopPropagation();copy(decodeURIComponent(b.dataset.say),b,'Frase copiada');});
 }
 
-// ================== PARSER PROYECCIÓN MENSUAL ==================
-function parseProy(txt){
-  const rows=parseCSV(txt); const hdr=rows[1]||[];
-  const months=[];
-  for(let b=2;b+1<hdr.length;b+=3){const m=String(hdr[b+1]).trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/); if(m)months.push({b,mo:+m[2],yr:+m[3],key:m[3]+'-'+m[2],label:MESNAME[+m[2]-1]});}
-  // meses con datos reales (# de ventas real>0)
-  const vrow=rows.find(r=>r[0]&&r[0].trim()==='# de ventas');
-  const withData=months.filter(mm=>vrow&&moneyNum(vrow[mm.b+1])>0);
-  const use=withData.slice(-3); // último trimestre
-  // grupo (sección) por fila: fila con col A y col B vacía = encabezado de sección
-  const groupOf={}; let curG='';
-  rows.forEach((r,idx)=>{
-    if(idx<2) return;
-    const a=(r[0]||'').trim(), bcol=(r[1]||'').trim();
-    if(a && !bcol){curG=a; return;}
-    if(a && bcol==='Sol') groupOf[idx]=curG;
-  });
-  const data={};
-  use.forEach(mm=>{
-    const arr=[];
-    rows.forEach((r,idx)=>{
-      if(!(idx in groupOf)) return;
-      const lab=(r[0]||'').trim();
-      const meta=(r[mm.b]||'').trim(), real=(r[mm.b+1]||'').trim(), pct=(r[mm.b+2]||'').trim();
-      const money=isMoneyStr(meta)||isMoneyStr(real);
-      const isPct=lab.startsWith('%');
-      const isRatio=/roas/i.test(lab);
-      arr.push({label:lab, group:groupOf[idx], meta, real, pct, money, isPct, isRatio,
-        metaN:money?moneyNum(meta):(isRatio?ratioNum(meta):moneyNum(meta)),
-        realN:money?moneyNum(real):(isRatio?ratioNum(real):moneyNum(real))});
-    });
-    data[mm.key]=arr;
-  });
-  return {months:use, data};
+/* ============ Router ============ */
+const rendered={videos:false,aperturas:false,guiones:false,tecnicas:false,objeciones:false};
+const TITLES={hub:'Arsenal de Ventas · CDI',videos:'Videos de Cierre · Arsenal de Ventas',aperturas:'Apertura Closer · Arsenal de Ventas',guiones:'Guion Setter · Arsenal de Ventas',tecnicas:'Técnicas de Cierre · Arsenal de Ventas',objeciones:'Manejo de Objeciones · Arsenal de Ventas'};
+function route(){
+  const map={'#/':'hub','':'hub','#/videos':'videos','#/aperturas':'aperturas','#/guiones':'guiones','#/tecnicas':'tecnicas','#/objeciones':'objeciones'};
+  const key=map[location.hash]||'hub';
+  if(key==='videos'&&!rendered.videos){renderVideos();rendered.videos=true;}
+  if(key==='aperturas'&&!rendered.aperturas){renderGuion($('aperturasApp'),APERTURAS);rendered.aperturas=true;}
+  if(key==='guiones'&&!rendered.guiones){renderGuion($('guionesApp'),GUIONES);rendered.guiones=true;}
+  if(key==='tecnicas'&&!rendered.tecnicas){renderTecnicas($('tecnicasApp'));rendered.tecnicas=true;}
+  if(key==='objeciones'&&!rendered.objeciones){renderObjeciones($('objecionesApp'));rendered.objeciones=true;}
+  ['hub','videos','aperturas','guiones','tecnicas','objeciones'].forEach(k=>$('view-'+k).hidden=(k!==key));
+  $('backHub').style.display=key==='hub'?'none':'';
+  document.title=TITLES[key];
+  window.scrollTo(0,0);
 }
-// ================== PARSER VENTAS POR FUENTE ==================
-function parseFuentes(txt){
-  const rows=parseCSV(txt);
-  const MM={ENERO:1,FEBRERO:2,MARZO:3,ABRIL:4,MAYO:5,JUNIO:6,JULIO:7,AGOSTO:8,SEPTIEMBRE:9,OCTUBRE:10,NOVIEMBRE:11,DICIEMBRE:12};
-  const months=[], data={}; let cur=null;
-  rows.forEach(r=>{
-    const a=(r[0]||'').trim(); const au=a.toUpperCase().replace('FUENTE','').trim();
-    if(MM[au]){cur=MM[au]; if(!data[cur]){data[cur]={sources:[],total:null,cartera:null}; months.push({key:cur,label:MESNAME[cur-1]});} return;}
-    if(!cur||!a||a.toUpperCase()==='FUENTE') return;
-    if(a.toUpperCase()==='TOTAL'){data[cur].total={inv:moneyNum(r[1]),rec:moneyNum(r[2]),roas:ratioNum(r[3])}; return;}
-    if(a.toUpperCase()==='CARTERA'){data[cur].cartera={inv:moneyNum(r[1]),rec:moneyNum(r[2]),roas:ratioNum(r[3]),ventas:parseInt(String(r[4]||'').replace(/[^0-9]/g,''))||0,pct:(r[5]||'').trim()}; return;}
-    const inv=moneyNum(r[1]), rec=moneyNum(r[2]), ventas=parseInt(String(r[4]||'').replace(/[^0-9]/g,''))||0;
-    if(!inv&&!rec&&!ventas) return;
-    data[cur].sources.push({name:a, inv, rec, roas:ratioNum(r[3]), ventas, pct:(r[5]||'').trim(), etapa:(r[6]||'').trim()});
-  });
-  return {months, data};
-}
+window.addEventListener('hashchange',route);
 
-// ================== ESTADO / CARGA ==================
-let MODE='closers';
-const DATA={closers:[],setters:[]};
-const FAILED={closers:[],setters:[]};
-let built=false;
-
-function loadMode(mode){
-  const list = mode==='closers'?CLOSERS:SETTERS;
-  const gid  = mode==='closers'?CLOSER_GID:SETTER_GID;
-  const parse= mode==='closers'?parseCloser:parseSetter;
-  FAILED[mode]=[];
-  return Promise.all(list.map(t=>
-    fetch(gvizUrl(t.id,gid),{cache:'no-store'})
-      .then(r=>r.ok?r.text():Promise.reject(r.status))
-      .then(txt=>{const recs=parse(t.name,txt,t); if(!recs.length)FAILED[mode].push(t.name); return recs;})
-      .catch(e=>{console.error(mode,t.name,e);FAILED[mode].push(t.name);return [];})
-  )).then(all=>{DATA[mode]=all.flat();});
-}
-function loadProyFuentes(){
-  return Promise.all([
-    fetch(gvizUrl(PROY_ID,PROY_GID),{cache:'no-store'}).then(r=>r.text()).then(t=>{PROY=parseProy(t);}).catch(e=>{console.error('proy',e);}),
-    fetch(gvizUrl(PROY_ID,FUENTE_GID),{cache:'no-store'}).then(r=>r.text()).then(t=>{FUENTES=parseFuentes(t);}).catch(e=>{console.error('fuentes',e);})
-  ]);
-}
-function fetchData(){
-  const btn=document.getElementById('refresh'); btn.classList.add('spin');
-  return Promise.all([loadMode('closers'),loadMode('setters'),loadProyFuentes(),loadFinanzas(),loadAgendas()]).then(()=>{
-    if(!built){buildFilters();built=true;applyMode();} // SOLO en la carga inicial se fija el filtro por defecto
-    else rerenderCurrent();                            // en auto-refrescos: re-dibuja con datos frescos SIN tocar el filtro del usuario
-  }).finally(()=>btn.classList.remove('spin'));
-}
-// re-dibuja el modo actual conservando exactamente los filtros seleccionados (rango, mes, closer/setter)
-function rerenderCurrent(){
-  if(MODE==='closers'||MODE==='setters'){ setStatus(); render(); }
-  else if(MODE==='proyeccion'){ renderProy(CUR_MES); }
-  else if(MODE==='fuentes'){ renderFuentes(CUR_MES); }
-  else if(MODE==='finanzas'){ renderFinanzas(); }
-  else if(MODE==='cartera'){ renderCartera(); }
-  else if(MODE==='agendas'){ agLlenaSelects(); renderAgendas(); }
-}
-function records(){return DATA[MODE];}
-function setStatus(){
-  const ok=records().length>0;
-  const s=document.getElementById('status');
-  s.className='live'+(ok?'':' err');
-  const t=new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
-  let txt = ok?('en vivo · actualizado '+t):'sin acceso a las hojas';
-  if(ok && FAILED[MODE].length) txt+=' · ⚠ sin acceso: '+FAILED[MODE].join(', ');
-  document.getElementById('statusTxt').textContent=txt;
-}
-
-// ================== FILTROS ==================
-function buildFilters(){
-  document.getElementById('refresh').addEventListener('click',fetchData);
-  document.getElementById('pers').addEventListener('change',render);
-  ['from','to'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{clearSeg();document.getElementById('mes').value='';render();}));
-  document.getElementById('mes').addEventListener('change',e=>{setMonth(e.target.value);render();});
-  document.getElementById('mesSel').addEventListener('change',e=>{CUR_MES=e.target.value; if(MODE==='proyeccion')renderProy(CUR_MES); else if(MODE==='fuentes')renderFuentes(CUR_MES);});
-  // Finanzas: clic en tarjeta/celda -> detalle (delegación)
-  document.getElementById('finanzasView').addEventListener('click',e=>{
-    const el=e.target.closest('[data-fin-metric]'); if(!el)return;
-    finDrill(el.dataset.finCloser||'', el.dataset.finMetric);
-  });
-  document.getElementById('finExport').addEventListener('click',finExport);
-  document.getElementById('finVentasExport').addEventListener('click',finVentasExport);
-  document.getElementById('finDetailClose').addEventListener('click',()=>{FIN_DRILL=null;document.getElementById('finDetailCard').style.display='none';});
-  // Cartera: sus dos filtros propios
-  document.getElementById('cartMes').addEventListener('change',renderCartera);
-  document.getElementById('cartCloser').addEventListener('change',renderCartera);
-  document.getElementById('seg').addEventListener('click',e=>{
-    const b=e.target.closest('button'); if(!b)return;
-    setRange(b.dataset.r); document.getElementById('mes').value=''; render();
-  });
-  document.getElementById('ctMetric').addEventListener('click',e=>{
-    const b=e.target.closest('button'); if(!b)return;
-    [...e.currentTarget.children].forEach(x=>x.classList.remove('on')); b.classList.add('on');
-    CH_METRIC=b.dataset.k; render();
-  });
-  document.getElementById('modeseg').addEventListener('click',e=>{
-    const b=e.target.closest('button'); if(!b||b.dataset.m===MODE)return;
-    [...e.currentTarget.children].forEach(x=>x.classList.remove('on')); b.classList.add('on');
-    MODE=b.dataset.m; applyMode();
-  });
-}
-function applyMode(){
-  document.body.className='m-'+MODE;
-  if(MODE==='closers'||MODE==='setters'){
-    document.getElementById('persLbl').textContent = MODE==='closers'?'Closer':'Setter';
-    const sel=document.getElementById('pers'); sel.innerHTML='<option value="">Todos</option>';
-    let persNames;
-    if(MODE==='closers'){ persNames=CLOSERS.map(t=>t.name); }
-    else { persNames=SETTERS.map(t=>t.name); SETTERS.forEach(t=>{if(t.split&&t.split.to&&!persNames.includes(t.split.to))persNames.push(t.split.to);}); } // incluye Eduardo
-    persNames.forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;sel.appendChild(o);});
-    setRange('tri'); document.getElementById('mes').value='';
-    setStatus(); render();
-  } else if(MODE==='finanzas'){
-    document.getElementById('persLbl').textContent='Closer';
-    const sel=document.getElementById('pers'); sel.innerHTML='<option value="">Todos</option>';
-    ((FIN&&FIN.closers)||[]).forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
-    document.getElementById('mes').value=''; FIN_DRILL=null;
-    if(records()&&records().length) setRange('tri'); // DATA.finanzas trae fechas → setRange funciona igual
-    renderFinanzas();
-  } else if(MODE==='agendas'){
-    agLlenaSelects();
-    ['agSetter','agEmbudo','agEstado','agEtapa'].forEach(id=>{const e=document.getElementById(id); if(e)e.value='';});
-    AG_RANGO='manana'; agSetRango('manana');
-    const sg=document.getElementById('agSeg');
-    if(sg){sg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.r==='manana'));}
-    renderAgendas();
-  } else if(MODE==='cartera'){
-    const sel=document.getElementById('cartCloser'); sel.innerHTML='<option value="">Todos</option>';
-    ((FIN&&FIN.closers)||[]).forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
-    document.getElementById('cartMes').value=String((new Date()).getMonth()+1); // mes actual por defecto
-    document.getElementById('status').className='live'; document.getElementById('statusTxt').textContent=(FIN?'en vivo':'sin acceso')+' · cartera';
-    renderCartera();
-  } else {
-    const src = MODE==='proyeccion'?PROY:FUENTES;
-    const months=(src&&src.months)||[];
-    const sel=document.getElementById('mesSel'); sel.innerHTML='';
-    months.forEach(m=>{const o=document.createElement('option');o.value=m.key;o.textContent=m.label;sel.appendChild(o);});
-    CUR_MES = months.length?String(months[months.length-1].key):null; sel.value=CUR_MES;
-    document.getElementById('status').className='live';
-    document.getElementById('statusTxt').textContent=(src?'en vivo':'sin acceso')+' · '+(MODE==='proyeccion'?'proyección mensual':'ventas por fuente');
-    if(MODE==='proyeccion') renderProy(CUR_MES); else renderFuentes(CUR_MES);
-  }
-}
-function clearSeg(){document.querySelectorAll('#seg button').forEach(b=>b.classList.remove('on'));}
-function fmtDate(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-function dataYear(){const a=records(); return a.length?new Date(Math.max(...a.map(x=>x.date))).getFullYear():2026;}
-function setRange(r){
-  const a=records(); if(!a.length){return;}
-  const today=new Date(); today.setHours(12,0,0,0);
-  const dataMax=new Date(Math.max(...a.map(x=>x.date)));
-  const maxD=new Date(Math.min(dataMax,today));
-  let from=new Date(maxD), to=new Date(maxD);
-  if(r==='hoy'){from=new Date(today);to=new Date(today);}
-  else if(r==='ayer'){const y=new Date(today);y.setDate(y.getDate()-1);from=new Date(y);to=new Date(y);}
-  else if(r==='sem'){const d=new Date(today);const dow=(d.getDay()+6)%7;from=new Date(d);from.setDate(d.getDate()-dow);to=new Date(today);}
-  else if(r==='semant'){const d=new Date(today);const dow=(d.getDay()+6)%7;const mon=new Date(d);mon.setDate(d.getDate()-dow);to=new Date(mon);to.setDate(mon.getDate()-1);from=new Date(to);from.setDate(to.getDate()-6);} // semana calendario anterior (lun–dom)
-  else if(r==='mesact'){from=new Date(today.getFullYear(),today.getMonth(),1);to=maxD;} // mes calendario actual (basado en la fecha real)
-  else if(r==='mespas'){from=new Date(today.getFullYear(),today.getMonth()-1,1);to=new Date(today.getFullYear(),today.getMonth(),0);} // mes calendario anterior completo (agosto cuando es septiembre)
-  else if(r==='tri'){from=new Date(maxD.getFullYear(),maxD.getMonth()-2,1);to=maxD;}
-  else if(r==='ano'){from=new Date(maxD.getFullYear(),0,1);to=maxD;}
-  else {from=new Date(Math.min(...a.map(x=>x.date)));to=maxD;}
-  document.getElementById('from').value=fmtDate(from);
-  document.getElementById('to').value=fmtDate(to);
-  document.querySelectorAll('#seg button').forEach(b=>b.classList.toggle('on',b.dataset.r===r));
-}
-function setMonth(m){
-  clearSeg();
-  if(!m){setRange('tri');return;}
-  const y=dataYear();
-  document.getElementById('from').value=fmtDate(new Date(y,+m-1,1));
-  document.getElementById('to').value=fmtDate(new Date(y,+m,0));
-}
-function filtered(){
-  const f=new Date(document.getElementById('from').value+'T00:00:00'), t=new Date(document.getElementById('to').value+'T23:59:59');
-  const p=document.getElementById('pers').value;
-  return records().filter(r=>r.date>=f&&r.date<=t&&(!p||r.who===p));
-}
-function prevPeriod(){
-  const f=new Date(document.getElementById('from').value+'T00:00:00'), t=new Date(document.getElementById('to').value+'T23:59:59');
-  const span=t-f; const pt=new Date(f-1), pf=new Date(pt-span); const p=document.getElementById('pers').value;
-  return records().filter(r=>r.date>=pf&&r.date<=pt&&(!p||r.who===p));
-}
-const sum=(a,k)=>a.reduce((s,x)=>s+(x[k]||0),0);
-
-function animate(el,to,dec){
-  const fmt=x=>x.toLocaleString('es-CO',{minimumFractionDigits:dec,maximumFractionDigits:dec});
-  if(rm||document.hidden){el.textContent=fmt(to);el.dataset.v=to;return;}
-  const from=parseFloat(el.dataset.v||0),t0=performance.now(),dur=700;
-  (function tick(t){const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,3),v=from+(to-from)*e;
-    el.textContent=fmt(v); if(p<1)requestAnimationFrame(tick);})(t0);
-  el.dataset.v=to;
-}
-function setKPI(i,label,val,dec,sub,subClass){
-  document.getElementById('kLbl'+i).textContent=label;
-  animate(document.getElementById('kVal'+i),val,dec||0);
-  const s=document.getElementById('kSub'+i);
-  s.className='delta'+(subClass?' '+subClass:''); s.textContent=sub||'';
-}
-
-// ================== RENDER ==================
-function render(){
-  if(MODE==='finanzas'){ renderFinanzas(); return; } // módulo Finanzas: render aislado (no afecta closers/setters)
-  if(MODE==='agendas'){ renderAgendas(); return; }   // módulo Agendas (GHL): render aislado
-  const data=filtered();
-  const pTxt=(document.getElementById('pers').value||('todos los '+(MODE==='closers'?'closers':'setters')));
-  document.getElementById('tblSub').textContent=pTxt+' · '+document.getElementById('from').value+'  →  '+document.getElementById('to').value;
-  if(MODE==='closers') renderClosers(data); else renderSetters(data);
-  renderChart(data);
-}
-
-function renderClosers(data){
-  const recaudo=sum(data,'recaudo'), recObj=sum(data,'recaudoObj');
-  const agendas=sum(data,'agendas'), asist=sum(data,'asist'), ofertas=sum(data,'ofertas');
-  const cieCon=sum(data,'cieCon'), cieRes=sum(data,'cieRes'), cieSeg=sum(data,'cieSeg');
-  const cierres=cieCon+cieRes;
-  setKPI(0,'Recaudo total',recaudo,0);
-  setKPI(1,'Agendas nuevas',agendas,0,'agendadas');
-  setKPI(2,'Asistencias',asist,0,pctStr(asist,agendas)+' de las agendas');
-  setKPI(3,'Ofertas presentadas',ofertas,0,pctStr(ofertas,asist)+' de asistencias');
-  setKPI(4,'Cierres',cierres,0,cieCon+' contado · '+cieRes+' reserva · '+cieSeg+' seg.');
-  // hero sub
-  const cumpl=recObj>0?Math.round(recaudo/recObj*100):null, prev=sum(prevPeriod(),'recaudo');
-  let parts=[]; if(cumpl!==null)parts.push((cumpl>=100?'✔ ':'')+cumpl+'% de la meta');
-  if(prev>0){const p=(recaudo-prev)/prev*100; parts.push((p>=0?'▲ ':'▼ ')+Math.abs(p).toFixed(0)+'% vs. anterior');}
-  const s0=document.getElementById('kSub0'); s0.className='delta '+(cumpl!==null?(cumpl>=100?'up':(cumpl>=70?'warn':'down')):''); s0.textContent=parts.join('   ·   ');
-
-  document.getElementById('tblTitle').textContent='Comparativo por closer';
-  document.getElementById('thead').innerHTML='<tr><th>Closer</th><th>Agendas</th><th>Asistencias</th><th>Ofertas</th><th>C. Contado</th><th>C. Reserva</th><th>C. Seguim.</th><th>% Cierre</th><th>Recaudo</th><th>% Meta</th></tr>';
-  const by={}; data.forEach(r=>{const b=by[r.who]||(by[r.who]={agendas:0,asist:0,ofertas:0,cieCon:0,cieRes:0,cieSeg:0,recaudo:0,recaudoObj:0});
-    ['agendas','asist','ofertas','cieCon','cieRes','cieSeg','recaudo','recaudoObj'].forEach(k=>b[k]+=r[k]);});
-  const list=Object.entries(by).map(([n,v])=>({n,...v})).sort((a,b)=>b.recaudo-a.recaudo);
-  const tb=document.getElementById('tbody'), tf=document.getElementById('tfoot');
-  if(!list.length){tb.innerHTML='<tr><td colspan="10" class="empty">Sin datos en el periodo.</td></tr>';tf.innerHTML='';renderFunnel([]);return;}
-  const clsC=p=>p===null?'':(p>=100?'g':(p<70?'b':'w')), clsK=p=>p===null?'':(p>=50?'g':(p<25?'b':'w'));
-  tb.innerHTML=list.map((t,i)=>{
-    const ini=t.n.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    const cie=t.cieCon+t.cieRes+t.cieSeg, cumpl=t.recaudoObj>0?Math.round(t.recaudo/t.recaudoObj*100):null, pcie=t.ofertas>0?Math.round(cie/t.ofertas*100):null;
-    return `<tr><td><div class="cl"><div class="av" style="background:${grads[i%grads.length]}">${ini}</div><span class="clname">${t.n}</span></div></td>
-      <td>${t.agendas}</td><td>${t.asist}<span class="sub2">${pctStr(t.asist,t.agendas)} asist.</span></td>
-      <td>${t.ofertas}<span class="sub2">${pctStr(t.ofertas,t.asist)} oferta</span></td>
-      <td>${t.cieCon}</td><td>${t.cieRes}</td><td>${t.cieSeg}</td>
-      <td><span class="pct ${clsK(pcie)}">${pcie===null?'—':pcie+'%'}</span></td>
-      <td class="rec">$${fmtCOP(t.recaudo)}</td><td><span class="pct ${clsC(cumpl)}">${cumpl===null?'—':cumpl+'%'}</span></td></tr>`;
-  }).join('');
-  const T=k=>list.reduce((s,x)=>s+x[k],0), tCie=T('cieCon')+T('cieRes')+T('cieSeg');
-  const tCumpl=T('recaudoObj')>0?Math.round(T('recaudo')/T('recaudoObj')*100):null, tPcie=T('ofertas')>0?Math.round(tCie/T('ofertas')*100):null;
-  tf.innerHTML=`<tr><td>Total</td><td>${T('agendas')}</td><td>${T('asist')}<span class="sub2">${pctStr(T('asist'),T('agendas'))} asist.</span></td>
-    <td>${T('ofertas')}<span class="sub2">${pctStr(T('ofertas'),T('asist'))} oferta</span></td>
-    <td>${T('cieCon')}</td><td>${T('cieRes')}</td><td>${T('cieSeg')}</td>
-    <td>${tPcie===null?'—':tPcie+'%'}</td><td class="rec">$${fmtCOP(T('recaudo'))}</td><td>${tCumpl===null?'—':tCumpl+'%'}</td></tr>`;
-
-  renderFunnel([{n:'Agendas nuevas',v:agendas,base:null},{n:'Asistencias',v:asist,base:agendas},{n:'Ofertas presentadas',v:ofertas,base:asist},{n:'Cierres',v:cierres,base:ofertas}]);
-}
-
-function renderSetters(data){
-  const conseguidas=sum(data,'conseguidas'), asistidas=sum(data,'asistidas'), ofertadas=sum(data,'ofertadas'), cerradas=sum(data,'cerradas'), recaudo=sum(data,'recaudo');
-  const programadas=sum(data,'programadas'), confirmadas=sum(data,'confirmadas'), asistieron=sum(data,'asistieron'), ofrecieron=sum(data,'ofrecieron');
-  const showPct=confirmadas>0?Math.round(asistieron/confirmadas*100):null;
-  setKPI(0,'Recaudo generado',recaudo,0);
-  setKPI(1,'Agendas en calendario',programadas,0,'las que tenías programadas');
-  setKPI(2,'RE-Calificadas',confirmadas,0,pctStr(confirmadas,programadas)+' de las de calendario');
-  setKPI(3,'% Asistencia',showPct===null?0:showPct,0,asistieron+' de '+confirmadas+' re-calificadas');
-  document.getElementById('kVal3').textContent=showPct===null?'—':showPct+'%';
-  setKPI(4,'Cerradas',cerradas,0,pctStr(cerradas,ofertadas)+' de cierre');
-  const s3=document.getElementById('kSub3'); s3.className='delta '+(showPct===null?'':(showPct>=70?'up':(showPct>=50?'warn':'down')));
-  const prev=sum(prevPeriod(),'recaudo'); const s0=document.getElementById('kSub0');
-  if(prev>0){const p=(recaudo-prev)/prev*100; s0.className='delta '+(p>=0?'up':'down'); s0.textContent=(p>=0?'▲ ':'▼ ')+Math.abs(p).toFixed(0)+'% vs. periodo anterior';}
-  else {s0.className='delta'; s0.textContent='que ayudó a cerrar';}
-
-  // tarjeta Confirmación & Show
-  document.getElementById('confStats').innerHTML=`<div class="confrow">
-    <div class="confstat"><div class="confn">${programadas.toLocaleString('es-CO')}</div><div class="conflbl">Agendas en calendario</div></div>
-    <div class="confarrow">${pctStr(confirmadas,programadas)}<span>re-califican</span></div>
-    <div class="confstat"><div class="confn">${confirmadas.toLocaleString('es-CO')}</div><div class="conflbl">RE-Calificadas</div></div>
-    <div class="confarrow big">${showPct===null?'—':showPct+'%'}<span>asisten</span></div>
-    <div class="confstat"><div class="confn">${asistieron.toLocaleString('es-CO')}</div><div class="conflbl">Asistentes a la consultoría</div></div>
-    <div class="confarrow">${pctStr(ofrecieron,asistieron)}<span>ofrecen</span></div>
-    <div class="confstat"><div class="confn">${ofrecieron.toLocaleString('es-CO')}</div><div class="conflbl">Ofertadas</div></div>
-    <div class="confarrow">${pctStr(cerradas,ofrecieron)}<span>cierran</span></div>
-    <div class="confstat"><div class="confn">${cerradas.toLocaleString('es-CO')}</div><div class="conflbl">Cierres</div></div>
-  </div>`;
-
-  document.getElementById('tblTitle').textContent='Comparativo por setter';
-  document.getElementById('thead').innerHTML='<tr><th>Setter</th><th>Agendas en calendario</th><th>RE-Calificadas</th><th>Asistentes</th><th>Ofertadas</th><th>Cerradas</th><th>Recaudo generado</th></tr>';
-  const by={}; data.forEach(r=>{const b=by[r.who]||(by[r.who]={conseguidas:0,ofertadas:0,cerradas:0,recaudo:0,programadas:0,confirmadas:0,asistieron:0,ofrecieron:0});
-    ['conseguidas','ofertadas','cerradas','recaudo','programadas','confirmadas','asistieron','ofrecieron'].forEach(k=>b[k]+=r[k]);});
-  const list=Object.entries(by).map(([n,v])=>({n,...v})).sort((a,b)=>b.recaudo-a.recaudo);
-  const tb=document.getElementById('tbody'), tf=document.getElementById('tfoot');
-  if(!list.length){tb.innerHTML='<tr><td colspan="7" class="empty">Sin datos en el periodo.</td></tr>';tf.innerHTML='';renderFunnel([]);renderChannels([]);renderChannelTime([]);return;}
-  const clsK=p=>p===null?'':(p>=30?'g':(p<12?'b':'w')), clsS=p=>p===null?'':(p>=70?'g':(p<50?'b':'w'));
-  tb.innerHTML=list.map((t,i)=>{
-    const ini=t.n.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    return `<tr><td><div class="cl"><div class="av" style="background:${grads[i%grads.length]}">${ini}</div><span class="clname">${t.n}</span></div></td>
-      <td>${t.programadas}</td>
-      <td>${t.confirmadas}<span class="sub2">${pctStr(t.confirmadas,t.programadas)} de calend.</span></td>
-      <td>${t.asistieron}<span class="sub2">${pctStr(t.asistieron,t.confirmadas)} asisten</span></td>
-      <td>${t.ofrecieron}<span class="sub2">${pctStr(t.ofrecieron,t.asistieron)} ofrecen</span></td>
-      <td>${t.cerradas}<span class="sub2">${pctStr(t.cerradas,t.ofrecieron)} cierran</span></td>
-      <td class="rec">$${fmtCOP(t.recaudo)}</td></tr>`;
-  }).join('');
-  const T=k=>list.reduce((s,x)=>s+x[k],0);
-  tf.innerHTML=`<tr><td>Total</td>
-    <td>${T('programadas')}</td>
-    <td>${T('confirmadas')}<span class="sub2">${pctStr(T('confirmadas'),T('programadas'))} de calend.</span></td>
-    <td>${T('asistieron')}<span class="sub2">${pctStr(T('asistieron'),T('confirmadas'))} asisten</span></td>
-    <td>${T('ofrecieron')}<span class="sub2">${pctStr(T('ofrecieron'),T('asistieron'))} ofrecen</span></td>
-    <td>${T('cerradas')}<span class="sub2">${pctStr(T('cerradas'),T('ofrecieron'))} cierran</span></td>
-    <td class="rec">$${fmtCOP(T('recaudo'))}</td></tr>`;
-
-  renderFunnel([{n:'Agendas en calendario',v:programadas,base:null},{n:'RE-Calificadas',v:confirmadas,base:programadas},{n:'Asistentes a la consultoría',v:asistieron,base:confirmadas},{n:'Ofertadas',v:ofrecieron,base:asistieron},{n:'Cerradas',v:cerradas,base:ofrecieron}]);
-  renderChannels(data); renderChannelTime(data);
-}
-
-function normChannel(name){
-  const l=name.toLowerCase();
-  if(l.includes('workshop')) return 'Workshop (LA)';
-  if(l.includes('pauta')) return 'Pauta (LA)';
-  if(l.includes('juan importa')) return 'TikTok · Juan Importa';
-  if(l.includes('tik tok cdi')||l.includes('tiktok cdi')) return 'TikTok · CDI';
-  if(l.includes('instagram inbound')) return 'Instagram Inbound';
-  if(l.includes('instagram outbound')) return 'Instagram Outbound';
-  if(l.includes('youtube')) return 'YouTube';
-  if(l.includes('facebook')) return 'Facebook';
-  if(l.includes('vsl')) return 'VSL Orgánico';
-  if(l.includes('lanzamiento')) return 'Lanzamiento';
-  return name;
-}
-function renderChannels(data){
-  const by={};
-  data.forEach(r=>{ if(!r.ch)return; for(const k in r.ch){const key=normChannel(k); const b=by[key]||(by[key]={con:0,conf:0,asi:0,of:0,cer:0,rec:0}); ['con','conf','asi','of','cer','rec'].forEach(m=>b[m]+=r.ch[k][m]||0);} });
-  const list=Object.entries(by).map(([n,v])=>({n,...v})).filter(x=>x.con||x.cer||x.rec).sort((a,b)=>b.rec-a.rec);
-  const el=document.getElementById('channels');
-  if(!list.length){el.innerHTML='<div class="empty">Sin datos de canales en el periodo.</div>';return;}
-  const clsK=p=>p===null?'':(p>=30?'g':(p<12?'b':'w'));
-  const rows=list.map((t,i)=>{
-    const pcie=t.of>0?Math.round(t.cer/t.of*100):null;
-    return `<tr>
-      <td><div class="cl"><span class="chdot" style="background:${solid[i%solid.length]}"></span><span class="clname">${t.n}</span></div></td>
-      <td>${t.con}</td>
-      <td>${t.asi}<span class="sub2">${pctStr(t.asi,t.con)} asisten</span></td>
-      <td>${t.of}<span class="sub2">${pctStr(t.of,t.asi)} ofrecen</span></td>
-      <td>${t.cer}<span class="sub2">${pctStr(t.cer,t.of)} cierran</span></td>
-      <td><span class="pct ${clsK(pcie)}">${pcie===null?'—':pcie+'%'}</span></td>
-      <td class="rec">$${fmtCOP(t.rec)}</td></tr>`;
-  }).join('');
-  const T=k=>list.reduce((s,x)=>s+x[k],0), tPcie=T('of')>0?Math.round(T('cer')/T('of')*100):null;
-  el.innerHTML=`<div class="tblwrap"><table class="tbl" style="min-width:720px">
-    <thead><tr><th>Canal</th><th>Agendas</th><th>Asistentes</th><th>Ofertadas</th><th>Cerradas</th><th>% Cierre</th><th>Recaudo</th></tr></thead>
-    <tbody>${rows}</tbody>
-    <tfoot><tr><td>Total</td><td>${T('con')}</td>
-      <td>${T('asi')}<span class="sub2">${pctStr(T('asi'),T('con'))} asisten</span></td>
-      <td>${T('of')}<span class="sub2">${pctStr(T('of'),T('asi'))} ofrecen</span></td>
-      <td>${T('cer')}<span class="sub2">${pctStr(T('cer'),T('of'))} cierran</span></td><td>${tPcie===null?'—':tPcie+'%'}</td><td class="rec">$${fmtCOP(T('rec'))}</td></tr></tfoot>
-  </table></div>`;
-}
-
-let CH_METRIC='ag';
-const MES3=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-function chColor(channels,n){return solid[channels.indexOf(n)%solid.length];}
-function renderChannelTime(data){
-  const from=new Date(document.getElementById('from').value+'T00:00:00'), to=new Date(document.getElementById('to').value+'T23:59:59');
-  const spanDays=(to-from)/864e5, daily=spanDays<=24;
-  const pick=cd=>CH_METRIC==='ag'?cd.con:(CH_METRIC==='cer'?cd.cer:cd.rec);
-  // agrupar por periodo (día o semana-lunes)
-  const bk={};
-  data.forEach(r=>{ if(!r.ch)return;
-    let key,label,order;
-    if(daily){const d=r.date;key=fmtDate(d);order=d.getTime();label=d.getDate()+' '+MES3[d.getMonth()];}
-    else{const d=new Date(r.date);const dow=(d.getDay()+6)%7;d.setDate(d.getDate()-dow);key=fmtDate(d);order=d.getTime();label=d.getDate()+' '+MES3[d.getMonth()];}
-    const b=bk[key]||(bk[key]={label,order,ch:{}});
-    for(const cn in r.ch){const nm=normChannel(cn);b.ch[nm]=(b.ch[nm]||0)+pick(r.ch[cn]);}
-  });
-  const list=Object.values(bk).sort((a,b)=>a.order-b.order);
-  const totals={}; list.forEach(b=>{for(const n in b.ch)totals[n]=(totals[n]||0)+b.ch[n];});
-  const channels=Object.keys(totals).filter(n=>totals[n]>0).sort((a,b)=>totals[b]-totals[a]);
-  document.getElementById('ctSub').textContent=(daily?'por día':'por semana')+' · '+list.length+(daily?' días':' semanas')+' · cada barra dividida por canal';
-  document.getElementById('ctLegend').innerHTML=channels.map(n=>`<span class="ctlegi"><span class="ctsw" style="background:${chColor(channels,n)}"></span>${n}</span>`).join('');
-  const svg=document.getElementById('ctChart'), xl=document.getElementById('ctXlab');
-  if(!list.length||!channels.length){svg.innerHTML='';xl.innerHTML='<span>Sin datos de canales en el periodo.</span>';return;}
-  const W=620,H=250,pad=18, n=list.length, step=(W-2*pad)/n, bw=Math.min(48,step*0.66);
-  const max=Math.max(...list.map(b=>channels.reduce((s,nm)=>s+(b.ch[nm]||0),0)))||1;
-  const ys=v=>(H-pad)-(v/max)*(H-2*pad);
-  let rects='';
-  list.forEach((b,i)=>{const cx=pad+step*i+step/2; let acc=0;
-    channels.forEach(nm=>{const v=b.ch[nm]||0; if(!v)return; const y0=ys(acc),y1=ys(acc+v);
-      rects+=`<rect x="${(cx-bw/2).toFixed(1)}" y="${y1.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(1,y0-y1).toFixed(1)}" fill="${chColor(channels,nm)}" rx="2"><title>${b.label} · ${nm}: ${CH_METRIC==='rec'?'$'+fmtCOP(v):v}</title></rect>`; acc+=v;});
-  });
-  svg.innerHTML=`${[0,.25,.5,.75,1].map(g=>`<line x1="${pad}" x2="${W-pad}" y1="${pad+g*(H-2*pad)}" y2="${pad+g*(H-2*pad)}" stroke="rgba(255,255,255,.06)"/>`).join('')}${rects}`;
-  const everyX=Math.ceil(n/14);
-  xl.innerHTML=list.map((b,i)=>`<span>${i%everyX===0?b.label:''}</span>`).join('');
-}
-
-function renderFunnel(stages){
-  const el=document.getElementById('funnel');
-  if(!stages.length){el.innerHTML='<div class="empty">Sin datos.</div>';return;}
-  const max=stages[0].v||1;
-  el.innerHTML=stages.map((s,i)=>`<div class="fstage">
-    <div class="ftop"><span class="fname">${s.n}</span>
-      <span class="fval">${(s.v||0).toLocaleString('es-CO')}${s.base!==null?`<span class="fpct">${pctStr(s.v,s.base)} del paso anterior</span>`:''}</span></div>
-    <div class="fbar"><i data-w="${Math.max(2,Math.round((s.v||0)/max*100))}" style="background:${grads[i%grads.length]}"></i></div></div>`).join('');
-  requestAnimationFrame(()=>el.querySelectorAll('.fbar i').forEach(x=>x.style.width=x.dataset.w+'%'));
-}
-
-function renderChart(data){
-  const by={}; data.forEach(r=>{const k=r.date.getFullYear()+'-'+String(r.date.getMonth()+1).padStart(2,'0');by[k]=(by[k]||0)+(r.recaudo||0);});
-  const keys=Object.keys(by).sort(); const mN=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-  const pts=keys.map(k=>({lbl:mN[+k.slice(5)-1],v:by[k]}));
-  const svg=document.getElementById('chart'), xl=document.getElementById('xlab');
-  if(pts.length<2){svg.innerHTML='';xl.innerHTML='';document.getElementById('chartSub').textContent='rango de un solo mes — usa Trimestre para ver la tendencia';return;}
-  document.getElementById('chartSub').textContent='pesos COP · '+pts.length+' meses';
-  const W=620,H=240,pad=16,max=Math.max(...pts.map(p=>p.v))*1.1||1;
-  const xs=i=>pad+i*((W-2*pad)/(pts.length-1)), ys=v=>H-pad-(v/max)*(H-2*pad);
-  const P=pts.map((p,i)=>[xs(i),ys(p.v)]);
-  const line=P.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
-  const area=line+` L${xs(pts.length-1)} ${H-pad} L${pad} ${H-pad} Z`;
-  svg.innerHTML=`<defs>
-    <linearGradient id="fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff6a2b" stop-opacity=".55"/><stop offset="1" stop-color="#ff2e8b" stop-opacity="0"/></linearGradient>
-    <linearGradient id="stroke" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffb020"/><stop offset="1" stop-color="#ff2e8b"/></linearGradient>
-    <filter id="glow"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-    ${[0,.25,.5,.75,1].map(g=>`<line x1="${pad}" x2="${W-pad}" y1="${pad+g*(H-2*pad)}" y2="${pad+g*(H-2*pad)}" stroke="rgba(255,255,255,.06)"/>`).join('')}
-    <path d="${area}" fill="url(#fill)"/>
-    <path d="${line}" fill="none" stroke="url(#stroke)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
-    ${P.map((p,i)=>`<circle cx="${p[0]}" cy="${p[1]}" r="${i===P.length-1?5:3}" fill="${i===P.length-1?'#ff2e8b':'#fff'}" ${i===P.length-1?'filter="url(#glow)"':''}/>`).join('')}`;
-  xl.innerHTML=pts.map(p=>`<span>${p.lbl}</span>`).join('');
-}
-
-// ================== RENDER PROYECCIÓN ==================
-function fmtMetric(m,useReal){
-  const raw=useReal?m.real:m.meta, n=useReal?m.realN:m.metaN;
-  if(m.money) return '$'+fmtCOP(n);
-  if(m.isPct) return raw||'—';
-  if(m.isRatio) return n.toLocaleString('es-CO',{maximumFractionDigits:1});
-  return n.toLocaleString('es-CO');
-}
-const pFind=(arr,l)=>arr.find(m=>m.label===l);
-function renderProy(key){
-  const kp=document.getElementById('proyKpis'), tb=document.getElementById('proyTbl');
-  if(!PROY||!PROY.data[key]){kp.innerHTML='<div class="empty">Sin datos de proyección.</div>';tb.innerHTML='';document.getElementById('proyChart').innerHTML='';document.getElementById('proyXlab').innerHTML='';return;}
-  const arr=PROY.data[key], mm=PROY.months.find(m=>String(m.key)===String(key));
-  document.getElementById('proyMesLbl').textContent=mm?mm.label:'';
-  const kdef=[['Recaudo','Recaudo'],['# de ventas','# de ventas'],['ROAS','ROAS total'],['Inversión','Inversión total']];
-  kp.innerHTML=kdef.map(([lbl,ml],i)=>{const m=pFind(arr,ml); if(!m)return '';
-    return `<div class="card${i===0?' hero':''}"><div class="label">${lbl}</div>
-      <div class="${i===0?'big':'val'}">${fmtMetric(m,true)}</div>
-      <div class="delta">${m.pct||'—'} de la meta · meta ${fmtMetric(m,false)}</div></div>`;}).join('');
-  const costRe=/costo|inversi/i;
-  const sem=(p,lab)=>{if(costRe.test(lab))return '';const n=parseFloat(String(p).replace(/[^0-9.,-]/g,'').replace(',','.'));return isNaN(n)?'':(n>=100?'g':(n>=80?'w':'b'));};
-  let curG=null, body='';
-  arr.forEach(m=>{
-    if(m.group!==curG){curG=m.group; if(curG)body+=`<tr class="grouprow"><td colspan="4">${curG}</td></tr>`;}
-    body+=`<tr><td>${m.label}</td><td>${fmtMetric(m,false)}</td><td class="rec">${fmtMetric(m,true)}</td><td><span class="pct ${sem(m.pct,m.label)}">${m.pct||'—'}</span></td></tr>`;
-  });
-  tb.innerHTML=`<thead><tr><th>Métrica</th><th>Meta</th><th>Real</th><th>% Logrado</th></tr></thead><tbody>${body}</tbody>`;
-  // gráfica recaudo meta vs real (trimestre)
-  const rec3=PROY.months.map(m=>{const a=PROY.data[m.key],r=a&&pFind(a,'Recaudo');return {label:m.label,meta:r?r.metaN:0,real:r?r.realN:0};});
-  const svg=document.getElementById('proyChart'), xl=document.getElementById('proyXlab');
-  const W=620,H=240,pad=20,n=rec3.length,step=(W-2*pad)/n;
-  const max=Math.max(...rec3.map(x=>Math.max(x.meta,x.real)))*1.1||1, ys=v=>(H-pad)-(v/max)*(H-2*pad);
-  let bars='';
-  rec3.forEach((x,i)=>{const cx=pad+step*i+step/2,bw=Math.min(34,step*0.28);
-    bars+=`<rect x="${(cx-bw-3).toFixed(1)}" y="${ys(x.meta).toFixed(1)}" width="${bw}" height="${(H-pad-ys(x.meta)).toFixed(1)}" fill="rgba(255,255,255,.18)" rx="3"><title>Meta ${x.label}: $${fmtCOP(x.meta)}</title></rect>`;
-    bars+=`<rect x="${(cx+3).toFixed(1)}" y="${ys(x.real).toFixed(1)}" width="${bw}" height="${(H-pad-ys(x.real)).toFixed(1)}" fill="url(#pg)" rx="3"><title>Real ${x.label}: $${fmtCOP(x.real)}</title></rect>`;});
-  svg.innerHTML=`<defs><linearGradient id="pg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb020"/><stop offset="1" stop-color="#ff2e8b"/></linearGradient></defs>
-    ${[0,.25,.5,.75,1].map(g=>`<line x1="${pad}" x2="${W-pad}" y1="${pad+g*(H-2*pad)}" y2="${pad+g*(H-2*pad)}" stroke="rgba(255,255,255,.06)"/>`).join('')}${bars}`;
-  document.getElementById('proyChartSub').innerHTML='barra clara = meta · barra de color = real';
-  xl.innerHTML=rec3.map(x=>`<span>${x.label}</span>`).join('');
-}
-// ================== RENDER VENTAS POR FUENTE ==================
-function renderFuentes(key){
-  const kp=document.getElementById('fuKpis'), tb=document.getElementById('fuTbl'), bars=document.getElementById('fuBars');
-  const sec=FUENTES&&FUENTES.data[key];
-  if(!sec||!sec.sources.length){kp.innerHTML='<div class="empty">Sin datos de fuentes.</div>';tb.innerHTML='';bars.innerHTML='';return;}
-  const mm=FUENTES.months.find(m=>String(m.key)===String(key));
-  document.getElementById('fuMesLbl').textContent=mm?mm.label:'';
-  const s=sec.sources;
-  const totRec=sec.total?sec.total.rec:s.reduce((a,x)=>a+x.rec,0);
-  const totInv=sec.total?sec.total.inv:s.reduce((a,x)=>a+x.inv,0);
-  const totV=s.reduce((a,x)=>a+x.ventas,0), roas=totInv>0?totRec/totInv:0;
-  kp.innerHTML=`
-    <div class="card hero"><div class="label">Recaudo total</div><div class="big">$${fmtCOP(totRec)}</div><div class="delta">${mm?mm.label:''} · por fuente</div></div>
-    <div class="card"><div class="label">Inversión total</div><div class="val">$${fmtCOP(totInv)}</div><div class="delta">en pauta y eventos</div></div>
-    <div class="card"><div class="label">ROAS</div><div class="val">${roas.toLocaleString('es-CO',{maximumFractionDigits:1})}</div><div class="delta">recaudo ÷ inversión</div></div>
-    <div class="card"><div class="label">Ventas</div><div class="val">${totV}</div><div class="delta">cierres del mes</div></div>`;
-  const et=e=>{const l=e.toLowerCase();return l.includes('proceso')?'proc':(l?'ok':'');};
-  const cart=sec.cartera;
-  const cartRow=(cart&&(cart.rec||cart.roas||cart.inv))?`<tr class="cartera"><td>Cartera</td><td>${cart.inv?'$'+fmtCOP(cart.inv):'—'}</td><td class="rec">${cart.rec?'$'+fmtCOP(cart.rec):'—'}</td><td>${cart.roas?cart.roas.toLocaleString('es-CO',{maximumFractionDigits:1}):'—'}</td><td>${cart.ventas||'—'}</td><td>${cart.pct||'—'}</td><td>—</td></tr>`:'';
-  tb.innerHTML=`<thead><tr><th>Fuente</th><th>Inversión</th><th>Recaudo</th><th>ROAS</th><th>#Ventas</th><th>%</th><th>Etapa</th></tr></thead><tbody>`+
-    s.map(x=>`<tr><td>${x.name}</td><td>${x.inv?'$'+fmtCOP(x.inv):'—'}</td><td class="rec">${x.rec?'$'+fmtCOP(x.rec):'—'}</td>
-      <td>${x.roas?x.roas.toLocaleString('es-CO',{maximumFractionDigits:1}):'—'}</td><td>${x.ventas||'—'}</td><td>${x.pct||'—'}</td>
-      <td><span class="etapa ${et(x.etapa)}">${x.etapa||'—'}</span></td></tr>`).join('')+cartRow+
-    `</tbody><tfoot><tr><td>Total</td><td>$${fmtCOP(totInv)}</td><td class="rec">$${fmtCOP(totRec)}</td><td>${roas.toLocaleString('es-CO',{maximumFractionDigits:1})}</td><td>${totV}</td><td></td><td></td></tr></tfoot>`;
-  // barras recaudo por fuente
-  const sorted=[...s].filter(x=>x.rec>0).sort((a,b)=>b.rec-a.rec), top=sorted.length?sorted[0].rec:1;
-  bars.innerHTML=sorted.map((x,i)=>`<div class="fubar">
-    <div style="flex:1;min-width:0"><div class="funame">${x.name}</div><div class="fumeta">${x.ventas} ventas · ROAS ${x.roas?x.roas.toLocaleString('es-CO',{maximumFractionDigits:1}):'—'}</div>
-    <div class="futrack"><i data-w="${Math.max(2,Math.round(x.rec/top*100))}" style="background:${grads[i%grads.length]}"></i></div></div>
-    <div class="furec">$${fmtCOP(x.rec)}</div></div>`).join('');
-  requestAnimationFrame(()=>bars.querySelectorAll('.futrack i').forEach(x=>x.style.width=x.dataset.w+'%'));
-  document.getElementById('fuChartSub').textContent=mm?('recaudo por fuente · '+mm.label):'';
-}
-
-// ================================================================
-// ============== MÓDULO FINANZAS (100% aislado) ==================
-// ================================================================
-const FIN_ID="15SLCJWLNWUTmMHvedAJPu473IFm2_C2_4fsIcQAJH0Y";
-const FIN_HV_GID="1210165273";  // High Ventas  (1 fila por venta)
-const FIN_SR_GID="443294330";   // Sales Records (1 fila por transacción, con ESTADO)
-let FIN=null;        // {ventas:{ID:{...}}, trans:[...], closers:[...]}
-let FIN_DRILL=null;  // detalle abierto: {closer, metric}
-const finDate=s=>{const m=String(s).match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);return m?new Date(+m[3],+m[2]-1,+m[1]):null;};
-// SOLO estos 5 closers interesan; el resto (Lanzamiento, Michelle, Kenny, Lorena…) se ignora. Une variantes.
-function finCloser(raw){
-  const l=String(raw||'').toLowerCase().replace(/\s+/g,'');
-  if(l.includes('alejandro'))return 'Alejandro Pulido';
-  if(l.includes('camilo'))return 'Camilo Luque';
-  if(l.includes('yeisson')||l.includes('yeison'))return 'Yeison Velez';
-  if(l.includes('wendy'))return 'Wendy Ortiz';
-  if(l.includes('carlosmejia'))return 'Carlos Mejía';
-  if(l.includes('karen'))return 'Karen Quintero';
-  return null; // excluido
-}
-const finMoney=v=>{const d=String(v).split(',')[0].replace(/[^0-9-]/g,'');return d&&d!=='-'?parseInt(d,10):0;};
-function estadoClass(e){const l=String(e||'').toLowerCase();
-  if(l.includes('inconsist'))return 'inconsistencia';
-  if(l.includes('cargue'))return 'cargue';
-  if(l.includes('validaci'))return 'validacion';
-  if(l.includes('factur'))return 'facturado';
-  if(l.includes('devoluc')||l.includes('nota'))return 'devolucion';
-  return 'otro';}
-const FIN_LBL={recaudo:'Recaudo del mes',ventas:'Ventas del mes',cuotas:'Cuotas cobradas',facturado:'Facturado',validacion:'En Proceso de Validación',cargue:'En Proceso de Cargue',inconsistencia:'Inconsistencia',devolucion:'Devoluciones'};
-
-function parseFinanzas(hvTxt, srTxt){
-  const hv=parseCSV(hvTxt), sr=parseCSV(srTxt);
-  const ventas={};
-  for(let i=1;i<hv.length;i++){const r=hv[i]; const id=(r[1]||'').trim(); if(!id.startsWith('VEN'))continue;
-    const cl=finCloser(r[4]); if(!cl)continue; // solo los 5 closers deseados
-    ventas[id]={id, idCli:(r[2]||'').trim(), date:finDate(r[3]), dateStr:(r[3]||'').trim(), closer:cl, setter:(r[5]||'').trim(),
-      cliente:(r[6]||'').trim(), pactado:finMoney(r[11]), cancelado:finMoney(r[15]), debe:finMoney(r[16]),
-      ultimoPago:(r[17]||'').trim(), proxPago:finDate(r[18]), proxPagoStr:(r[18]||'').trim(), descripcion:(r[23]||'').trim(), correo:(r[27]||'').trim()};
-  }
-  const trans=[];
-  for(let i=1;i<sr.length;i++){const r=sr[i]; const id=(r[1]||'').trim(); if(!id.startsWith('VEN'))continue;
-    // Atribuir el pago al closer de la VENTA (cruce por ID con High Ventas). Si la venta no está, usar el nombre del pago.
-    const vRef=ventas[id]; const cl=vRef?vRef.closer:finCloser(r[4]); if(!cl)continue;
-    trans.push({id, estado:(r[0]||'').trim(), idCli:(r[2]||'').trim(), fechaReg:finDate(r[3]), fechaRegStr:(r[3]||'').trim(),
-      fechaPago:finDate(r[10]), fechaPagoStr:(r[10]||'').trim(), // fecha en que ENTRÓ el dinero
-      closer:cl, setter:(r[5]||'').trim(), cliente:(r[6]||'').trim(), valor:finMoney(r[11]), correccion:(r[14]||'').trim()});
-  }
-  // Marcar CUOTAS/ABONOS: 2º pago en adelante de una misma venta (sin importar el mes).
-  // El 1er pago (por fecha de pago) = inicial; los siguientes = cuotas. Las devoluciones no cuentan.
-  const porVenta={};
-  trans.forEach(tr=>{ if(estadoClass(tr.estado)==='devolucion'){tr.esCuota=false;return;} (porVenta[tr.id]||(porVenta[tr.id]=[])).push(tr); });
-  Object.values(porVenta).forEach(arr=>{
-    arr.sort((a,b)=>{
-      const da=a.fechaPago||a.fechaReg, db=b.fechaPago||b.fechaReg;
-      const t=(da&&db)?da-db:(da?-1:(db?1:0)); if(t)return t;
-      const ra=a.fechaReg||0, rb=b.fechaReg||0; return (ra&&rb)?ra-rb:0;
-    });
-    arr.forEach((tr,i)=>{tr.esCuota=i>0;});
-  });
-  const ORDER=['Alejandro Pulido','Camilo Luque','Yeison Velez','Wendy Ortiz','Carlos Mejía','Karen Quintero'];
-  const closers=ORDER.filter(c=>Object.values(ventas).some(v=>v.closer===c));
-  return {ventas, trans, closers};
-}
-function loadFinanzas(){
-  return Promise.all([
-    fetch(gvizUrl(FIN_ID,FIN_HV_GID),{cache:'no-store'}).then(r=>r.ok?r.text():Promise.reject(r.status)),
-    fetch(gvizUrl(FIN_ID,FIN_SR_GID),{cache:'no-store'}).then(r=>r.ok?r.text():Promise.reject(r.status))
-  ]).then(([hv,sr])=>{FIN=parseFinanzas(hv,sr); DATA.finanzas=Object.values(FIN.ventas);})
-    .catch(e=>{console.error('finanzas',e); FIN=null; DATA.finanzas=[];});
-}
-function finStatus(){
-  document.getElementById('status').className='live'+(FIN?'':' err');
-  const t=new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
-  document.getElementById('statusTxt').textContent=(FIN?'en vivo · actualizado '+t:'sin acceso a las hojas de Finanzas')+' · finanzas';
-}
-// transacciones (cuotas/pagos) cuya FECHA DE PAGO cae en el periodo + closer — esto es "lo entrante del mes"
-function finTransPeriodo(){
-  if(!FIN)return [];
-  const f=new Date(document.getElementById('from').value+'T00:00:00'), t=new Date(document.getElementById('to').value+'T23:59:59'), cl=document.getElementById('pers').value;
-  return FIN.trans.filter(tr=>tr.fechaPago&&tr.fechaPago>=f&&tr.fechaPago<=t&&(!cl||tr.closer===cl));
-}
-// ¿es el pago INICIAL de la venta? (true) o una CUOTA/abono, es decir 2º pago en adelante (false)
-function finEsNueva(tr, from){return !tr.esCuota;}
-
-function renderFinanzas(){
-  const kp=document.getElementById('finKpis'), es=document.getElementById('finEstados');
-  if(!FIN){kp.innerHTML='<div class="empty">Sin acceso a las hojas de Finanzas. Verifica que estén compartidas como "Cualquiera con el enlace".</div>';es.innerHTML='';document.getElementById('finTbl').innerHTML='';document.getElementById('finFunnel').innerHTML='';document.getElementById('finSeg').innerHTML='';document.getElementById('finDetailCard').style.display='none';return;}
-  finStatus();
-  const from=new Date(document.getElementById('from').value+'T00:00:00'), to=new Date(document.getElementById('to').value+'T23:59:59'), cl=document.getElementById('pers').value;
-  // VENTAS del mes = lo VENDIDO (por Fecha de Venta, valor pactado) -> "lo que ellos colocan"
-  const ventasMes=Object.values(FIN.ventas).filter(v=>v.date&&v.date>=from&&v.date<=to&&(!cl||v.closer===cl));
-  const ventasTotal=ventasMes.reduce((s,v)=>s+v.pactado,0);
-  // RECAUDO del mes = lo que ENTRÓ (por Fecha de Pago, sin devoluciones)
-  const trans=finTransPeriodo();
-  const inTx=trans.filter(tr=>estadoClass(tr.estado)!=='devolucion');   // dinero que entró
-  const recaudo=inTx.reduce((s,tr)=>s+tr.valor,0);
-  const devol=trans.filter(tr=>estadoClass(tr.estado)==='devolucion').reduce((s,tr)=>s+tr.valor,0);
-  const recCuotas=inTx.filter(tr=>!finEsNueva(tr,from)).reduce((s,tr)=>s+tr.valor,0);
-  const st={facturado:0,validacion:0,cargue:0,inconsistencia:0};
-  inTx.forEach(tr=>{const c=estadoClass(tr.estado); if(st[c]!==undefined)st[c]+=tr.valor;});
-  const card=(metric,label,val,sub,hero,cls)=>`<div class="card${hero?' hero':''} finclick" data-fin-metric="${metric}"><div class="label">${label}</div><div class="${hero?'big':'val'}">$${fmtCOP(val)}</div><div class="delta ${cls||''}">${sub||''}</div></div>`;
-  kp.innerHTML=
-    card('ventas','Ventas del mes',ventasTotal,ventasMes.length+' ventas cerradas · por fecha de venta','','up')+
-    card('recaudo','Recaudo del mes',recaudo,inTx.length+' pagos · lo que entró (fecha de pago)',true)+
-    card('cuotas','Cuotas cobradas',recCuotas,'abonos: 2º pago en adelante de una venta')+
-    card('devolucion','Devoluciones',devol,'notas crédito (dinero que salió)','',devol>0?'down':'')+
-    `<div class="card"><div class="label">% Cobrado del mes</div><div class="val">${ventasTotal>0?Math.round(recaudo/ventasTotal*100):0}%</div><div class="delta up">recaudo ÷ ventas</div></div>`;
-  es.innerHTML=
-    card('facturado','Facturado',st.facturado,'ingresó y facturado','','up')+
-    card('validacion','En Validación',st.validacion,'detenido en validación','','warn')+
-    card('cargue','En Proceso de Cargue',st.cargue,'detenido en cargue','','warn')+
-    card('inconsistencia','Inconsistencia',st.inconsistencia,'requiere corrección','','down');
-  renderFinFunnel([
-    {n:'Ventas del mes (vendido)',v:ventasTotal,base:null},
-    {n:'Recaudo del mes (entró)',v:recaudo,base:ventasTotal},
-    {n:'Facturado',v:st.facturado,base:ventasTotal},
-    {n:'Cuotas cobradas (2º pago +)',v:recCuotas,base:ventasTotal},
-    {n:'Detenido (valid.+cargue+incons.)',v:st.validacion+st.cargue+st.inconsistencia,base:ventasTotal}]);
-  renderFinTable(ventasMes,inTx,from);
-  renderFinConcil();
-  renderFinSeg(trans);
-  renderFinVentasDetalle();
-  renderFinDetail();
-}
-// Detalle de ventas del periodo (ID, cliente, correo) para revisar anomalías y compartir
-function finVentasList(){
-  if(!FIN)return [];
-  const from=new Date(document.getElementById('from').value+'T00:00:00'), to=new Date(document.getElementById('to').value+'T23:59:59'), cl=document.getElementById('pers').value;
-  return Object.values(FIN.ventas).filter(v=>v.date&&v.date>=from&&v.date<=to&&(!cl||v.closer===cl))
-    .sort((a,b)=>(a.closer||'').localeCompare(b.closer||'')||(a.date-b.date));
-}
-function renderFinVentasDetalle(){
-  const tb=document.getElementById('finVentasDet'); if(!tb)return;
-  if(!FIN){tb.innerHTML='';return;}
-  const list=finVentasList();
-  const sub=document.getElementById('finVentasDetSub');
-  if(!list.length){tb.innerHTML='<tbody><tr><td class="empty">Sin ventas en el periodo.</td></tr></tbody>';return;}
-  const pct=v=>v.pactado>0?Math.round(v.cancelado/v.pactado*100):0;
-  const rows=list.map(v=>{const p=pct(v), prom=v.pactado>0&&p<20;
-    return `<tr>
-      <td style="font-family:ui-monospace,monospace;font-size:12px">${v.id}</td>
-      <td style="font-family:ui-monospace,monospace;font-size:12px;color:var(--muted)">${v.idCli||'—'}</td>
-      <td style="font-weight:600">${v.cliente||'—'}</td>
-      <td style="color:var(--muted);font-size:12px">${v.correo||'—'}</td>
-      <td>${v.closer}</td>
-      <td style="color:var(--muted)">${(v.dateStr||'').slice(0,10)||'—'}</td>
-      <td class="rec">$${fmtCOP(v.pactado)}</td>
-      <td>$${fmtCOP(v.cancelado)}</td>
-      <td style="color:${v.debe>0?'var(--bad)':'var(--muted)'}">$${fmtCOP(v.debe)}</td>
-      <td><span class="pct ${prom?'b':(p>=100?'g':'w')}">${p}%${prom?' ⚠️ promesa':''}</span></td></tr>`;}).join('');
-  if(sub)sub.innerHTML=list.length+' ventas · ID venta, ID cliente, nombre, vendido y pagado · <span style="color:var(--bad)">⚠️ marca promesas (&lt;20% pagado)</span> · <span style="color:var(--faint)">(el correo viene vacío: la columna de email en la hoja está rota #REF!)</span>';
-  tb.innerHTML=`<thead><tr><th>ID Venta</th><th>ID Cliente</th><th>Cliente</th><th>Correo</th><th>Closer</th><th>Fecha</th><th>Vendido</th><th>Pagado</th><th>Falta</th><th>% pago</th></tr></thead><tbody>${rows}</tbody>`;
-}
-function finVentasExport(){
-  const list=finVentasList(); if(!list.length)return;
-  const cols=['ID Venta','ID Cliente','Cliente','Correo','Closer','Setter','Fecha Venta','Vendido','Pagado','Falta','% pago','Próximo Pago'];
-  const data=list.map(v=>[v.id,v.idCli,v.cliente,v.correo,v.closer,v.setter,v.dateStr,v.pactado,v.cancelado,v.debe,(v.pactado>0?Math.round(v.cancelado/v.pactado*100):0)+'%',v.proxPagoStr]);
-  const esc=c=>'"'+String(c==null?'':c).replace(/"/g,'""')+'"';
-  const csv=[cols.map(esc).join(',')].concat(data.map(r=>r.map(esc).join(','))).join('\r\n');
-  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
-  const url=URL.createObjectURL(blob), a=document.createElement('a'); a.href=url; a.download='detalle_ventas.csv'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000);
-}
-// Panel de conciliación: cruza High Ventas (vendido/cartera) + Sales Records (recaudado) + trackers de closers (reportado)
-function renderFinConcil(){
-  const el=document.getElementById('finConcil'), kp=document.getElementById('finConcilKpis'), nota=document.getElementById('finConcilNota');
-  if(!el)return;
-  if(!FIN){el.innerHTML='';kp.innerHTML='';return;}
-  const from=new Date(document.getElementById('from').value+'T00:00:00'), to=new Date(document.getElementById('to').value+'T23:59:59'), cl=document.getElementById('pers').value;
-  const by={}, get=c=>by[c]||(by[c]={vendido:0,promesa:0,recaudado:0,facturado:0,faltaFact:0});
-  Object.values(FIN.ventas).forEach(v=>{ if(!v.date||v.date<from||v.date>to||(cl&&v.closer!==cl))return; const b=get(v.closer);
-    const esPromesa=v.pactado>0 && (v.cancelado/v.pactado)<0.20; // reserva casi sin pagar = promesa, no venta real
-    if(esPromesa) b.promesa+=v.pactado; else b.vendido+=v.pactado; });
-  finTransPeriodo().forEach(tr=>{ if(estadoClass(tr.estado)==='devolucion')return; const b=get(tr.closer); b.recaudado+=tr.valor;
-    if(estadoClass(tr.estado)==='facturado') b.facturado+=tr.valor; else b.faltaFact+=tr.valor; });
-  const ORD=['Yeison Velez','Alejandro Pulido','Wendy Ortiz','Karen Quintero','Camilo Luque','Carlos Mejía'];
-  const list=ORD.filter(c=>by[c]).map(c=>({n:c,...by[c]}));
-  if(!list.length){el.innerHTML='<tbody><tr><td class="empty">Sin datos en el periodo.</td></tr></tbody>';kp.innerHTML='';nota.textContent='';return;}
-  const T=k=>list.reduce((s,x)=>s+(x[k]||0),0);
-  const tV=T('vendido'),tR=T('recaudado'),tF=T('facturado'),tFF=T('faltaFact'),tProm=T('promesa');
-  const card=(lbl,val,sub,cls)=>`<div class="card"><div class="label">${lbl}</div><div class="${cls==='hero'?'big':'val'}">$${fmtCOP(val)}</div><div class="delta ${cls==='hero'?'up':(cls||'')}">${sub||''}</div></div>`;
-  kp.innerHTML=
-    card('Vendido real',tV,'venta cerrada · sin promesas')+
-    card('Entró (en Sales)',tR,'registrado · el número real','hero')+
-    card('Facturado',tF,'ya facturado','up')+
-    card('Falta por facturar',tFF,'en validación / cargue','warn');
-  const row=t=>`<tr>
-    <td style="font-weight:700">${t.n}</td>
-    <td>$${fmtCOP(t.vendido)}</td>
-    <td class="rec">$${fmtCOP(t.recaudado)}</td>
-    <td>$${fmtCOP(t.facturado)}</td>
-    <td style="color:${t.faltaFact>0?'var(--warn)':'var(--muted)'}">$${fmtCOP(t.faltaFact)}</td></tr>`;
-  el.innerHTML=`<thead><tr><th>Closer</th><th>Vendido real</th><th>Entró (Sales)</th><th>Facturado</th><th>Falta facturar</th></tr></thead>
-    <tbody>${list.map(row).join('')}</tbody>
-    <tfoot><tr><td>Total</td><td>$${fmtCOP(tV)}</td><td class="rec">$${fmtCOP(tR)}</td><td>$${fmtCOP(tF)}</td><td style="color:var(--warn)">$${fmtCOP(tFF)}</td></tr></tfoot>`;
-  nota.innerHTML='💡 <b>Vendido real</b> excluye promesas (ventas con menos del 20% pagado — reservas casi sin abonar). '+(tProm>0?'En este periodo hay <b style="color:var(--bad)">$'+fmtCOP(tProm)+'</b> en promesas fuera del vendido (ej. las 3 reservas del 31/08 de Alejo). ':'')+'<b>Entró (en Sales)</b> es el recaudo real registrado por tesorería.';
-}
-function renderFinFunnel(stages){
-  const el=document.getElementById('finFunnel'); const max=stages[0].v||1;
-  el.innerHTML=stages.map((s,i)=>`<div class="fstage">
-    <div class="ftop"><span class="fname">${s.n}</span>
-      <span class="fval">$${fmtCOP(s.v||0)}${s.base!==null?`<span class="fpct">${s.base>0?Math.round((s.v||0)/s.base*100):0}% del vendido</span>`:''}</span></div>
-    <div class="fbar"><i data-w="${Math.max(2,Math.round((s.v||0)/max*100))}" style="background:${grads[i%grads.length]}"></i></div></div>`).join('');
-  requestAnimationFrame(()=>el.querySelectorAll('.fbar i').forEach(x=>x.style.width=x.dataset.w+'%'));
-}
-function renderFinTable(ventasMes,inTx,from){
-  const by={}, get=cl=>by[cl]||(by[cl]={ventas:0,recaudo:0,cuotas:0,facturado:0,validacion:0,cargue:0,inconsistencia:0});
-  ventasMes.forEach(v=>{get(v.closer).ventas+=v.pactado;});
-  inTx.forEach(tr=>{const b=get(tr.closer); b.recaudo+=tr.valor; if(!finEsNueva(tr,from))b.cuotas+=tr.valor;
-    const c=estadoClass(tr.estado); if(b[c]!==undefined)b[c]+=tr.valor;});
-  const list=Object.entries(by).map(([n,v])=>({n,...v})).sort((a,b)=>b.ventas-a.ventas);
-  const tb=document.getElementById('finTbl');
-  if(!list.length){tb.innerHTML='<tbody><tr><td class="empty">Sin datos en el periodo seleccionado.</td></tr></tbody>';return;}
-  const cell=(cl,metric,val)=>`<td class="fincell finclick" data-fin-closer="${cl}" data-fin-metric="${metric}">$${fmtCOP(val)}</td>`;
-  const body=list.map((t,i)=>{const ini=t.n.split(/(?=[A-Z])| /).map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    return `<tr>
-      <td><div class="cl"><div class="av" style="background:${grads[i%grads.length]}">${ini}</div><span class="clname">${t.n}</span></div></td>
-      ${cell(t.n,'ventas',t.ventas)}${cell(t.n,'recaudo',t.recaudo)}${cell(t.n,'cuotas',t.cuotas)}
-      ${cell(t.n,'facturado',t.facturado)}${cell(t.n,'validacion',t.validacion)}${cell(t.n,'cargue',t.cargue)}${cell(t.n,'inconsistencia',t.inconsistencia)}</tr>`;}).join('');
-  const T=k=>list.reduce((s,x)=>s+x[k],0);
-  tb.innerHTML=`<thead><tr><th>Closer</th><th>Ventas del mes</th><th>Recaudo del mes</th><th>Cuotas</th><th>Facturado</th><th>Validación</th><th>Proc. Cargue</th><th>Inconsist.</th></tr></thead>
-    <tbody>${body}</tbody>
-    <tfoot><tr><td>Total</td><td class="rec">$${fmtCOP(T('ventas'))}</td><td class="rec">$${fmtCOP(T('recaudo'))}</td><td>$${fmtCOP(T('cuotas'))}</td><td>$${fmtCOP(T('facturado'))}</td><td>$${fmtCOP(T('validacion'))}</td><td>$${fmtCOP(T('cargue'))}</td><td>$${fmtCOP(T('inconsistencia'))}</td></tr></tfoot>`;
-}
-function renderFinSeg(trans){
-  const today=new Date();
-  const stuck=trans.filter(tr=>['validacion','cargue','inconsistencia'].includes(estadoClass(tr.estado)))
-    .map(tr=>({cliente:tr.cliente,closer:tr.closer,estado:tr.estado,dias:tr.fechaPago?Math.max(0,Math.floor((today-tr.fechaPago)/864e5)):null,comentario:tr.correccion,valor:tr.valor}))
-    .sort((a,b)=>(b.dias||0)-(a.dias||0));
-  const tb=document.getElementById('finSeg');
-  if(!stuck.length){tb.innerHTML='<tbody><tr><td class="empty">No hay dinero detenido en el periodo. 🎉</td></tr></tbody>';return;}
-  const badge=e=>{const c=estadoClass(e);return `<span class="pct ${c==='inconsistencia'?'b':'w'}">${e}</span>`;};
-  tb.innerHTML=`<thead><tr><th>Cliente</th><th>Closer</th><th>Estado</th><th>Valor</th><th>Días detenido</th><th>Comentario</th></tr></thead><tbody>`+
-    stuck.slice(0,80).map(s=>`<tr><td style="font-weight:700">${s.cliente||'—'}</td><td>${s.closer||'—'}</td><td>${badge(s.estado)}</td><td class="rec">$${fmtCOP(s.valor)}</td><td><b>${s.dias===null?'—':s.dias+' días'}</b></td><td style="max-width:280px;white-space:normal;color:var(--muted)">${s.comentario||'—'}</td></tr>`).join('')+`</tbody>`;
-}
-function finDrill(closer, metric){ FIN_DRILL={closer:closer||'', metric}; renderFinDetail(); document.getElementById('finDetailCard').scrollIntoView({behavior:'smooth',block:'start'}); }
-// devuelve las transacciones del detalle según la tarjeta/celda clicada
-function finDetailTrans(){
-  if(!FIN||!FIN_DRILL)return [];
-  const {closer,metric}=FIN_DRILL;
-  const from=new Date(document.getElementById('from').value+'T00:00:00'), to=new Date(document.getElementById('to').value+'T23:59:59');
-  // 'ventas' = ventas cerradas en el periodo (por fecha de venta), no transacciones
-  if(metric==='ventas'){
-    return Object.values(FIN.ventas).filter(v=>v.date&&v.date>=from&&v.date<=to&&(!closer||v.closer===closer))
-      .sort((a,b)=>b.pactado-a.pactado).map(v=>({tr:null, v, nueva:true}));
-  }
-  let tx=finTransPeriodo().filter(tr=>!closer||tr.closer===closer);
-  if(metric==='recaudo') tx=tx.filter(tr=>estadoClass(tr.estado)!=='devolucion');          // lo que entró (sin devoluciones)
-  else if(metric==='cuotas') tx=tx.filter(tr=>estadoClass(tr.estado)!=='devolucion'&&!finEsNueva(tr,from));
-  else if(['facturado','validacion','cargue','inconsistencia','devolucion'].includes(metric)) tx=tx.filter(tr=>estadoClass(tr.estado)===metric);
-  return tx.map(tr=>({tr, v:FIN.ventas[tr.id]||{}, nueva:finEsNueva(tr,from)}));
-}
-const FIN_DET_COLS=['ID Venta','ID Cliente','Cliente','Correo','Closer','Setter','Fecha Venta','Fecha Pago','Valor (esta transacción)','Tipo','Estado','Comentario','Pactado (venta)','Cancelado (venta)','Pendiente (venta)'];
-function finDetailData(){
-  return finDetailTrans().map(({tr,v,nueva})=>[
-    (tr?tr.id:v.id)||'', v.idCli||(tr&&tr.idCli)||'', v.cliente||(tr&&tr.cliente)||'', v.correo||'', (tr?tr.closer:v.closer)||'', (tr?tr.setter:v.setter)||v.setter||'',
-    v.dateStr||'', tr?tr.fechaPagoStr:'—', tr?tr.valor:(v.pactado||0), tr?(nueva?'Pago inicial':'Cuota / abono'):'Venta (pactado)', tr?tr.estado:'—', tr?tr.correccion:'',
-    v.pactado||0, v.cancelado||0, v.debe||0
-  ]);
-}
-function renderFinDetail(){
-  const cardEl=document.getElementById('finDetailCard');
-  if(!FIN_DRILL||!FIN){cardEl.style.display='none';return;}
-  const rows=finDetailData();
-  document.getElementById('finDetailTitle').textContent='Detalle · '+FIN_LBL[FIN_DRILL.metric];
-  document.getElementById('finDetailSub').textContent=(FIN_DRILL.closer?FIN_DRILL.closer+' · ':'todos los closers · ')+rows.length+(FIN_DRILL.metric==='ventas'?' ventas':' registros');
-  const money=new Set([8,12,13,14]);
-  const tb=document.getElementById('finDetail');
-  if(!rows.length){tb.innerHTML='<tbody><tr><td class="empty">Sin transacciones para este filtro.</td></tr></tbody>';cardEl.style.display='block';return;}
-  tb.innerHTML=`<thead><tr>${FIN_DET_COLS.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>`+
-    rows.map(r=>`<tr>${r.map((c,j)=>`<td>${money.has(j)?'$'+fmtCOP(c):(c||'—')}</td>`).join('')}</tr>`).join('')+`</tbody>`;
-  cardEl.style.display='block';
-}
-function finExport(){
-  const openDetail=FIN_DRILL&&document.getElementById('finDetailCard').style.display!=='none';
-  let cols, data, name;
-  if(openDetail){ cols=FIN_DET_COLS; data=finDetailData(); name='finanzas_'+FIN_DRILL.metric+(FIN_DRILL.closer?'_'+FIN_DRILL.closer:'')+'.csv'; }
-  else { // exportar todas las transacciones (recaudo) del periodo filtrado
-    const from=new Date(document.getElementById('from').value+'T00:00:00');
-    cols=['ID Venta','Cliente','Closer','Setter','Fecha Venta','Fecha Pago','Valor','Tipo','Estado'];
-    data=finTransPeriodo().map(tr=>{const v=FIN.ventas[tr.id]||{}; return [tr.id,v.cliente||tr.cliente,tr.closer,tr.setter,v.dateStr||'',tr.fechaPagoStr,tr.valor,finEsNueva(tr,from)?'Venta nueva':'Cuota',tr.estado];});
-    name='finanzas_recaudo_mes.csv';
-  }
-  const esc=c=>'"'+String(c).replace(/"/g,'""')+'"';
-  const csv=[cols.map(esc).join(',')].concat(data.map(r=>r.map(esc).join(','))).join('\r\n');
-  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
-  const url=URL.createObjectURL(blob), a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000);
-}
-
-// ================================================================
-// ============== MÓDULO CARTERA (100% aislado) ===================
-// Reutiliza FIN.ventas (hoja High Ventas ya cargada). Sin nueva conexión.
-// ================================================================
-const CART_MES=['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-function renderCartera(){
-  const tb=document.getElementById('cartTbl');
-  const mes=+(document.getElementById('cartMes').value||((new Date()).getMonth()+1));
-  const closer=document.getElementById('cartCloser').value;
-  document.getElementById('cartTitle').textContent=CART_MES[mes]+(closer?(' · '+closer):'');
-  if(!FIN){document.getElementById('cartN').textContent='0';document.getElementById('cartVal').textContent='0';tb.innerHTML='<tbody><tr><td class="empty">Sin acceso a High Ventas.</td></tr></tbody>';return;}
-  // clientes cuyo PRÓXIMO PAGO cae en el mes elegido, que aún deben, del closer elegido
-  const rows=Object.values(FIN.ventas)
-    .filter(v=>v.proxPago&&(v.proxPago.getMonth()+1)===mes&&v.debe>0&&(!closer||v.closer===closer))
-    .sort((a,b)=>a.proxPago-b.proxPago);
-  const total=rows.reduce((s,v)=>s+v.debe,0);
-  document.getElementById('cartN').textContent=rows.length.toLocaleString('es-CO');
-  document.getElementById('cartNsub').textContent='en '+CART_MES[mes];
-  document.getElementById('cartVal').textContent=fmtCOP(total);
-  document.getElementById('cartSub').textContent=rows.length+' clientes con próximo pago en '+CART_MES[mes]+(closer?(' · '+closer):' · todos los closers');
-  if(!rows.length){tb.innerHTML='<tbody><tr><td class="empty">No hay clientes por cobrar en '+CART_MES[mes]+(closer?(' para '+closer):'')+'. 🎉</td></tr></tbody>';return;}
-  const fdate=v=>{const d=v.proxPago;return d?(String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear()):'—';};
-  tb.innerHTML='<thead><tr><th>Cliente</th><th>Correo</th><th>Teléfono</th><th>Closer</th><th>Fecha Próximo Pago</th><th>Valor a Pagar</th></tr></thead><tbody>'+
-    rows.map(v=>`<tr>
-      <td style="font-weight:700">${v.cliente||'—'}</td>
-      <td style="color:var(--muted)">${v.correo||'—'}</td>
-      <td style="color:var(--muted)">${v.telefono||'—'}</td>
-      <td>${v.closer||'—'}</td>
-      <td><b>${fdate(v)}</b></td>
-      <td class="rec">$${fmtCOP(v.debe)}</td></tr>`).join('')+
-    `</tbody><tfoot><tr><td>Total</td><td></td><td></td><td></td><td>${rows.length} clientes</td><td class="rec">$${fmtCOP(total)}</td></tr></tfoot>`;
-}
-
-// ================================================================
-// ============= MÓDULO AGENDAS · GHL (100% aislado) ==============
-// ================================================================
-function parseAgendas(txt){
-  const rows=parseCSV(txt); if(rows.length<2) return [];
-  const out=[];
-  for(let i=1;i<rows.length;i++){
-    const r=rows[i]; const iso=(r[12]||'').trim();
-    if(!iso) continue;
-    out.push({
-      fecha:(r[0]||'').trim(), hora:(r[1]||'').trim(), cliente:(r[2]||'').trim(),
-      tel:(r[3]||'').trim(), correo:(r[4]||'').trim(), setter:(r[5]||'').trim(),
-      consultor:(r[6]||'').trim(), embudo:(r[7]||'').trim(), etapa:(r[8]||'').trim(),
-      estado:(r[9]||'').trim(), calendario:(r[10]||'').trim(), fuente:(r[11]||'').trim(), iso:iso
-    });
-  }
-  return out;
-}
-function loadAgendas(){
-  return fetch(gvizUrl(AG_ID,AG_GID),{cache:'no-store'})
-    .then(r=>r.ok?r.text():Promise.reject(r.status))
-    .then(t=>{AGENDAS=parseAgendas(t);})
-    .catch(e=>{console.error('agendas',e); AGENDAS=null;});
-}
-const agHoyISO=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
-const agSumaISO=n=>{const d=new Date();d.setDate(d.getDate()+n);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
-const AG_MESNOM=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-const AG_DIANOM=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
-function agMinISO(){const l=(AGENDAS||[]).map(a=>a.iso).filter(Boolean).sort();return l[0]||agHoyISO();}
-function agMaxISO(){const l=(AGENDAS||[]).map(a=>a.iso).filter(Boolean).sort();return l[l.length-1]||agHoyISO();}
-// los botones rápidos solo LLENAN los campos Desde/Hasta
-function agSetRango(r){
-  const hoy=agHoyISO(); let d=hoy, h=hoy;
-  if(r==='manana'){ d=h=agSumaISO(1); }
-  else if(r==='sem'){ d=hoy; h=agSumaISO(7); }
-  else if(r==='prox'){ d=hoy; h=agMaxISO(); }
-  else if(r==='todas'){ d=agMinISO(); h=agMaxISO(); }
-  const D=document.getElementById('agDesde'), H=document.getElementById('agHasta');
-  if(D)D.value=d; if(H)H.value=h;
-}
-// el filtro SIEMPRE se lee de los campos Desde/Hasta
-function agPorRango(list){
-  const D=document.getElementById('agDesde'), H=document.getElementById('agHasta');
-  const d=D?D.value:'', h=H?H.value:'';
-  if(!d&&!h) return list;
-  return list.filter(a=>(!d||a.iso>=d)&&(!h||a.iso<=h));
-}
-function agFechaLarga(iso){const p=iso.split('-'),dd=new Date(+p[0],+p[1]-1,+p[2]);
-  return AG_DIANOM[dd.getDay()]+' '+(+p[2])+' de '+AG_MESNOM[+p[1]-1].toLowerCase();}
-function agFechaCorta(iso){const p=iso.split('-');return (+p[2])+' '+AG_MESNOM[+p[1]-1].slice(0,3).toLowerCase();}
-function agEtiqueta(){
-  const D=document.getElementById('agDesde'), H=document.getElementById('agHasta');
-  const d=D?D.value:'', h=H?H.value:'';
-  if(d&&h&&d===h) return agFechaLarga(d);
-  if(d&&h) return 'del '+agFechaCorta(d)+' al '+agFechaCorta(h);
-  if(d) return 'desde '+agFechaCorta(d);
-  if(h) return 'hasta '+agFechaCorta(h);
-  return 'todas las fechas';
-}
-// aplica también los 4 selects
-function agFiltradas(){
-  if(!AGENDAS) return [];
-  const v=id=>{const e=document.getElementById(id);return e?e.value:'';};
-  const s=v('agSetter'), em=v('agEmbudo'), es=v('agEstado'), et=v('agEtapa');
-  return agPorRango(AGENDAS).filter(a=>
-    (!s||a.setter===s)&&(!em||a.embudo===em)&&(!es||a.estado===es)&&(!et||a.etapa===et)
-  ).sort((a,b)=>(a.iso+a.hora).localeCompare(b.iso+b.hora));
-}
-function agLlenaSelects(){
-  const set=(id,vals,lbl)=>{const e=document.getElementById(id); if(!e)return; const prev=e.value;
-    e.innerHTML='<option value="">'+lbl+'</option>'+vals.map(x=>`<option value="${x}">${x}</option>`).join('');
-    if(vals.includes(prev)) e.value=prev;};
-  const uniq=k=>[...new Set((AGENDAS||[]).map(a=>a[k]).filter(Boolean))].sort();
-  set('agSetter',uniq('setter'),'Todos');
-  set('agEmbudo',uniq('embudo'),'Todos');
-  set('agEstado',uniq('estado'),'Todos');
-  set('agEtapa', uniq('etapa'), 'Todas');
-}
-function renderAgendas(){
-  const kp=document.getElementById('agKpis'); if(!kp) return;
-  document.getElementById('status').className='live'+(AGENDAS?'':' err');
-  document.getElementById('statusTxt').textContent=(AGENDAS?'en vivo · '+new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}):'sin acceso a la hoja de GHL')+' · agendas';
-  if(!AGENDAS){kp.innerHTML='<div class="empty">Sin acceso a la hoja de Agendas (GHL). Verifica que esté compartida como "Cualquiera con el enlace".</div>';
-    ['agResumen','agTbl'].forEach(i=>{const e=document.getElementById(i); if(e)e.innerHTML='';}); return;}
-
-  const list=agFiltradas();
-  const conf=list.filter(a=>/confirm/i.test(a.estado)).length;
-  const canc=list.filter(a=>/cancel/i.test(a.estado)).length;
-  const setters=new Set(list.map(a=>a.setter).filter(Boolean)).size;
-  const etiq=agEtiqueta();
-  kp.innerHTML=
-    `<div class="card hero"><div class="label">Agendas ${etiq}</div><div class="big">${list.length}</div><div class="delta up">citas en el filtro</div></div>`+
-    `<div class="card"><div class="label">Confirmadas</div><div class="val">${conf}</div><div class="delta up">${list.length?Math.round(conf/list.length*100):0}% del total</div></div>`+
-    `<div class="card"><div class="label">Canceladas</div><div class="val">${canc}</div><div class="delta down">${list.length?Math.round(canc/list.length*100):0}% del total</div></div>`+
-    `<div class="card"><div class="label">Setters con agenda</div><div class="val">${setters}</div><div class="delta">personas activas</div></div>`;
-
-  // ---- Resumen: setter x embudo ----
-  const embudos=[...new Set((AGENDAS||[]).map(a=>a.embudo).filter(Boolean))].sort();
-  const by={};
-  list.forEach(a=>{const k=a.setter||'(sin setter)'; const b=by[k]||(by[k]={tot:0}); b.tot++; b[a.embudo]=(b[a.embudo]||0)+1;});
-  const filas=Object.entries(by).map(([n,v])=>({n,...v})).sort((a,b)=>b.tot-a.tot);
-  const rt=document.getElementById('agResumen');
-  document.getElementById('agResSub').textContent=`${etiq} · ${list.length} agendas · ${filas.length} setters`;
-  if(!filas.length){rt.innerHTML='<tbody><tr><td class="empty">Sin agendas para este filtro.</td></tr></tbody>';}
-  else{
-    const T=k=>filas.reduce((s,x)=>s+(x[k]||0),0);
-    rt.innerHTML=`<thead><tr><th>Setter</th>${embudos.map(e=>`<th>${e}</th>`).join('')}<th>Total</th></tr></thead>`+
-      `<tbody>${filas.map((t,i)=>{const ini=t.n.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-        return `<tr><td><div class="cl"><div class="av" style="background:${grads[i%grads.length]}">${ini}</div><span class="clname">${t.n}</span></div></td>`+
-          embudos.map(e=>`<td>${t[e]||0}</td>`).join('')+`<td class="rec">${t.tot}</td></tr>`;}).join('')}</tbody>`+
-      `<tfoot><tr><td>Total</td>${embudos.map(e=>`<td>${T(e)}</td>`).join('')}<td class="rec">${T('tot')}</td></tr></tfoot>`;
-  }
-
-  // ---- Detalle ----
-  const tb=document.getElementById('agTbl');
-  document.getElementById('agDetSub').textContent=`${list.length} agendas · ordenadas por fecha y hora`;
-  if(!list.length){tb.innerHTML='<tbody><tr><td class="empty">Sin agendas para este filtro.</td></tr></tbody>'; return;}
-  const badge=e=>{const c=/confirm/i.test(e)?'ok':(/cancel/i.test(e)?'bad':'warn'); return `<span class="agpill ${c}">${e||'—'}</span>`;};
-  tb.innerHTML=`<thead><tr><th>Fecha</th><th>Hora</th><th>Cliente</th><th>Teléfono</th><th>Setter</th><th>Consultor</th><th>Embudo</th><th>Etapa</th><th>Estado</th></tr></thead><tbody>`+
-    list.slice(0,400).map(a=>`<tr>
-      <td style="white-space:nowrap">${a.fecha}</td>
-      <td style="font-weight:700">${a.hora}</td>
-      <td style="font-weight:600">${a.cliente||'—'}</td>
-      <td style="color:var(--muted);font-size:12.5px;white-space:nowrap">${a.tel||'—'}</td>
-      <td style="font-weight:700;color:var(--c3)">${a.setter||'—'}</td>
-      <td>${a.consultor||'—'}</td>
-      <td>${a.embudo||'—'}</td>
-      <td style="color:var(--muted);font-size:12.5px">${a.etapa||'—'}</td>
-      <td>${badge(a.estado)}</td></tr>`).join('')+`</tbody>`;
-}
-function agExportCSV(){
-  const list=agFiltradas(); if(!list.length)return;
-  const cols=['Fecha','Hora','Cliente','Teléfono','Correo','Setter','Consultor','Embudo','Etapa','Estado','Calendario','Fuente'];
-  const data=list.map(a=>[a.fecha,a.hora,a.cliente,a.tel,a.correo,a.setter,a.consultor,a.embudo,a.etapa,a.estado,a.calendario,a.fuente]);
-  const esc=c=>'"'+String(c==null?'':c).replace(/"/g,'""')+'"';
-  const csv=[cols.map(esc).join(',')].concat(data.map(r=>r.map(esc).join(','))).join('\r\n');
-  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
-  const url=URL.createObjectURL(blob),a=document.createElement('a');
-  a.href=url;a.download='agendas_ghl.csv';document.body.appendChild(a);a.click();a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),1000);
-}
-// listeners propios del módulo
+/* ============ chrome: tema, reloj, sticky ============ */
 (function(){
-  const seg=document.getElementById('agSeg');
-  if(seg) seg.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b)return;
-    seg.querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
-    AG_RANGO=b.dataset.r; agSetRango(AG_RANGO); renderAgendas();});
-  // si escribes una fecha a mano, se apagan los botones rápidos
-  ['agDesde','agHasta'].forEach(id=>{
-    const e=document.getElementById(id); if(e) e.addEventListener('change',()=>{
-      if(seg) seg.querySelectorAll('button').forEach(x=>x.classList.remove('on'));
-      AG_RANGO=''; renderAgendas();});});
-  ['agSetter','agEmbudo','agEstado','agEtapa'].forEach(id=>{
-    const e=document.getElementById(id); if(e) e.addEventListener('change',renderAgendas);});
-  const ex=document.getElementById('agExport'); if(ex) ex.addEventListener('click',agExportCSV);
+  const root=document.documentElement;const saved=localStorage.getItem('cdi-theme');if(saved)root.setAttribute('data-theme',saved);
+  $('themeToggle').addEventListener('click',()=>{const next=root.getAttribute('data-theme')==='light'?'dark':'light';root.setAttribute('data-theme',next);localStorage.setItem('cdi-theme',next);});
+  const clock=$('clock');const tick=()=>{clock.textContent=new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});};tick();setInterval(tick,15000);
+  const y=$('year');if(y)y.textContent=new Date().getFullYear();
+  const tb=$('topbar');const onScroll=()=>tb.classList.toggle('is-stuck',window.scrollY>8);onScroll();window.addEventListener('scroll',onScroll,{passive:true});
+  document.addEventListener('pointermove',ev=>{const c=ev.target.closest?.('.modcard,.vcard');if(!c)return;const r=c.getBoundingClientRect();c.style.setProperty('--mx',(ev.clientX-r.left)+'px');c.style.setProperty('--my',(ev.clientY-r.top)+'px');});
 })();
-
-fetchData();
-setInterval(fetchData, 60000);
+route();
 </script>
 </body>
 </html>
