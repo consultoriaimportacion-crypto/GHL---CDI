@@ -1603,6 +1603,9 @@ function agExportCSV(){
 // Lee la pestaña "GHL Consultores" que escribe el puente de GHL.
 // ================================================================
 let CONS=null, CS_SEL={c:null,g:null};
+// Solo estos son consultores (lo demás -setters, sin asignar, etc.- no se muestra)
+const CS_CONSULTORES=['Karen','Yeison','Alejandro','Wendy'];
+const esConsultor=n=>CS_CONSULTORES.some(c=>new RegExp('^'+c,'i').test((n||'').trim()));
 const CS_GRUPOS=['Show','Seguimiento','Venta'];
 const CS_LBL={Show:'Shows',Seguimiento:'Seguimientos',Venta:'Ventas'};
 function parseConsultores(txt){
@@ -1620,7 +1623,9 @@ function parseConsultores(txt){
     const r=rows[i], grupo=g(r,'Grupo'), etapa=g(r,'Etapa');
     if(!CS_GRUPOS.includes(grupo)) continue;
     if(/no[\s-]*show|no[\s-]*asist/i.test(etapa)) continue;   // un no-show nunca cuenta como show
-    out.push({consultor:g(r,'Consultor')||'(sin consultor)', grupo, embudo:embudoLimpio(g(r,'Embudo')), etapa,
+    const cons=g(r,'Consultor');
+    if(!esConsultor(cons)) continue;                            // solo los 4 consultores
+    out.push({consultor:cons.trim(), grupo, embudo:embudoLimpio(g(r,'Embudo')), etapa,
       cliente:g(r,'Cliente'), tel:g(r,'Teléfono'), correo:g(r,'Correo'),
       valor:moneyNum(g(r,'Valor')), fecha:g(r,'Fecha'), iso:g(r,'FechaISO')});
   }
