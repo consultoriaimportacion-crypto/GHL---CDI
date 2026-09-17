@@ -127,7 +127,16 @@
   .chbar i{display:block;height:100%;border-radius:99px;width:0;transition:width .9s cubic-bezier(.2,.7,.2,1)}
 
   /* visibilidad por modo */
-  #proyView,#fuentesView,#finanzasView,#carteraView,#agendasView{display:none}
+  #proyView,#fuentesView,#finanzasView,#carteraView,#agendasView,#consView{display:none}
+  body.m-consultores #consView{display:block}
+  body.m-consultores .fld.daily,body.m-consultores #seg{display:none}
+  /* Consultores (aislado) */
+  .cscell{cursor:pointer;font-weight:800;font-size:15px;transition:color .15s}
+  .cscell:hover{color:var(--c3)}
+  .cscell.on{color:var(--c3);box-shadow:inset 0 -2px 0 var(--c3)}
+  .cscell.cero{color:var(--faint);cursor:default;font-weight:600}
+  .cswa{color:var(--good);text-decoration:none;font-weight:700;white-space:nowrap}
+  .cswa:hover{text-decoration:underline}
   #dailyView{display:none}
   body.m-closers #dailyView,body.m-setters #dailyView{display:block}
   body.m-proyeccion #proyView{display:block}
@@ -193,7 +202,7 @@
       </div>
     </div>
     <div class="modeseg" id="modeseg">
-      <button data-m="closers" class="on">Closers</button><button data-m="setters">Setters</button><button data-m="proyeccion">Proyección</button><button data-m="fuentes">Fuentes</button><button data-m="finanzas">Finanzas</button><button data-m="cartera">Cartera</button><button data-m="agendas">Agendas</button>
+      <button data-m="closers" class="on">Closers</button><button data-m="setters">Setters</button><button data-m="proyeccion">Proyección</button><button data-m="fuentes">Fuentes</button><button data-m="finanzas">Finanzas</button><button data-m="cartera">Cartera</button><button data-m="agendas">Agendas</button><button data-m="consultores">Consultores</button>
     </div>
   </div>
 
@@ -396,6 +405,38 @@
         <button class="refbtn" id="agExport" title="Exportar CSV" style="width:auto;padding:0 14px;font-size:12.5px;font-weight:700">⤓ CSV</button>
       </div>
       <div class="tblwrap"><table class="tbl" id="agTbl" style="min-width:1180px"></table></div>
+    </div>
+  </div>
+
+  <div id="consView">
+    <div class="card" style="margin-bottom:16px">
+      <div class="lbl" style="margin-bottom:7px">CUÁNDO</div>
+      <div class="seg" id="csSeg">
+        <button data-r="sem">Esta semana</button><button data-r="mes" class="on">Este mes</button><button data-r="mespas">Mes pasado</button><button data-r="todo">Todo</button>
+      </div>
+      <div class="agfilt">
+        <div class="fld"><label>Desde</label><input type="date" id="csDesde" autocomplete="off"></div>
+        <div class="fld"><label>Hasta</label><input type="date" id="csHasta" autocomplete="off"></div>
+        <div class="fld"><label>Consultor</label><select class="sel" id="csConsultor"></select></div>
+        <div class="fld"><label>Embudo</label><select class="sel" id="csEmbudo"></select></div>
+      </div>
+      <div class="h2sub" style="margin-top:10px">La fecha es cuando el cliente <b>llegó a esa etapa</b> en GHL · "Todo" muestra todo lo que tiene cada consultor hoy</div>
+    </div>
+
+    <div class="kpis" id="csKpis" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px"></div>
+
+    <div class="card">
+      <h2>Por consultor</h2>
+      <div class="h2sub">clic en un número para ver los clientes con su teléfono</div>
+      <div class="tblwrap"><table class="tbl" id="csTbl" style="min-width:360px"></table></div>
+    </div>
+
+    <div class="card" id="csDetCard" style="display:none">
+      <div class="cthead">
+        <div><h2 id="csDetTit">Clientes</h2><div class="h2sub" id="csDetSub"></div></div>
+        <button class="refbtn" id="csExport" title="Exportar CSV" style="width:auto;padding:0 14px;font-size:12.5px;font-weight:700">⤓ CSV</button>
+      </div>
+      <div class="tblwrap"><table class="tbl" id="csDet" style="min-width:820px"></table></div>
     </div>
   </div>
 
@@ -612,7 +653,7 @@ function loadProyFuentes(){
 }
 function fetchData(){
   const btn=document.getElementById('refresh'); btn.classList.add('spin');
-  return Promise.all([loadMode('closers'),loadMode('setters'),loadProyFuentes(),loadFinanzas(),loadAgendas()]).then(()=>{
+  return Promise.all([loadMode('closers'),loadMode('setters'),loadProyFuentes(),loadFinanzas(),loadAgendas(),loadConsultores()]).then(()=>{
     if(!built){buildFilters();built=true;applyMode();} // SOLO en la carga inicial se fija el filtro por defecto
     else rerenderCurrent();                            // en auto-refrescos: re-dibuja con datos frescos SIN tocar el filtro del usuario
   }).finally(()=>btn.classList.remove('spin'));
@@ -625,6 +666,7 @@ function rerenderCurrent(){
   else if(MODE==='finanzas'){ renderFinanzas(); }
   else if(MODE==='cartera'){ renderCartera(); }
   else if(MODE==='agendas'){ agLlenaSelects(); renderAgendas(); }
+  else if(MODE==='consultores'){ csLlenaSelects(); renderConsultores(); }
 }
 function records(){return DATA[MODE];}
 function setStatus(){
@@ -688,6 +730,13 @@ function applyMode(){
     document.getElementById('mes').value=''; FIN_DRILL=null;
     if(records()&&records().length) setRange('tri'); // DATA.finanzas trae fechas → setRange funciona igual
     renderFinanzas();
+  } else if(MODE==='consultores'){
+    CS_SEL={c:null,g:null};
+    ['csEmbudo','csConsultor'].forEach(id=>{const e=document.getElementById(id); if(e) e.value='';});
+    csSetRango('mes');
+    const sg=document.getElementById('csSeg');
+    if(sg) sg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.r==='mes'));
+    csLlenaSelects(); renderConsultores();
   } else if(MODE==='agendas'){
     agLlenaSelects();
     ['agSetter','agEmbudo','agEstado','agEtapa'].forEach(id=>{const e=document.getElementById(id); if(e)e.value='';});
@@ -772,6 +821,7 @@ function setKPI(i,label,val,dec,sub,subClass){
 function render(){
   if(MODE==='finanzas'){ renderFinanzas(); return; } // módulo Finanzas: render aislado (no afecta closers/setters)
   if(MODE==='agendas'){ renderAgendas(); return; }   // módulo Agendas (GHL): render aislado
+  if(MODE==='consultores'){ renderConsultores(); return; } // módulo Consultores (GHL): render aislado
   const data=filtered();
   const pTxt=(document.getElementById('pers').value||('todos los '+(MODE==='closers'?'closers':'setters')));
   document.getElementById('tblSub').textContent=pTxt+' · '+document.getElementById('from').value+'  →  '+document.getElementById('to').value;
@@ -1546,6 +1596,156 @@ function agExportCSV(){
   ['agSetter','agEmbudo','agEstado','agEtapa'].forEach(id=>{
     const e=document.getElementById(id); if(e) e.addEventListener('change',renderAgendas);});
   const ex=document.getElementById('agExport'); if(ex) ex.addEventListener('click',agExportCSV);
+})();
+
+// ================================================================
+// =========== MÓDULO CONSULTORES · GHL (100% aislado) ============
+// Lee la pestaña "GHL Consultores" que escribe el puente de GHL.
+// ================================================================
+let CONS=null, CS_SEL={c:null,g:null};
+const CS_GRUPOS=['Show','Seguimiento','Venta'];
+const CS_LBL={Show:'Shows',Seguimiento:'Seguimientos',Venta:'Ventas'};
+function parseConsultores(txt){
+  const rows=parseCSV(txt); if(rows.length<1) return null;
+  const h=rows[0].map(x=>(x||'').trim());
+  const ix=n=>h.indexOf(n);
+  // si la pestaña aún no existe, gviz devuelve otra hoja: se detecta por el encabezado
+  if(ix('Consultor')<0||ix('Grupo')<0) return null;
+  const g=(r,n)=>{const i=ix(n);return i<0?'':(r[i]||'').trim();};
+  const out=[];
+  for(let i=1;i<rows.length;i++){
+    const r=rows[i], grupo=g(r,'Grupo');
+    if(!CS_GRUPOS.includes(grupo)) continue;
+    out.push({consultor:g(r,'Consultor')||'(sin consultor)', grupo, embudo:g(r,'Embudo'), etapa:g(r,'Etapa'),
+      cliente:g(r,'Cliente'), tel:g(r,'Teléfono'), correo:g(r,'Correo'),
+      valor:moneyNum(g(r,'Valor')), fecha:g(r,'Fecha'), iso:g(r,'FechaISO')});
+  }
+  return out;
+}
+function loadConsultores(){
+  const url=`https://docs.google.com/spreadsheets/d/${AG_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent('GHL Consultores')}&_=${Date.now()}`;
+  return fetch(url,{cache:'no-store'}).then(r=>r.ok?r.text():Promise.reject(r.status))
+    .then(t=>{CONS=parseConsultores(t);})
+    .catch(e=>{console.error('consultores',e); CONS=null;});
+}
+function csLlenaSelects(){
+  const llena=(id,campo)=>{const s=document.getElementById(id); if(!s) return;
+    const prev=s.value, vals=[...new Set((CONS||[]).map(x=>x[campo]).filter(Boolean))].sort();
+    s.innerHTML='<option value="">Todos</option>'+vals.map(v=>`<option value="${v}">${v}</option>`).join('');
+    if(vals.includes(prev)) s.value=prev;};
+  llena('csConsultor','consultor');
+  llena('csEmbudo','embudo');
+}
+const csISO=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+// los botones rápidos solo LLENAN Desde/Hasta; el filtro siempre lee esos campos
+function csSetRango(r){
+  const hoy=new Date(); let d='', h='';
+  if(r==='mes'){ d=csISO(new Date(hoy.getFullYear(),hoy.getMonth(),1)); h=csISO(new Date(hoy.getFullYear(),hoy.getMonth()+1,0)); }
+  else if(r==='mespas'){ d=csISO(new Date(hoy.getFullYear(),hoy.getMonth()-1,1)); h=csISO(new Date(hoy.getFullYear(),hoy.getMonth(),0)); }
+  else if(r==='sem'){ const l=new Date(hoy); l.setDate(hoy.getDate()-((hoy.getDay()+6)%7)); const dm=new Date(l); dm.setDate(l.getDate()+6); d=csISO(l); h=csISO(dm); }
+  const D=document.getElementById('csDesde'), H=document.getElementById('csHasta');
+  if(D)D.value=d; if(H)H.value=h;
+}
+function csEtiqueta(){
+  const d=(document.getElementById('csDesde')||{}).value||'', h=(document.getElementById('csHasta')||{}).value||'';
+  if(!d&&!h) return 'todo';
+  if(d&&h&&d===h) return agFechaLarga(d);
+  if(d&&h) return 'del '+agFechaCorta(d)+' al '+agFechaCorta(h);
+  return d?'desde '+agFechaCorta(d):'hasta '+agFechaCorta(h);
+}
+// filas que cuentan con los filtros de arriba (fechas + embudo)
+function csBase(){
+  const em=(document.getElementById('csEmbudo')||{}).value||'';
+  const co=(document.getElementById('csConsultor')||{}).value||'';
+  const d=(document.getElementById('csDesde')||{}).value||'', h=(document.getElementById('csHasta')||{}).value||'';
+  return (CONS||[]).filter(x=>(!em||x.embudo===em)&&(!co||x.consultor===co)&&
+    (!d||(x.iso&&x.iso>=d))&&(!h||(x.iso&&x.iso<=h)));
+}
+function renderConsultores(){
+  const kp=document.getElementById('csKpis'); if(!kp) return;
+  const st=document.getElementById('status'), stt=document.getElementById('statusTxt');
+  st.className='live'+(CONS?'':' err');
+  stt.textContent=(CONS?'en vivo · '+new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}):'falta la pestaña "GHL Consultores"')+' · consultores';
+  const tb=document.getElementById('csTbl');
+  if(!CONS){
+    kp.innerHTML='<div class="empty" style="grid-column:1/-1">Todavía no existe la pestaña <b>GHL Consultores</b> en la hoja de GHL. Corre <b>actualizarConsultoresGHL</b> en Apps Script.</div>';
+    tb.innerHTML=''; document.getElementById('csDetCard').style.display='none'; return;
+  }
+  const base=csBase();
+  const cuenta=g=>base.filter(x=>x.grupo===g).length;
+  const valorV=base.filter(x=>x.grupo==='Venta').reduce((s,x)=>s+x.valor,0);
+  const et=csEtiqueta();
+  const sub={Show:'llegaron a show · '+et,Seguimiento:'en seguimiento · '+et,Venta:(valorV?'$'+fmtCOP(valorV)+' vendidos · ':'')+et};
+  kp.innerHTML=CS_GRUPOS.map(g=>`<div class="card finclick${g==='Venta'?' hero':''}" data-c="" data-g="${g}">
+      <div class="label">${CS_LBL[g]}</div><div class="${g==='Venta'?'big':'val'}">${cuenta(g)}</div>
+      <div class="delta ${g==='Venta'?'up':''}">${sub[g]}</div></div>`).join('');
+
+  // tabla consultor × grupo
+  const by={};
+  base.forEach(x=>{const b=by[x.consultor]||(by[x.consultor]={Show:0,Seguimiento:0,Venta:0}); b[x.grupo]++;});
+  const lista=Object.entries(by).map(([n,v])=>({n,...v})).sort((a,b)=>(b.Venta-a.Venta)||(b.Seguimiento-a.Seguimiento)||a.n.localeCompare(b.n));
+  if(!lista.length){tb.innerHTML='<tbody><tr><td class="empty">Sin datos para este filtro.</td></tr></tbody>';}
+  else{
+    const celda=(c,g,n)=>n?`<td class="cscell${CS_SEL.c===c&&CS_SEL.g===g?' on':''}" data-c="${c}" data-g="${g}">${n}</td>`:'<td class="cscell cero">0</td>';
+    const T=g=>lista.reduce((s,x)=>s+x[g],0);
+    tb.innerHTML='<thead><tr><th>Consultor</th><th>Shows</th><th>Seguimientos</th><th>Ventas</th></tr></thead><tbody>'+
+      lista.map((t,i)=>{const ini=t.n.replace(/[()]/g,'').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+        return `<tr><td><div class="cl"><div class="av" style="background:${grads[i%grads.length]}">${ini}</div><span class="clname">${t.n}</span></div></td>${CS_GRUPOS.map(g=>celda(t.n,g,t[g])).join('')}</tr>`;}).join('')+
+      '</tbody><tfoot><tr><td>Total</td>'+CS_GRUPOS.map(g=>celda('',g,T(g))).join('')+'</tr></tfoot>';
+  }
+  renderConsDetalle();
+}
+function csDetalleFilas(){
+  if(!CS_SEL.g) return [];
+  return csBase().filter(x=>x.grupo===CS_SEL.g&&(!CS_SEL.c||x.consultor===CS_SEL.c))
+    .sort((a,b)=>(b.iso||'').localeCompare(a.iso||''));
+}
+function renderConsDetalle(){
+  const card=document.getElementById('csDetCard');
+  if(!CS_SEL.g){card.style.display='none';return;}
+  const filas=csDetalleFilas();
+  const em=(document.getElementById('csEmbudo')||{}).value||'';
+  const coSel=(document.getElementById('csConsultor')||{}).value||'';
+  document.getElementById('csDetTit').textContent=CS_LBL[CS_SEL.g]+' · '+(CS_SEL.c||coSel||'todos los consultores')+(em?' · '+em:'');
+  document.getElementById('csDetSub').textContent=filas.length+' cliente'+(filas.length===1?'':'s')+' · '+csEtiqueta()+' · clic en el teléfono para abrir WhatsApp';
+  const tb=document.getElementById('csDet');
+  const wa=t=>{const d=(t||'').replace(/\D/g,'');return d?`<a class="cswa" href="https://wa.me/${d}" target="_blank" rel="noopener">${t}</a>`:'—';};
+  tb.innerHTML=!filas.length?'<tbody><tr><td class="empty">Sin clientes.</td></tr></tbody>':
+    '<thead><tr><th>Cliente</th><th>Teléfono</th><th>Consultor</th><th>Embudo</th><th>Etapa</th><th>Desde</th><th>Valor</th></tr></thead><tbody>'+
+    filas.map(x=>`<tr><td style="font-weight:700">${x.cliente||'—'}</td><td>${wa(x.tel)}</td><td>${x.consultor}</td><td>${x.embudo||'—'}</td>
+      <td style="color:var(--muted);font-size:12.5px">${x.etapa||'—'}</td><td style="white-space:nowrap">${x.fecha||'—'}</td>
+      <td class="rec">${x.valor?'$'+fmtCOP(x.valor):'—'}</td></tr>`).join('')+'</tbody>';
+  card.style.display='block';
+}
+function csExportCSV(){
+  const filas=csDetalleFilas(); if(!filas.length) return;
+  const cols=['Cliente','Teléfono','Correo','Consultor','Grupo','Embudo','Etapa','Fecha','Valor'];
+  const data=filas.map(x=>[x.cliente,x.tel,x.correo,x.consultor,x.grupo,x.embudo,x.etapa,x.fecha,x.valor]);
+  const esc=c=>'"'+String(c==null?'':c).replace(/"/g,'""')+'"';
+  const csv=[cols.map(esc).join(',')].concat(data.map(r=>r.map(esc).join(','))).join('\r\n');
+  const url=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'})), a=document.createElement('a');
+  a.href=url; a.download='consultores_'+(CS_LBL[CS_SEL.g]||'').toLowerCase()+(CS_SEL.c?'_'+CS_SEL.c:'')+'.csv';
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+(function(){
+  const v=document.getElementById('consView');
+  if(v) v.addEventListener('click',e=>{
+    const el=e.target.closest('[data-g]'); if(!el||el.classList.contains('cero')) return;
+    const c=el.dataset.c||'', g=el.dataset.g;
+    CS_SEL = (CS_SEL.c===c&&CS_SEL.g===g) ? {c:null,g:null} : {c,g};   // segundo clic = cerrar
+    renderConsultores();
+    if(CS_SEL.g) document.getElementById('csDetCard').scrollIntoView({behavior:'smooth',block:'start'});
+  });
+  const seg=document.getElementById('csSeg');
+  if(seg) seg.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b)return;
+    seg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
+    csSetRango(b.dataset.r); renderConsultores();});
+  // fecha escrita a mano: se apagan los botones rápidos
+  ['csDesde','csHasta'].forEach(id=>{const e=document.getElementById(id); if(e) e.addEventListener('change',()=>{
+    if(seg) seg.querySelectorAll('button').forEach(x=>x.classList.remove('on')); renderConsultores();});});
+  const emb=document.getElementById('csEmbudo'); if(emb) emb.addEventListener('change',renderConsultores);
+  const con=document.getElementById('csConsultor'); if(con) con.addEventListener('change',()=>{CS_SEL={c:null,g:null}; renderConsultores();});
+  const ex=document.getElementById('csExport'); if(ex) ex.addEventListener('click',csExportCSV);
 })();
 
 fetchData();
