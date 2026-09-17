@@ -412,7 +412,7 @@
     <div class="card" style="margin-bottom:16px">
       <div class="lbl" style="margin-bottom:7px">CUÁNDO</div>
       <div class="seg" id="csSeg">
-        <button data-r="sem">Esta semana</button><button data-r="mes" class="on">Este mes</button><button data-r="mespas">Mes pasado</button><button data-r="todo">Todo</button>
+        <button data-r="sem">Esta semana</button><button data-r="mes">Este mes</button><button data-r="mespas">Mes pasado</button><button data-r="todo" class="on">Todo</button>
       </div>
       <div class="agfilt">
         <div class="fld"><label>Desde</label><input type="date" id="csDesde" autocomplete="off"></div>
@@ -420,7 +420,7 @@
         <div class="fld"><label>Consultor</label><select class="sel" id="csConsultor"></select></div>
         <div class="fld"><label>Embudo</label><select class="sel" id="csEmbudo"></select></div>
       </div>
-      <div class="h2sub" style="margin-top:10px">La fecha es cuando el cliente <b>llegó a esa etapa</b> en GHL · "Todo" muestra todo lo que tiene cada consultor hoy</div>
+      <div class="h2sub" style="margin-top:10px">La fecha es cuando el cliente <b>llegó a esa etapa</b> en GHL · Para <b>ventas por fecha</b> usa el módulo Finanzas: GHL no guarda el día de la venta</div>
     </div>
 
     <div class="kpis" id="csKpis" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px"></div>
@@ -733,9 +733,9 @@ function applyMode(){
   } else if(MODE==='consultores'){
     CS_SEL={c:null,g:null};
     ['csEmbudo','csConsultor'].forEach(id=>{const e=document.getElementById(id); if(e) e.value='';});
-    csSetRango('mes');
+    csSetRango('todo');
     const sg=document.getElementById('csSeg');
-    if(sg) sg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.r==='mes'));
+    if(sg) sg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.r==='todo'));
     csLlenaSelects(); renderConsultores();
   } else if(MODE==='agendas'){
     agLlenaSelects();
@@ -1612,11 +1612,15 @@ function parseConsultores(txt){
   // si la pestaña aún no existe, gviz devuelve otra hoja: se detecta por el encabezado
   if(ix('Consultor')<0||ix('Grupo')<0) return null;
   const g=(r,n)=>{const i=ix(n);return i<0?'':(r[i]||'').trim();};
+  // nombres de embudo cambian en GHL: se normalizan a Pauta / Workshop / Orgánico
+  const embudoLimpio=e=>{const l=(e||'').toLowerCase();
+    return /pauta/.test(l)?'Pauta':/workshop/.test(l)?'Workshop':/org[aá]nico/.test(l)?'Orgánico':e;};
   const out=[];
   for(let i=1;i<rows.length;i++){
-    const r=rows[i], grupo=g(r,'Grupo');
+    const r=rows[i], grupo=g(r,'Grupo'), etapa=g(r,'Etapa');
     if(!CS_GRUPOS.includes(grupo)) continue;
-    out.push({consultor:g(r,'Consultor')||'(sin consultor)', grupo, embudo:g(r,'Embudo'), etapa:g(r,'Etapa'),
+    if(/no[\s-]*show|no[\s-]*asist/i.test(etapa)) continue;   // un no-show nunca cuenta como show
+    out.push({consultor:g(r,'Consultor')||'(sin consultor)', grupo, embudo:embudoLimpio(g(r,'Embudo')), etapa,
       cliente:g(r,'Cliente'), tel:g(r,'Teléfono'), correo:g(r,'Correo'),
       valor:moneyNum(g(r,'Valor')), fecha:g(r,'Fecha'), iso:g(r,'FechaISO')});
   }
